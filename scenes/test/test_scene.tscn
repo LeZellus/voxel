@@ -1,7 +1,12 @@
-[gd_scene load_steps=6 format=3 uid="uid://rm0npb5j2kr5"]
+[gd_scene load_steps=11 format=3 uid="uid://rm0npb5j2kr5"]
 
 [ext_resource type="Script" path="res://scripts/PlayerController.gd" id="1_0bupl"]
 [ext_resource type="PackedScene" uid="uid://yyt7yjtqdboi" path="res://scenes/test/test_plateform.tscn" id="1_egkgl"]
+[ext_resource type="Script" path="res://scripts/state_machine/StateMachine.gd" id="3_t7aov"]
+[ext_resource type="Script" path="res://scripts/state_machine/IdleState.gd" id="4_ynswf"]
+[ext_resource type="Script" path="res://scripts/state_machine/WalkingState.gd" id="5_ne8ck"]
+[ext_resource type="Script" path="res://scripts/state_machine/FarmingState.gd" id="6_kwx8p"]
+[ext_resource type="Script" path="res://scripts/state_machine/JumpingState.gd" id="7_uwys1"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rffcu"]
 shading_mode = 0
@@ -22,16 +27,34 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.88931, 0)
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="Environment"]
 
-[node name="CharacterBody3D" type="CharacterBody3D" parent="."]
+[node name="Player" type="CharacterBody3D" parent="."]
 script = ExtResource("1_0bupl")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="CharacterBody3D"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Player"]
 mesh = SubResource("CapsuleMesh_6ga6j")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="CharacterBody3D"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Player"]
 shape = SubResource("CapsuleShape3D_a03if")
 
-[node name="SpringArm3D" type="SpringArm3D" parent="CharacterBody3D"]
+[node name="SpringArm3D" type="SpringArm3D" parent="Player"]
 
-[node name="Camera3D" type="Camera3D" parent="CharacterBody3D/SpringArm3D"]
+[node name="Camera3D" type="Camera3D" parent="Player/SpringArm3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.00633, 0)
+
+[node name="InteractionRay" type="RayCast3D" parent="Player"]
+
+[node name="StateMachine" type="Node" parent="Player" node_paths=PackedStringArray("initial_state")]
+script = ExtResource("3_t7aov")
+initial_state = NodePath("Idle")
+
+[node name="Idle" type="Node" parent="Player/StateMachine"]
+script = ExtResource("4_ynswf")
+
+[node name="Walking" type="Node" parent="Player/StateMachine"]
+script = ExtResource("5_ne8ck")
+
+[node name="Farming" type="Node" parent="Player/StateMachine"]
+script = ExtResource("6_kwx8p")
+
+[node name="Jumping" type="Node" parent="Player/StateMachine"]
+script = ExtResource("7_uwys1")
