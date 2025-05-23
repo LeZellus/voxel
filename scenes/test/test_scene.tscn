@@ -1,6 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://rm0npb5j2kr5"]
 
 [ext_resource type="Script" path="res://scripts/PlayerController.gd" id="1_0bupl"]
+[ext_resource type="PackedScene" uid="uid://yyt7yjtqdboi" path="res://scenes/test/test_plateform.tscn" id="1_egkgl"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rffcu"]
 shading_mode = 0
@@ -12,16 +13,14 @@ radial_segments = 8
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_a03if"]
 
-[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_w281t"]
-
 [node name="TestScene" type="Node3D"]
+
+[node name="plateform" parent="." instance=ExtResource("1_egkgl")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.88931, 0)
 
 [node name="Environment" type="Node3D" parent="."]
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="Environment"]
-
-[node name="Camera3D" type="Camera3D" parent="Environment"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 10.0651)
 
 [node name="CharacterBody3D" type="CharacterBody3D" parent="."]
 script = ExtResource("1_0bupl")
@@ -32,14 +31,7 @@ mesh = SubResource("CapsuleMesh_6ga6j")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="CharacterBody3D"]
 shape = SubResource("CapsuleShape3D_a03if")
 
-[node name="CameraPivot" type="Node3D" parent="CharacterBody3D"]
+[node name="SpringArm3D" type="SpringArm3D" parent="CharacterBody3D"]
 
-[node name="Camera3D" type="Camera3D" parent="CharacterBody3D/CameraPivot"]
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-
-[node name="StaticBody3D" type="StaticBody3D" parent="MeshInstance3D"]
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="MeshInstance3D/StaticBody3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.19418, 0)
-shape = SubResource("WorldBoundaryShape3D_w281t")
+[node name="Camera3D" type="Camera3D" parent="CharacterBody3D/SpringArm3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.00633, 0)

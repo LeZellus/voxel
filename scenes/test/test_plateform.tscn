@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://yyt7yjtqdboi"]
+
+[ext_resource type="PackedScene" uid="uid://c5d4l1dmnfl13" path="res://assets/models/optimized/plateform.fbx" id="1_041nl"]
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_udu2a"]
+
+[node name="plateform" instance=ExtResource("1_041nl")]
+
+[node name="Area3D" type="StaticBody3D" parent="." index="4"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.442073, 0)
+shape = SubResource("WorldBoundaryShape3D_udu2a")
