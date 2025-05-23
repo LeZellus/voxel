@@ -2,7 +2,6 @@ extends State
 class_name JumpingState
 
 func enter():
-	print("Joueur: Saut")
 	player.velocity.y = player.jump_velocity
 
 func physics_update(delta):

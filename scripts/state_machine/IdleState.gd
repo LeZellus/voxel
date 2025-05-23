@@ -1,15 +1,12 @@
 extends State
 class_name IdleState
 
-func enter():
-	print("Joueur: En attente")
-
 func physics_update(delta):
 	player.apply_gravity(delta)
 	
 	# FORCER l'arrêt immédiat
-	player.velocity.x = 0  # AJOUTER
-	player.velocity.z = 0  # AJOUTER
+	player.velocity.x = 0 
+	player.velocity.z = 0 
 	
 	# Vérifier transitions
 	var input_dir = Input.get_vector("move_left", "move_right", "move_forward", "move_back")

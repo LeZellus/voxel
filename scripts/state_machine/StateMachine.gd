@@ -28,9 +28,7 @@ func _physics_process(delta):
 	if current_state:
 		current_state.physics_update(delta)
 		
-	print("StateMachine _physics_process appelé")  # AJOUTER
 	if current_state:
-		print("État actuel: ", current_state.name)  # AJOUTER
 		current_state.physics_update(delta)
 	else:
 		print("Aucun état actuel!") 
@@ -47,4 +45,3 @@ func change_state(new_state_name: String):
 	
 	current_state = new_state
 	current_state.enter()
-	print("État changé: ", new_state_name)

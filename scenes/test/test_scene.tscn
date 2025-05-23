@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://rm0npb5j2kr5"]
+[gd_scene load_steps=12 format=3 uid="uid://rm0npb5j2kr5"]
 
 [ext_resource type="Script" path="res://scripts/PlayerController.gd" id="1_0bupl"]
 [ext_resource type="PackedScene" uid="uid://yyt7yjtqdboi" path="res://scenes/test/test_plateform.tscn" id="1_egkgl"]
@@ -7,6 +7,7 @@
 [ext_resource type="Script" path="res://scripts/state_machine/WalkingState.gd" id="5_ne8ck"]
 [ext_resource type="Script" path="res://scripts/state_machine/FarmingState.gd" id="6_kwx8p"]
 [ext_resource type="Script" path="res://scripts/state_machine/JumpingState.gd" id="7_uwys1"]
+[ext_resource type="Script" path="res://scripts/ToolSystem.gd" id="8_fudal"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rffcu"]
 shading_mode = 0
@@ -38,10 +39,11 @@ shape = SubResource("CapsuleShape3D_a03if")
 
 [node name="SpringArm3D" type="SpringArm3D" parent="Player"]
 
+[node name="InteractionRay" type="RayCast3D" parent="Player/SpringArm3D"]
+target_position = Vector3(0, 0, -20)
+
 [node name="Camera3D" type="Camera3D" parent="Player/SpringArm3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.00633, 0)
-
-[node name="InteractionRay" type="RayCast3D" parent="Player"]
 
 [node name="StateMachine" type="Node" parent="Player" node_paths=PackedStringArray("initial_state")]
 script = ExtResource("3_t7aov")
@@ -58,3 +60,6 @@ script = ExtResource("6_kwx8p")
 
 [node name="Jumping" type="Node" parent="Player/StateMachine"]
 script = ExtResource("7_uwys1")
+
+[node name="ToolSystem" type="Node" parent="Player"]
+script = ExtResource("8_fudal")
