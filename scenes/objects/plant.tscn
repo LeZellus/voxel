@@ -1,0 +1,15 @@
+[gd_scene load_steps=2 format=3 uid="uid://l8ad5o3ncv5w"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_mfo4u"]
+size = Vector3(1.07373, 4.56519, 1)
+
+[node name="Plant" type="Node3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.00886306, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.65979, 0)
+shape = SubResource("BoxShape3D_mfo4u")

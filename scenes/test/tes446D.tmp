@@ -1,14 +1,15 @@
-[gd_scene load_steps=13 format=3 uid="uid://rm0npb5j2kr5"]
+[gd_scene load_steps=14 format=3 uid="uid://rm0npb5j2kr5"]
 
 [ext_resource type="Script" path="res://scripts/PlayerController.gd" id="1_0bupl"]
 [ext_resource type="PackedScene" uid="uid://yyt7yjtqdboi" path="res://scenes/test/test_plateform.tscn" id="1_egkgl"]
-[ext_resource type="PackedScene" uid="uid://dem8nvxjnlr56" path="res://scenes/UI/UIManager.tscn" id="1_vo8i5"]
 [ext_resource type="Script" path="res://scripts/state_machine/StateMachine.gd" id="3_t7aov"]
 [ext_resource type="Script" path="res://scripts/state_machine/IdleState.gd" id="4_ynswf"]
 [ext_resource type="Script" path="res://scripts/state_machine/WalkingState.gd" id="5_ne8ck"]
 [ext_resource type="Script" path="res://scripts/state_machine/FarmingState.gd" id="6_kwx8p"]
 [ext_resource type="Script" path="res://scripts/state_machine/JumpingState.gd" id="7_uwys1"]
 [ext_resource type="Script" path="res://scripts/ToolSystem.gd" id="8_fudal"]
+[ext_resource type="PackedScene" uid="uid://3bmupvmxhssr" path="res://scenes/objects/plant.tscn" id="9_4crwa"]
+[ext_resource type="Script" path="res://scripts/debug/DetectionDebugVisual.gd" id="9_o6mxn"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rffcu"]
 shading_mode = 0
@@ -22,18 +23,15 @@ radial_segments = 8
 
 [node name="TestScene" type="Node3D"]
 
-[node name="UIManager" parent="." instance=ExtResource("1_vo8i5")]
-
 [node name="plateform" parent="." instance=ExtResource("1_egkgl")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.88931, 0)
 
 [node name="Environment" type="Node3D" parent="."]
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="Environment"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.59069, 22.3423)
-light_color = Color(0.674048, 0.581462, 0.515484, 1)
 
 [node name="Player" type="CharacterBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -2.05041)
 script = ExtResource("1_0bupl")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Player"]
@@ -65,3 +63,8 @@ script = ExtResource("7_uwys1")
 
 [node name="ToolSystem" type="Node" parent="Player"]
 script = ExtResource("8_fudal")
+
+[node name="DebugCircle" type="Node3D" parent="Player"]
+script = ExtResource("9_o6mxn")
+
+[node name="Plant" parent="." instance=ExtResource("9_4crwa")]

@@ -1,8 +1,9 @@
-[gd_scene load_steps=13 format=3 uid="uid://rm0npb5j2kr5"]
+[gd_scene load_steps=14 format=3 uid="uid://rm0npb5j2kr5"]
 
 [ext_resource type="Script" path="res://scripts/PlayerController.gd" id="1_0bupl"]
 [ext_resource type="PackedScene" uid="uid://yyt7yjtqdboi" path="res://scenes/test/test_plateform.tscn" id="1_egkgl"]
 [ext_resource type="PackedScene" uid="uid://dem8nvxjnlr56" path="res://scenes/UI/UIManager.tscn" id="1_vo8i5"]
+[ext_resource type="PackedScene" uid="uid://cvg6ai8p2pldo" path="res://scenes/UI/SimpleToolPanel.tscn" id="2_ljrtx"]
 [ext_resource type="Script" path="res://scripts/state_machine/StateMachine.gd" id="3_t7aov"]
 [ext_resource type="Script" path="res://scripts/state_machine/IdleState.gd" id="4_ynswf"]
 [ext_resource type="Script" path="res://scripts/state_machine/WalkingState.gd" id="5_ne8ck"]
@@ -23,6 +24,8 @@ radial_segments = 8
 [node name="TestScene" type="Node3D"]
 
 [node name="UIManager" parent="." instance=ExtResource("1_vo8i5")]
+
+[node name="SimpleToolPanel" parent="UIManager" instance=ExtResource("2_ljrtx")]
 
 [node name="plateform" parent="." instance=ExtResource("1_egkgl")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.88931, 0)
