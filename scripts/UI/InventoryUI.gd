@@ -99,6 +99,9 @@ func _on_slot_input(event: InputEvent, slot_index: int):
 func _select_slot(slot_index: int):
 	selected_slot = slot_index
 	_show_item_info(slot_index)
+	
+	if slot_cursor:
+		slot_cursor.animate_click()
 
 func _on_slot_changed(slot_index: int):
 	_update_slot_visual(slot_index)

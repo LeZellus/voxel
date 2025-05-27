@@ -37,6 +37,9 @@ func show_on_slot(target_control: Control):
 	visible = true
 	size = target_control.size
 	
+	# Définir le pivot au centre pour l'animation de scale
+	pivot_offset = size / 2
+	
 	if tween:
 		tween.kill()
 	
@@ -47,3 +50,15 @@ func show_on_slot(target_control: Control):
 
 func hide_cursor():
 	visible = false
+	
+func animate_click():
+	if not visible:
+		return
+		
+	# Créer un tween séparé pour l'animation de clic
+	var click_tween = create_tween()
+	click_tween.set_parallel(true)  # Permet plusieurs animations simultanées
+	
+	# Animation de scale (pulse effect)
+	click_tween.tween_property(self, "scale", Vector2(1.2, 1.2), 0.1)
+	click_tween.tween_property(self, "scale", Vector2(1.0, 1.0), 0.15).set_delay(0.1)

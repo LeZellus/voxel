@@ -3,7 +3,7 @@
 [ext_resource type="FontFile" uid="uid://b2ovnq4y084qx" path="res://assets/fonts/awcathode-webfont.ttf" id="1_culsm"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gvomj"]
-bg_color = Color(0.063, 0.078, 0.122, 0.7)
+bg_color = Color(0.125, 0.18, 0.216, 0.9)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xof4f"]
 bg_color = Color(0.063, 0.078, 0.122, 0.7)
