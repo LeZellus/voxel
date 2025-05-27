@@ -21,7 +21,7 @@ func physics_update(delta):
 	player.apply_movement(Vector3.ZERO, 0)
 	player.move_and_slide()
 
-func handle_input(event):
+func handle_input(_event):
 	# Les inputs caméra sont gérés par PlayerController
 	# Ici on gère seulement les inputs spécifiques à cet état
 	pass

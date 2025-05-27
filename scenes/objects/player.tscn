@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://cx6drcd7vxfvd"]
+[gd_scene load_steps=13 format=3 uid="uid://cx6drcd7vxfvd"]
 
 [ext_resource type="Script" path="res://scripts/PlayerController.gd" id="1_1yluk"]
 [ext_resource type="Script" path="res://scripts/state_machine/StateMachine.gd" id="2_mytfj"]
@@ -6,7 +6,8 @@
 [ext_resource type="Script" path="res://scripts/state_machine/WalkingState.gd" id="4_rwr3b"]
 [ext_resource type="Script" path="res://scripts/state_machine/FarmingState.gd" id="5_vxp0e"]
 [ext_resource type="Script" path="res://scripts/state_machine/JumpingState.gd" id="6_6gvi2"]
-[ext_resource type="Script" path="res://scripts/ToolSystem.gd" id="7_yvlqr"]
+[ext_resource type="Script" path="res://scripts/manager/ToolSystem.gd" id="7_yvlqr"]
+[ext_resource type="Script" path="res://scripts/manager/InventoryManager.gd" id="8_5ixy0"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_a03if"]
 
@@ -17,6 +18,8 @@ albedo_color = Color(0.792571, 0.000501137, 0.794149, 1)
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_6ga6j"]
 material = SubResource("StandardMaterial3D_rffcu")
 radial_segments = 8
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_bew58"]
 
 [node name="Player" type="CharacterBody3D"]
 script = ExtResource("1_1yluk")
@@ -50,3 +53,12 @@ script = ExtResource("7_yvlqr")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 mesh = SubResource("CapsuleMesh_6ga6j")
+
+[node name="ItemDetector" type="Area3D" parent="."]
+transform = Transform3D(2.61765, 0, 0, 0, 2.61765, 0, 0, 0, 2.61765, 0, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ItemDetector"]
+shape = SubResource("SphereShape3D_bew58")
+
+[node name="InventoryManager" type="Node3D" parent="."]
+script = ExtResource("8_5ixy0")

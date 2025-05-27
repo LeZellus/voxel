@@ -23,6 +23,6 @@ func physics_update(delta):
 		else:
 			state_machine.change_state("idle")
 
-func handle_input(event):
+func handle_input(_event):
 	# Caméra gérée par PlayerController
 	pass

@@ -1,4 +1,7 @@
-# SimpleToolPanel.gd
+[gd_scene load_steps=2 format=3 uid="uid://bcptouxbsn270"]
+
+[sub_resource type="GDScript" id="GDScript_hmk7w"]
+script/source = "# SimpleToolPanel.gd
 extends Control
 class_name SimpleToolPanel
 
@@ -14,13 +17,13 @@ var current_selected: int = 0
 
 # Configuration des outils
 var tools_data = [
-	{"name": "Graines", "tool": ToolSystem.Tool.SEEDS, "icon": "🌱", "key": "1"},
-	{"name": "Arrosoir", "tool": ToolSystem.Tool.WATERING_CAN, "icon": "🚿", "key": "2"},
-	{"name": "Faucille", "tool": ToolSystem.Tool.SICKLE, "icon": "🔪", "key": "3"}
+	{\"name\": \"Graines\", \"tool\": ToolSystem.Tool.SEEDS, \"icon\": \"🌱\", \"key\": \"1\"},
+	{\"name\": \"Arrosoir\", \"tool\": ToolSystem.Tool.WATERING_CAN, \"icon\": \"🚿\", \"key\": \"2\"},
+	{\"name\": \"Faucille\", \"tool\": ToolSystem.Tool.SICKLE, \"icon\": \"🔪\", \"key\": \"3\"}
 ]
 
 func _ready():
-	print("SimpleToolPanel: Initialisation...")
+	print(\"SimpleToolPanel: Initialisation...\")
 	setup_ui()
 	setup_input()
 
@@ -37,7 +40,7 @@ func setup_ui():
 	
 	# Container vertical pour les boutons
 	var vbox = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 10)
+	vbox.add_theme_constant_override(\"separation\", 10)
 	add_child(vbox)
 	
 	# Création des boutons d'outils
@@ -55,11 +58,11 @@ func create_tool_button(tool_data: Dictionary, index: int) -> Button:
 	
 	# Configuration du bouton
 	button.custom_minimum_size = Vector2(60, 60)
-	button.text = tool_data.icon + "\n" + str(index + 1)
-	button.tooltip_text = tool_data.name + " (" + tool_data.key + ")"
+	button.text = tool_data.icon + \"\\n\" + str(index + 1)
+	button.tooltip_text = tool_data.name + \" (\" + tool_data.key + \")\"
 	
 	# Style du bouton
-	button.add_theme_font_size_override("font_size", 12)
+	button.add_theme_font_size_override(\"font_size\", 12)
 	
 	# Connexion du signal
 	button.pressed.connect(_on_tool_button_pressed.bind(index))
@@ -73,7 +76,7 @@ func select_tool(index: int):
 	if index < 0 or index >= tools_data.size():
 		return
 	
-	print("SimpleToolPanel: Sélection de l'outil ", index)
+	print(\"SimpleToolPanel: Sélection de l'outil \", index)
 	
 	# Mise à jour de la sélection visuelle
 	update_button_selection(index)
@@ -90,11 +93,11 @@ func update_button_selection(selected_index: int):
 		if i == selected_index:
 			# Bouton sélectionné
 			button.modulate = Color.YELLOW
-			button.add_theme_stylebox_override("normal", create_selected_style())
+			button.add_theme_stylebox_override(\"normal\", create_selected_style())
 		else:
 			# Bouton normal
 			button.modulate = Color.WHITE
-			button.remove_theme_stylebox_override("normal")
+			button.remove_theme_stylebox_override(\"normal\")
 
 func create_selected_style() -> StyleBox:
 	var style = StyleBoxFlat.new()
@@ -142,10 +145,10 @@ func cycle_tool(direction: int):
 # Méthode pour ajouter de nouveaux outils facilement
 func add_tool(name: String, tool: ToolSystem.Tool, icon: String):
 	var new_tool_data = {
-		"name": name,
-		"tool": tool,
-		"icon": icon,
-		"key": str(tools_data.size() + 1)
+		\"name\": name,
+		\"tool\": tool,
+		\"icon\": icon,
+		\"key\": str(tools_data.size() + 1)
 	}
 	tools_data.append(new_tool_data)
 	
@@ -158,3 +161,14 @@ func get_current_tool() -> ToolSystem.Tool:
 	if current_selected < tools_data.size():
 		return tools_data[current_selected].tool
 	return ToolSystem.Tool.SEEDS
+"
+
+[node name="SimpleToolbar" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = SubResource("GDScript_hmk7w")

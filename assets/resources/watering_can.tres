@@ -1,0 +1,17 @@
+[gd_resource type="AudioStream" script_class="Item" load_steps=3 format=3 uid="uid://xidwq30p73ok"]
+
+[ext_resource type="Script" path="res://scripts/items/Item.gd" id="1_f0msj"]
+[ext_resource type="ArrayMesh" uid="uid://d1cggphalsfpa" path="res://assets/models/objects/watering_can.obj" id="2_mkfwd"]
+
+[resource]
+script = ExtResource("1_f0msj")
+id = "watering_can"
+name = "Watering Can"
+description = "Watering Cans are used to increase plant growth speed"
+world_mesh = ExtResource("2_mkfwd")
+inventory_scale = 0.8
+stack_size = 1
+is_stackable = false
+rarity = "common"
+item_type = "tool"
+durability = -1
