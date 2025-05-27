@@ -8,6 +8,7 @@ var inventory: Inventory
 var inventory_manager: Node
 var slot_scenes: Array[Control] = []
 var selected_slot: int = -1
+var slot_cursor: Control
 
 const INVENTORY_SIZE = 36
 const GRID_COLUMNS = 9
@@ -19,6 +20,14 @@ func _ready():
 	if inventory_grid:
 		inventory_grid.columns = GRID_COLUMNS
 		_create_slots()
+	
+	# Créer le curseur
+	if not Engine.is_editor_hint():
+		_create_slot_cursor()
+
+func _create_slot_cursor():
+	slot_cursor = preload("res://scripts/ui/SlotCursor.gd").new()
+	panel.add_child(slot_cursor)
 
 func setup_inventory(inv: Inventory, manager: Node):
 	inventory = inv
@@ -34,6 +43,8 @@ func show_animated():
 	UIAnimator.slide_inventory_from_bottom(panel, estimated_height)
 
 func hide_animated():
+	if slot_cursor:
+		slot_cursor.hide_cursor()
 	var tween = UIAnimator.slide_inventory_to_bottom(panel)
 	await tween.finished
 	visible = false
@@ -63,8 +74,18 @@ func _create_game_slots():
 		var slot = slot_scene.instantiate()
 		if not Engine.is_editor_hint():
 			slot.gui_input.connect(_on_slot_input.bind(i))
+			slot.mouse_entered.connect(_on_slot_hovered.bind(i))
+			slot.mouse_exited.connect(_on_slot_unhovered)
 		inventory_grid.add_child(slot)
 		slot_scenes.append(slot)
+
+func _on_slot_hovered(slot_index: int):
+	if slot_cursor and slot_index < slot_scenes.size():
+		slot_cursor.show_on_slot(slot_scenes[slot_index])
+
+func _on_slot_unhovered():
+	# Le curseur reste visible mais peut être masqué si on quitte complètement la grille
+	pass
 
 func _clear_existing_slots():
 	for child in inventory_grid.get_children():
