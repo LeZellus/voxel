@@ -1,20 +1,19 @@
 # UIAudioManager.gd
 extends Node
-@onready var audio_player = AudioStreamPlayer.new()
 
+@onready var audio_player = AudioStreamPlayer.new()
 var sounds = {}
 var audio_players = {}
 
 func _ready():
+	add_child(audio_player)
 	load_ui_sounds()
 	setup_audio_players()
-	print("UIAudioManager prêt, sons chargés : ", sounds.keys())
-	
+
 func setup_audio_players():
-	# Créer différents players pour différents types de sons
-	create_audio_player("ui", "SFX", 0.4)      # Sons d'interface
-	create_audio_player("hover", "SFX", 0.1)   # Sons de survol (plus discrets)
-	create_audio_player("action", "SFX", 0.6)  # Sons d'actions importantes
+	create_audio_player("ui", "SFX", 1.0)
+	create_audio_player("hover", "SFX", 0.1)
+	create_audio_player("action", "SFX", 1.0)
 
 func create_audio_player(name: String, bus: String, volume: float):
 	var player = AudioStreamPlayer.new()
@@ -24,36 +23,30 @@ func create_audio_player(name: String, bus: String, volume: float):
 	audio_players[name] = player
 
 func load_ui_sounds():
-	print("Chargement des sons depuis : res://audio/sfx/ui_interface/")
 	var dir = DirAccess.open("res://audio/sfx/ui_interface/")
 	if dir:
-		print("Dossier trouvé, lecture des fichiers...")
 		dir.list_dir_begin()
 		var file_name = dir.get_next()
 		while file_name != "":
-			print("Fichier trouvé : ", file_name)
 			if file_name.ends_with(".ogg") or file_name.ends_with(".wav") or file_name.ends_with(".mp3"):
 				var sound_name = file_name.get_basename()
 				var full_path = "res://audio/sfx/ui_interface/" + file_name
-				print("Chargement du son : ", sound_name, " depuis ", full_path)
 				sounds[sound_name] = load(full_path)
-				if sounds[sound_name]:
-					print("✓ Son chargé avec succès : ", sound_name)
-				else:
-					print("✗ Échec du chargement : ", sound_name)
 			file_name = dir.get_next()
-	else:
-		print("ERREUR : Impossible d'ouvrir le dossier res://audio/sfx/ui_interface/")
+
+func has_sound(sound_name: String) -> bool:
+	return sounds.has(sound_name)
 
 func play_sound(sound_name: String, player_type: String = "ui"):
 	if not sounds.has(sound_name):
-		print("Son non trouvé : ", sound_name)
 		return
 	
-	if not audio_players.has(player_type):
-		print("Player non trouvé : ", player_type)
-		return
+	var player = audio_player
+	if audio_players.has(player_type):
+		player = audio_players[player_type]
 	
-	var player = audio_players[player_type]
+	if player.playing and player_type != "ui":
+		player.stop()
+	
 	player.stream = sounds[sound_name]
 	player.play()

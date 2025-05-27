@@ -91,6 +91,9 @@ func create_game_slots():
 		print("Slot ", i, " created: ", slot != null)
 		
 		if not Engine.is_editor_hint():
+			# ← AJOUTER CETTE LIGNE IMPORTANTE
+			slot.setup_slot(self)  # Passe la référence de l'inventaire au slot
+			
 			slot.gui_input.connect(_on_slot_input.bind(i))
 			slot.mouse_entered.connect(_on_slot_hovered.bind(i))
 			slot.mouse_exited.connect(_on_slot_unhovered)
