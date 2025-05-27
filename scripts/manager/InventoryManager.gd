@@ -1,9 +1,7 @@
 # InventoryManager.gd - Gestionnaire principal à attacher au joueur
-# À sauvegarder dans : res://scripts/InventoryManager.gd
 extends Node
 
-# Pour l'instant on utilise l'UI simple, plus tard on pourra utiliser la vraie scène
-# @export var inventory_ui_scene: PackedScene = preload("res://scenes/ui/InventoryUI.tscn")
+@export var inventory_ui_scene: PackedScene = preload("res://scenes/ui/InventoryUI.tscn")
 
 var inventory: Inventory
 var inventory_ui: Control
@@ -11,7 +9,6 @@ var inventory_ui: Control
 func _ready():
 	print("InventoryManager _ready() démarré")
 	
-	# IMPORTANT: Configure le nœud pour continuer à fonctionner en pause
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	
 	# Crée l'inventaire
@@ -19,88 +16,49 @@ func _ready():
 	add_child(inventory)
 	print("Inventory créé et ajouté")
 	
-	# Crée l'interface (version simple pour l'instant)
+	# Attendre que l'inventory soit prêt
+	await get_tree().process_frame
+	
+	# Crée l'interface
 	create_inventory_ui()
-	print("create_inventory_ui() appelé")
 	
 	# Configure les actions d'input
 	setup_input_actions()
 	
 	print("InventoryManager initialisé")
-	print("inventory_ui est: ", inventory_ui)
 
 func create_inventory_ui():
 	print("create_inventory_ui() démarré")
 	
-	# Crée l'UI avec la structure attendue par InventoryUI.gd
-	inventory_ui = Control.new()
-	inventory_ui.name = "InventoryUI"
-	inventory_ui.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	if not inventory_ui_scene:
+		print("Erreur: inventory_ui_scene non défini")
+		return
+	
+	# Instancie la scène
+	inventory_ui = inventory_ui_scene.instantiate()
 	inventory_ui.visible = false
 	inventory_ui.process_mode = Node.PROCESS_MODE_ALWAYS
-	
-	# Structure attendue : Panel/VBoxContainer/InventoryGrid
-	var panel = Panel.new()
-	panel.name = "Panel"
-	
-	# CORRECTION: Centrage réel du panel
-	panel.anchor_left = 0.5
-	panel.anchor_right = 0.5
-	panel.anchor_top = 0.5
-	panel.anchor_bottom = 0.5
-	panel.offset_left = -300   # -width/2
-	panel.offset_right = 300   # width/2
-	panel.offset_top = -200    # -height/2
-	panel.offset_bottom = 200  # height/2
-	
-	var vbox = VBoxContainer.new()
-	vbox.name = "VBoxContainer"
-	vbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	
-	var grid = GridContainer.new()
-	grid.name = "InventoryGrid"
-	grid.columns = 9
-	
-	# Style du panel
-	var style_box = StyleBoxFlat.new()
-	style_box.bg_color = Color(0.15, 0.15, 0.15, 0.0)
-	panel.add_theme_stylebox_override("panel", style_box)
-	
-	# Titre de l'inventaire
-	var title = Label.new()
-	title.text = "INVENTAIRE"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_color_override("font_color", Color.WHITE)
-	title.add_theme_font_size_override("font_size", 18)
-	
-	# Assemble la hiérarchie
-	inventory_ui.add_child(panel)
-	panel.add_child(vbox)
-	vbox.add_child(title)
-	vbox.add_child(grid)
-	
-	# Charge et attache le script InventoryUI
-	var script = load("res://scripts/ui/InventoryUI.gd")
-	if script:
-		inventory_ui.set_script(script)
-		print("Script InventoryUI.gd attaché")
-		
-		# Initialise l'UI après avoir attaché le script
-		await get_tree().process_frame
-		inventory_ui.setup_inventory(inventory, self)
-	else:
-		print("Attention: Script InventoryUI.gd non trouvé")
 	
 	# Ajoute à la scène
 	get_tree().current_scene.add_child(inventory_ui)
 	print("UI ajoutée à la scène")
+	
+	# Attendre que l'UI soit prête
+	await get_tree().process_frame
+	
+	# Initialise l'UI avec l'inventory
+	if inventory and inventory_ui and inventory_ui.has_method("setup_inventory"):
+		inventory_ui.setup_inventory(inventory, self)
+		print("setup_inventory() appelé avec succès")
+	else:
+		print("Erreur: Impossible d'initialiser l'UI")
+		print("inventory: ", inventory)
+		print("inventory_ui: ", inventory_ui)
 
 func setup_input_actions():
-	# Supprime l'action si elle existe déjà pour la recréer
 	if InputMap.has_action("toggle_inventory"):
 		InputMap.erase_action("toggle_inventory")
 	
-	# Crée l'action
 	InputMap.add_action("toggle_inventory")
 	var key_event = InputEventKey.new()
 	key_event.keycode = KEY_TAB
@@ -109,18 +67,14 @@ func setup_input_actions():
 	print("Action toggle_inventory créée avec la touche TAB")
 
 func _input(event):
-	# Utilise l'action configurée au lieu du test direct de touche
 	if Input.is_action_just_pressed("toggle_inventory"):
 		print("Action toggle_inventory détectée!")
-		# Vérification de sécurité
 		if inventory_ui != null:
-			# Ne gère l'input que si l'inventaire est fermé
 			toggle_inventory()
 		else:
 			print("Erreur: inventory_ui est null!")
 
 func toggle_inventory():
-	# Double vérification de sécurité
 	if not inventory_ui:
 		print("Erreur: Impossible de basculer l'inventaire - inventory_ui est null")
 		return
@@ -132,11 +86,9 @@ func toggle_inventory():
 	print("Inventaire maintenant: ", "visible" if inventory_ui.visible else "caché")
 	
 	if inventory_ui.visible:
-		# Le jeu continue, on libère juste la souris
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		print("Souris libérée")
 	else:
-		# On capture la souris pour le mouvement de caméra
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		print("Souris capturée")
 

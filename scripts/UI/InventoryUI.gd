@@ -14,15 +14,12 @@ func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	set_process_input(true)
 	
-	# Configure le TooltipManager pour utiliser cette UI comme parent
-	TooltipManager.set_tooltip_parent(self)
-	
 	if inventory_grid:
 		inventory_grid.columns = 9
 		create_simple_slots()
 
 func _input(event):
-	if visible and event is InputEventKey and event.pressed and event.keycode == KEY_E:
+	if visible and event is InputEventKey and event.pressed and event.keycode == KEY_TAB:
 		toggle_inventory()
 		get_viewport().set_input_as_handled()
 
@@ -41,49 +38,14 @@ func create_simple_slots():
 	for child in inventory_grid.get_children():
 		child.queue_free()
 	
+	var slot_scene = preload("res://scenes/ui/InventorySlot2D.tscn")
+	
 	for i in range(36):
-		# Crée un Panel pour le fond
-		var slot_panel = Panel.new()
-		slot_panel.custom_minimum_size = Vector2(64, 64)
+		var slot_instance = slot_scene.instantiate()
+		slot_instance.gui_input.connect(_on_slot_input.bind(i))
 		
-		# Style du fond
-		var style_box = StyleBoxFlat.new()
-		style_box.bg_color = Color(0.2, 0.2, 0.2, 0.8)
-		style_box.border_width_left = 2
-		style_box.border_width_right = 2
-		style_box.border_width_top = 2
-		style_box.border_width_bottom = 2
-		style_box.border_color = Color(0.5, 0.5, 0.5, 1.0)
-		style_box.corner_radius_top_left = 4
-		style_box.corner_radius_top_right = 4
-		style_box.corner_radius_bottom_left = 4
-		style_box.corner_radius_bottom_right = 4
-		
-		slot_panel.add_theme_stylebox_override("panel", style_box)
-		
-		# Ajoute l'icône
-		var icon = TextureRect.new()
-		icon.name = "IconTexture"
-		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		icon.anchors_preset = Control.PRESET_FULL_RECT
-		slot_panel.add_child(icon)
-		
-		# Ajoute le label de quantité
-		var quantity = Label.new()
-		quantity.name = "QuantityLabel"
-		quantity.anchors_preset = Control.PRESET_BOTTOM_RIGHT
-		quantity.add_theme_color_override("font_color", Color.WHITE)
-		slot_panel.add_child(quantity)
-		
-		# Attache le script InventorySlot2D
-		var script = load("res://scripts/ui/InventorySlot2D.gd")
-		slot_panel.set_script(script)
-		
-		# Connexions pour les clics
-		slot_panel.gui_input.connect(_on_slot_input.bind(i))
-		
-		inventory_grid.add_child(slot_panel)
-		slot_scenes.append(slot_panel)
+		inventory_grid.add_child(slot_instance)
+		slot_scenes.append(slot_instance)
 
 func _on_slot_input(event: InputEvent, slot_index: int):
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
@@ -95,10 +57,6 @@ func _on_slot_clicked(slot_index: int):
 
 func toggle_inventory():
 	visible = !visible
-	
-	# Cache les tooltips quand l'inventaire se ferme
-	if not visible:
-		TooltipManager.hide_tooltip()
 	
 	if visible:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE

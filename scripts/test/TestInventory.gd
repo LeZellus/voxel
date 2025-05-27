@@ -65,7 +65,7 @@ func test_items(inventory_manager):
 	# Ajoute les items via l'inventory_manager
 	if inventory_manager.has_method("add_item_to_inventory"):
 		print("Ajout des graines...")
-		var result1 = inventory_manager.add_item_to_inventory(test_item_1, 100000)
+		var result1 = inventory_manager.add_item_to_inventory(test_item_1, 4000)
 		print("Graines ajoutées, reste: ", result1)
 		
 		print("Ajout de l'arrosoir...")
