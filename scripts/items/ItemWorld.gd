@@ -2,7 +2,6 @@
 extends RigidBody3D
 
 @export var item_data: Item  # La ressource Item qu'on va créer
-
 @onready var mesh_instance: MeshInstance3D = $MeshInstance3D
 @onready var collision_shape: CollisionShape3D = $CollisionShape3D
 
@@ -23,20 +22,21 @@ func setup_visual():
 		print("Attention: Pas de modèle 3D pour ", item_data.name)
 
 func setup_physics():
-	if not item_data or not item_data.world_mesh:
+	if not item_data or not item_data.world_mesh or not collision_shape:
 		return
 	
-	# Crée la collision automatiquement
-	var shape = item_data.world_mesh.create_trimesh_shape()
+	# Utilise une collision convexe au lieu de trimesh pour les objets mobiles
+	var shape = item_data.world_mesh.create_convex_shape()
 	collision_shape.shape = shape
-	
-	# Rend l'objet un peu plus léger
-	mass = 0.5
 
 # Fonction appelée quand le joueur interagit
 func pickup() -> Item:
+	if not item_data:
+		return null
+		
 	print("Ramassage de: ", item_data.name)
-	var item_copy = item_data.duplicate_item()
+	# Retourne une copie des données de l'item
+	var item_copy = item_data.duplicate()
 	queue_free()  # Supprime l'objet du monde
 	return item_copy
 

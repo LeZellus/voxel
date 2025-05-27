@@ -9,7 +9,7 @@ extends Resource
 
 # Propriétés visuelles
 @export var world_mesh: Mesh  # Modèle 3D (utilisé dans le monde et l'inventaire)
-@export var inventory_scale: float = 1.0  # Échelle pour l'affichage dans l'inventaire
+@export var icon: Texture2D  # Échelle pour l'affichage dans l'inventaire
 
 # Propriétés de gameplay
 @export var stack_size: int = 64  # Nombre max dans une pile
@@ -36,7 +36,7 @@ func duplicate_item() -> Item:
 	new_item.name = name
 	new_item.description = description
 	new_item.world_mesh = world_mesh
-	new_item.inventory_scale = inventory_scale
+	new_item.icon = icon
 	new_item.stack_size = stack_size
 	new_item.is_stackable = is_stackable
 	new_item.rarity = rarity

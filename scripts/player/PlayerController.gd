@@ -44,7 +44,7 @@ func handle_camera_input(event: InputEvent):
 		spring_arm.rotation.x -= event.relative.y * mouse_sensitivity
 		spring_arm.rotation.x = clamp(spring_arm.rotation.x, min_vertical_angle, max_vertical_angle)
 	
-	if event is InputEventMouseButton:
+	if event is InputEventMouseButton and Input.is_key_pressed(KEY_CTRL):
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			spring_arm.spring_length = clamp(spring_arm.spring_length - 1.0, 3.0, 15.0)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:

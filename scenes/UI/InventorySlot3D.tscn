@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://db3u1n1acklfl"]
 
-[ext_resource type="Script" path="res://scripts/UI/InventorySlot3D.gd" id="1_t06pm"]
+[ext_resource type="Script" path="res://scripts/ui/InventorySlot3D.gd" id="1_0vqa1"]
 
 [node name="InventorySlot3D" type="Control"]
 layout_mode = 3
@@ -9,17 +9,12 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_t06pm")
+script = ExtResource("1_0vqa1")
 
-[node name="SubViewport" type="SubViewport" parent="."]
-
-[node name="Camera3D" type="Camera3D" parent="SubViewport"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2)
-
-[node name="ItemDisplay" type="MeshInstance3D" parent="SubViewport"]
-
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="SubViewport"]
-transform = Transform3D(0.707107, -0.353553, 0.612372, 0, 0.866025, 0.5, -0.707107, -0.353553, 0.612372, 1, 1, 1)
+[node name="IconTexture" type="TextureRect" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
 
 [node name="QuantityLabel" type="Label" parent="."]
 layout_mode = 1

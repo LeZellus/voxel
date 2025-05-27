@@ -1,6 +1,7 @@
-[gd_resource type="AudioStream" script_class="Item" load_steps=3 format=3 uid="uid://xidwq30p73ok"]
+[gd_resource type="AudioStream" script_class="Item" load_steps=4 format=3 uid="uid://xidwq30p73ok"]
 
 [ext_resource type="Script" path="res://scripts/items/Item.gd" id="1_f0msj"]
+[ext_resource type="Texture2D" uid="uid://dbo6crr5i74gn" path="res://assets/icons/sack_of_seed.webp" id="1_j77gu"]
 [ext_resource type="ArrayMesh" uid="uid://d1cggphalsfpa" path="res://assets/models/objects/watering_can.obj" id="2_mkfwd"]
 
 [resource]
@@ -10,6 +11,7 @@ name = "Watering Can"
 description = "Watering Cans are used to increase plant growth speed"
 world_mesh = ExtResource("2_mkfwd")
 inventory_scale = 0.8
+icon = ExtResource("1_j77gu")
 stack_size = 1
 is_stackable = false
 rarity = "common"

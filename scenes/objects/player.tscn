@@ -1,6 +1,6 @@
-[gd_scene load_steps=13 format=3 uid="uid://cx6drcd7vxfvd"]
+[gd_scene load_steps=14 format=3 uid="uid://cx6drcd7vxfvd"]
 
-[ext_resource type="Script" path="res://scripts/PlayerController.gd" id="1_1yluk"]
+[ext_resource type="Script" path="res://scripts/player/PlayerController.gd" id="1_1yluk"]
 [ext_resource type="Script" path="res://scripts/state_machine/StateMachine.gd" id="2_mytfj"]
 [ext_resource type="Script" path="res://scripts/state_machine/IdleState.gd" id="3_qy6uw"]
 [ext_resource type="Script" path="res://scripts/state_machine/WalkingState.gd" id="4_rwr3b"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://scripts/state_machine/JumpingState.gd" id="6_6gvi2"]
 [ext_resource type="Script" path="res://scripts/manager/ToolSystem.gd" id="7_yvlqr"]
 [ext_resource type="Script" path="res://scripts/manager/InventoryManager.gd" id="8_5ixy0"]
+[ext_resource type="Script" path="res://scripts/player/ItemPickup.gd" id="8_awfe7"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_a03if"]
 
@@ -24,7 +25,7 @@ radial_segments = 8
 [node name="Player" type="CharacterBody3D"]
 script = ExtResource("1_1yluk")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+[node name="PlayerCollision" type="CollisionShape3D" parent="."]
 shape = SubResource("CapsuleShape3D_a03if")
 
 [node name="SpringArm3D" type="SpringArm3D" parent="."]
@@ -56,8 +57,9 @@ mesh = SubResource("CapsuleMesh_6ga6j")
 
 [node name="ItemDetector" type="Area3D" parent="."]
 transform = Transform3D(2.61765, 0, 0, 0, 2.61765, 0, 0, 0, 2.61765, 0, 0, 0)
+script = ExtResource("8_awfe7")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="ItemDetector"]
+[node name="ItemDetectorCollision" type="CollisionShape3D" parent="ItemDetector"]
 shape = SubResource("SphereShape3D_bew58")
 
 [node name="InventoryManager" type="Node3D" parent="."]
