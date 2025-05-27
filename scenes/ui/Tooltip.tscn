@@ -12,11 +12,10 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_o82nm")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="Panel" parent="."]
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 40.0
-color = Color(0.215686, 0, 0.733333, 0.541176)
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Background"]
 layout_mode = 0
