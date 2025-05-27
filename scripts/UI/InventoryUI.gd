@@ -1,74 +1,89 @@
-# InventoryUI.gd - Interface d'inventaire avec Panel
+@tool
 extends Control
 
 @onready var inventory_grid: GridContainer = $Panel/VBoxContainer/InventoryGrid
 @onready var panel: Panel = $Panel
 
 var inventory: Inventory
-var slot_scenes: Array[Control] = []
 var inventory_manager: Node
+var slot_scenes: Array[Control] = []
 var selected_slot: int = -1
+
+const INVENTORY_SIZE = 36
+const GRID_COLUMNS = 9
 
 func _ready():
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	set_process_input(true)
 	
 	if inventory_grid:
-		inventory_grid.columns = 9
-		create_simple_slots()
-
-func _input(event):
-	if visible and event is InputEventKey and event.pressed and event.keycode == KEY_TAB:
-		toggle_inventory()
-		get_viewport().set_input_as_handled()
+		inventory_grid.columns = GRID_COLUMNS
+		_create_slots()
 
 func setup_inventory(inv: Inventory, manager: Node):
 	inventory = inv
 	inventory_manager = manager
 	inventory.slot_changed.connect(_on_slot_changed)
-	update_all_slots()
+	_update_all_slots()
 
-func create_simple_slots():
-	if not inventory_grid:
-		return
-		
-	slot_scenes.clear()
+func show_animated():
+	visible = true
+	await get_tree().process_frame
 	
-	for child in inventory_grid.get_children():
-		child.queue_free()
+	var estimated_height = (INVENTORY_SIZE / GRID_COLUMNS) * 64 + ((INVENTORY_SIZE / GRID_COLUMNS) * 4) + 32
+	UIAnimator.slide_inventory_from_bottom(panel, estimated_height)
+
+func hide_animated():
+	var tween = UIAnimator.slide_inventory_to_bottom(panel)
+	await tween.finished
+	visible = false
+
+func _create_slots():
+	if Engine.is_editor_hint():
+		_create_editor_preview()
+	else:
+		_create_game_slots()
+
+func _create_editor_preview():
+	_clear_existing_slots()
+	
+	for i in INVENTORY_SIZE:
+		var slot = ColorRect.new()
+		slot.custom_minimum_size = Vector2(64, 64)
+		slot.color = Color(0.3, 0.3, 0.3, 0.8)
+		slot.name = "PreviewSlot_" + str(i)
+		inventory_grid.add_child(slot)
+
+func _create_game_slots():
+	_clear_existing_slots()
 	
 	var slot_scene = preload("res://scenes/ui/InventorySlot2D.tscn")
 	
-	for i in range(36):
-		var slot_instance = slot_scene.instantiate()
-		slot_instance.gui_input.connect(_on_slot_input.bind(i))
-		
-		inventory_grid.add_child(slot_instance)
-		slot_scenes.append(slot_instance)
+	for i in INVENTORY_SIZE:
+		var slot = slot_scene.instantiate()
+		if not Engine.is_editor_hint():
+			slot.gui_input.connect(_on_slot_input.bind(i))
+		inventory_grid.add_child(slot)
+		slot_scenes.append(slot)
+
+func _clear_existing_slots():
+	for child in inventory_grid.get_children():
+		child.queue_free()
+	slot_scenes.clear()
 
 func _on_slot_input(event: InputEvent, slot_index: int):
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		_on_slot_clicked(slot_index)
+		_select_slot(slot_index)
 
-func _on_slot_clicked(slot_index: int):
+func _select_slot(slot_index: int):
 	selected_slot = slot_index
-	show_item_info(slot_index)
-
-func toggle_inventory():
-	visible = !visible
-	
-	if visible:
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	else:
-		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-		selected_slot = -1
+	_show_item_info(slot_index)
 
 func _on_slot_changed(slot_index: int):
-	update_slot_visual(slot_index)
+	_update_slot_visual(slot_index)
 
-func update_slot_visual(slot_index: int):
-	if slot_index < 0 or slot_index >= slot_scenes.size():
+func _update_slot_visual(slot_index: int):
+	if not _is_valid_slot_index(slot_index):
 		return
 	
 	var slot = inventory.get_slot(slot_index)
@@ -79,8 +94,8 @@ func update_slot_visual(slot_index: int):
 	else:
 		slot_2d.set_item(slot.item, slot.quantity)
 
-func show_item_info(slot_index: int):
-	if not inventory:
+func _show_item_info(slot_index: int):
+	if not inventory or not _is_valid_slot_index(slot_index):
 		return
 		
 	var slot = inventory.get_slot(slot_index)
@@ -88,13 +103,16 @@ func show_item_info(slot_index: int):
 		print("Slot vide")
 		return
 	
-	print("=== ", slot.item.name, " ===")
+	print("=== %s ===" % slot.item.name)
 	print(slot.item.description)
-	print("Quantité: ", slot.quantity)
+	print("Quantité: %d" % slot.quantity)
 
-func update_all_slots():
+func _update_all_slots():
 	if not inventory:
 		return
 	
 	for i in range(min(inventory.size, slot_scenes.size())):
-		update_slot_visual(i)
+		_update_slot_visual(i)
+
+func _is_valid_slot_index(index: int) -> bool:
+	return index >= 0 and index < slot_scenes.size()

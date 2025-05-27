@@ -17,7 +17,6 @@ func setup_visual():
 	# Applique le modèle 3D
 	if item_data.world_mesh:
 		mesh_instance.mesh = item_data.world_mesh
-		print("Modèle 3D appliqué pour: ", item_data.name)
 	else:
 		print("Attention: Pas de modèle 3D pour ", item_data.name)
 

@@ -7,14 +7,11 @@ var inventory: Inventory
 var inventory_ui: Control
 
 func _ready():
-	print("InventoryManager _ready() démarré")
-	
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	
 	# Crée l'inventaire
 	inventory = Inventory.new()
 	add_child(inventory)
-	print("Inventory créé et ajouté")
 	
 	# Attendre que l'inventory soit prêt
 	await get_tree().process_frame
@@ -25,10 +22,7 @@ func _ready():
 	# Configure les actions d'input
 	setup_input_actions()
 	
-	print("InventoryManager initialisé")
-
 func create_inventory_ui():
-	print("create_inventory_ui() démarré")
 	
 	if not inventory_ui_scene:
 		print("Erreur: inventory_ui_scene non défini")
@@ -41,7 +35,6 @@ func create_inventory_ui():
 	
 	# Ajoute à la scène
 	get_tree().current_scene.add_child(inventory_ui)
-	print("UI ajoutée à la scène")
 	
 	# Attendre que l'UI soit prête
 	await get_tree().process_frame
@@ -49,7 +42,6 @@ func create_inventory_ui():
 	# Initialise l'UI avec l'inventory
 	if inventory and inventory_ui and inventory_ui.has_method("setup_inventory"):
 		inventory_ui.setup_inventory(inventory, self)
-		print("setup_inventory() appelé avec succès")
 	else:
 		print("Erreur: Impossible d'initialiser l'UI")
 		print("inventory: ", inventory)
@@ -63,12 +55,9 @@ func setup_input_actions():
 	var key_event = InputEventKey.new()
 	key_event.keycode = KEY_TAB
 	InputMap.action_add_event("toggle_inventory", key_event)
-	
-	print("Action toggle_inventory créée avec la touche TAB")
 
-func _input(event):
+func _input(_event):
 	if Input.is_action_just_pressed("toggle_inventory"):
-		print("Action toggle_inventory détectée!")
 		if inventory_ui != null:
 			toggle_inventory()
 		else:
@@ -76,21 +65,16 @@ func _input(event):
 
 func toggle_inventory():
 	if not inventory_ui:
-		print("Erreur: Impossible de basculer l'inventaire - inventory_ui est null")
 		return
 	
-	var was_visible = inventory_ui.visible
-	inventory_ui.visible = !inventory_ui.visible
-	
-	print("Inventaire était: ", "visible" if was_visible else "caché")
-	print("Inventaire maintenant: ", "visible" if inventory_ui.visible else "caché")
-	
 	if inventory_ui.visible:
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-		print("Souris libérée")
-	else:
+		# Fermer
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-		print("Souris capturée")
+		inventory_ui.hide_animated()
+	else:
+		# Ouvrir
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		inventory_ui.show_animated()
 
 # Méthodes publiques pour interagir avec l'inventaire
 func add_item_to_inventory(item: Item, quantity: int = 1) -> int:
