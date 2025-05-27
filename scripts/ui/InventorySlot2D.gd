@@ -22,10 +22,29 @@ func _ready():
 	icon_texture.size = Vector2(48, 48)  # Plus petit que les 64x64 de la case
 	icon_texture.position = Vector2(8, 8)  # Centré avec marge
 	
-	# Configure le label de quantité
+	# Configure le label de quantité - SOLUTION ROBUSTE
 	quantity_label.text = ""
-	quantity_label.anchors_preset = Control.PRESET_BOTTOM_RIGHT
+	# Position absolue depuis le coin bas-droit
+	quantity_label.position = Vector2(0, 0)  # Sera ajusté dynamiquement
+	quantity_label.anchor_left = 1.0
+	quantity_label.anchor_right = 1.0 
+	quantity_label.anchor_top = 1.0
+	quantity_label.anchor_bottom = 1.0
+	# Le label se dimensionne automatiquement selon son contenu
+	quantity_label.custom_minimum_size = Vector2.ZERO
+	quantity_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	quantity_label.clip_contents = false
+	
+	# Style du texte
+	quantity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	quantity_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 	quantity_label.add_theme_color_override("font_color", Color.WHITE)
+	quantity_label.add_theme_font_size_override("font_size", 12)
+	
+	# Ajoute une ombre pour améliorer la lisibilité
+	quantity_label.add_theme_color_override("font_shadow_color", Color.BLACK)
+	quantity_label.add_theme_constant_override("shadow_offset_x", 1)
+	quantity_label.add_theme_constant_override("shadow_offset_y", 1)
 	
 	# Connecte les signaux pour la tooltip
 	mouse_entered.connect(_on_mouse_entered)
@@ -57,9 +76,26 @@ func set_item(item: Item, qty: int = 1):
 	icon_texture.texture = item.icon
 	
 	if qty > 1:
-		quantity_label.text = str(qty)
+		var qty_text = str(qty)
+		quantity_label.text = qty_text
+		
+		# Position dynamique selon la taille du texte
+		_position_quantity_label(qty_text)
 	else:
 		quantity_label.text = ""
+
+func _position_quantity_label(text: String):
+	# Calcule la taille exacte du texte
+	var font = quantity_label.get_theme_default_font()
+	var font_size = 12  # Taille définie plus haut
+	var text_size = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
+	
+	# Position depuis le coin bas-droit avec marges de 4px
+	var x_pos = size.x - text_size.x - 4
+	var y_pos = size.y - text_size.y - 4
+	
+	quantity_label.position = Vector2(x_pos, y_pos)
+	quantity_label.size = text_size
 
 func update_background_state(has_item: bool):
 	var style_box = StyleBoxFlat.new()

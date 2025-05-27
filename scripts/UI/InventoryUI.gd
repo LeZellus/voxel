@@ -48,6 +48,16 @@ func create_simple_slots():
 		
 		# Style du fond
 		var style_box = StyleBoxFlat.new()
+		style_box.bg_color = Color(0.2, 0.2, 0.2, 0.8)
+		style_box.border_width_left = 2
+		style_box.border_width_right = 2
+		style_box.border_width_top = 2
+		style_box.border_width_bottom = 2
+		style_box.border_color = Color(0.5, 0.5, 0.5, 1.0)
+		style_box.corner_radius_top_left = 4
+		style_box.corner_radius_top_right = 4
+		style_box.corner_radius_bottom_left = 4
+		style_box.corner_radius_bottom_right = 4
 		
 		slot_panel.add_theme_stylebox_override("panel", style_box)
 		
@@ -66,7 +76,7 @@ func create_simple_slots():
 		slot_panel.add_child(quantity)
 		
 		# Attache le script InventorySlot2D
-		var script = load("res://scripts/ui/InventorySlot3D.gd")
+		var script = load("res://scripts/ui/InventorySlot2D.gd")
 		slot_panel.set_script(script)
 		
 		# Connexions pour les clics

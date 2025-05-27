@@ -1,8 +1,8 @@
 [gd_scene load_steps=2 format=3 uid="uid://db3u1n1acklfl"]
 
-[ext_resource type="Script" path="res://scripts/ui/InventorySlot3D.gd" id="1_0vqa1"]
+[ext_resource type="Script" path="res://scripts/ui/InventorySlot2D.gd" id="1_jjwjd"]
 
-[node name="InventorySlot3D" type="Control"]
+[node name="InventorySlot2D" type="Control"]
 z_index = 11
 layout_mode = 3
 anchors_preset = 15
@@ -10,7 +10,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_0vqa1")
+script = ExtResource("1_jjwjd")
 
 [node name="IconTexture" type="TextureRect" parent="."]
 layout_mode = 0
@@ -28,3 +28,4 @@ offset_left = -40.0
 offset_top = -23.0
 grow_horizontal = 0
 grow_vertical = 0
+horizontal_alignment = 2

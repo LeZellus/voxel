@@ -103,23 +103,19 @@ func setup_input_actions():
 	# Crée l'action
 	InputMap.add_action("toggle_inventory")
 	var key_event = InputEventKey.new()
-	key_event.keycode = KEY_E
+	key_event.keycode = KEY_TAB
 	InputMap.action_add_event("toggle_inventory", key_event)
 	
-	print("Action toggle_inventory créée avec la touche E")
+	print("Action toggle_inventory créée avec la touche TAB")
 
 func _input(event):
-	# Test direct de la touche E - seulement si l'inventaire est fermé
-	if event is InputEventKey and event.pressed and event.keycode == KEY_E:
-		print("Touche E détectée dans InventoryManager!")
+	# Utilise l'action configurée au lieu du test direct de touche
+	if Input.is_action_just_pressed("toggle_inventory"):
+		print("Action toggle_inventory détectée!")
 		# Vérification de sécurité
 		if inventory_ui != null:
 			# Ne gère l'input que si l'inventaire est fermé
-			if not inventory_ui.visible:
-				print("Inventaire fermé - on l'ouvre")
-				toggle_inventory()
-			else:
-				print("Inventaire déjà ouvert - l'UI va gérer la fermeture")
+			toggle_inventory()
 		else:
 			print("Erreur: inventory_ui est null!")
 

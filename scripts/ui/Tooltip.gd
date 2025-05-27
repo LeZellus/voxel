@@ -13,26 +13,20 @@ func _ready():
 	tween.tween_property(self, "modulate:a", 1.0, 0.2)
 
 func setup_tooltip(item: Item):
-	"""Configure la tooltip avec les données de l'item"""
+	# Configure la tooltip avec les données de l'item
 	if not item:
 		print("Tooltip: item est null")
 		return
 	
-	print("Tooltip setup - item.name: ", item.name)
-	print("Tooltip setup - item.description: ", item.description)
-	
 	# Configure le texte
 	item_name.text = item.name if "name" in item else "Item"
 	item_description.text = item.description if "description" in item else ""
-	
-	print("Tooltip - name affiché: ", item_name.text)
-	print("Tooltip - description affichée: ", item_description.text)
 	
 	# Ajuste la taille si nécessaire
 	await get_tree().process_frame
 	_adjust_size()
 
 func _adjust_size():
-	"""Ajuste la taille de la tooltip selon le contenu"""
+	# Ajuste la taille de la tooltip selon le contenu
 	background.size = Vector2.ZERO
 	size = Vector2.ZERO
