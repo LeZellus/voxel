@@ -42,9 +42,16 @@ func create_inventory_ui():
 	# Structure attendue : Panel/VBoxContainer/InventoryGrid
 	var panel = Panel.new()
 	panel.name = "Panel"
-	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	panel.size = Vector2(600, 400)
-	panel.position = Vector2(-300, -200)
+	
+	# CORRECTION: Centrage réel du panel
+	panel.anchor_left = 0.5
+	panel.anchor_right = 0.5
+	panel.anchor_top = 0.5
+	panel.anchor_bottom = 0.5
+	panel.offset_left = -300   # -width/2
+	panel.offset_right = 300   # width/2
+	panel.offset_top = -200    # -height/2
+	panel.offset_bottom = 200  # height/2
 	
 	var vbox = VBoxContainer.new()
 	vbox.name = "VBoxContainer"
@@ -56,12 +63,7 @@ func create_inventory_ui():
 	
 	# Style du panel
 	var style_box = StyleBoxFlat.new()
-	style_box.bg_color = Color(0.15, 0.15, 0.15, 0.95)
-	style_box.border_width_left = 3
-	style_box.border_width_top = 3
-	style_box.border_width_right = 3
-	style_box.border_width_bottom = 3
-	style_box.border_color = Color.WHITE
+	style_box.bg_color = Color(0.15, 0.15, 0.15, 0.0)
 	panel.add_theme_stylebox_override("panel", style_box)
 	
 	# Titre de l'inventaire

@@ -19,15 +19,18 @@ extends Resource
 # Propriétés spécifiques au farming
 @export var item_type: String = "tool"  # tool, seed, crop, resource
 @export var durability: int = -1  # -1 = indestructible, sinon nombre d'utilisations
+@export var max_stack_size: int = 4000
 
 func _init(
 	p_id: String = "",
 	p_name: String = "",
-	p_description: String = ""
+	p_description: String = "",
+	p_max_stack_size: int = 4000
 ):
 	id = p_id
 	name = p_name
 	description = p_description
+	max_stack_size = p_max_stack_size
 
 # Méthode pour créer une copie
 func duplicate_item() -> Item:
