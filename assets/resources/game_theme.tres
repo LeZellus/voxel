@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=6 format=3 uid="uid://dcsalqn1jq3b"]
+[gd_resource type="Theme" load_steps=9 format=3 uid="uid://dcsalqn1jq3b"]
 
 [ext_resource type="FontFile" uid="uid://b2ovnq4y084qx" path="res://assets/fonts/awcathode-webfont.ttf" id="1_culsm"]
 
@@ -13,6 +13,15 @@ bg_color = Color(0.063, 0.078, 0.122, 0.9)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_l4knd"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7puww"]
+bg_color = Color(0.063, 0.078, 0.122, 0.9)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_p76i8"]
+bg_color = Color(0, 0.734585, 0.440145, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ecx3h"]
+bg_color = Color(0.125, 0.18, 0.216, 0.9)
+
 [resource]
 default_font = ExtResource("1_culsm")
 default_font_size = 16
@@ -20,3 +29,6 @@ Button/styles/focus = SubResource("StyleBoxFlat_gvomj")
 Button/styles/hover = SubResource("StyleBoxFlat_xof4f")
 Button/styles/normal = SubResource("StyleBoxFlat_bcc5d")
 Button/styles/pressed = SubResource("StyleBoxFlat_l4knd")
+Panel/styles/panel = SubResource("StyleBoxFlat_7puww")
+Panel/styles/panel_focus = SubResource("StyleBoxFlat_p76i8")
+Panel/styles/panel_hover = SubResource("StyleBoxFlat_ecx3h")

@@ -5,6 +5,10 @@ var tween: Tween
 var corner_size: int = 12
 var border_width: int = 2
 
+var corner_size_pressed: int = 6
+var current_corner_size: int = 12
+var is_pressed: bool = false
+
 func _ready():
 	visible = false
 	mouse_filter = Control.MOUSE_FILTER_IGNORE  # Ne pas intercepter les clics
@@ -31,6 +35,20 @@ func _draw():
 	# Coin bas-droite
 	draw_rect(Rect2(size.x - corner_size, size.y - border_width, corner_size, border_width), color)
 	draw_rect(Rect2(size.x - border_width, size.y - corner_size, border_width, corner_size), color)
+	
+func set_pressed(pressed: bool):
+	if is_pressed == pressed:
+		return
+	
+	is_pressed = pressed
+	var target_size = corner_size_pressed if pressed else corner_size
+	
+	var corner_tween = create_tween()
+	corner_tween.tween_method(_update_corner_size, current_corner_size, target_size, 0.1)
+	
+func _update_corner_size(size: int):
+	current_corner_size = size
+	queue_redraw()
 
 func show_on_slot(target_control: Control):
 	visible = true

@@ -1,10 +1,10 @@
-[gd_scene load_steps=3 format=3 uid="uid://dgy8x1drhw3x"]
+[gd_scene load_steps=4 format=3 uid="uid://dgy8x1drhw3x"]
 
 [ext_resource type="Script" path="res://scripts/game_ui/DragPreview.gd" id="1_1ru8b"]
+[ext_resource type="Theme" uid="uid://dcsalqn1jq3b" path="res://assets/resources/game_theme.tres" id="1_stl8o"]
 [ext_resource type="Texture2D" uid="uid://dbo6crr5i74gn" path="res://assets/icons/sack_of_seed.webp" id="2_prfjr"]
 
-[node name="DragPreview" type="Control"]
-layout_mode = 3
+[node name="DragPreview" type="Panel"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -12,6 +12,7 @@ offset_right = -1088.0
 offset_bottom = -584.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("1_stl8o")
 script = ExtResource("1_1ru8b")
 
 [node name="IconTexture" type="TextureRect" parent="."]

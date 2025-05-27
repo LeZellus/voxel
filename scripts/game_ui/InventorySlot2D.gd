@@ -18,6 +18,15 @@ var min_drag_distance: float = 5.0
 
 func _ready():
 	quantity_label.text = ""
+	theme = preload("res://assets/resources/game_theme.tres")
+	mouse_entered.connect(_on_hover)
+	mouse_exited.connect(_on_unhover)
+	
+func _on_hover():
+	add_theme_stylebox_override("panel", theme.get_stylebox("panel_hover", "Panel"))
+
+func _on_unhover():
+	add_theme_stylebox_override("panel", theme.get_stylebox("panel", "Panel"))
 	
 func set_item(item: Item, qty: int = 1):
 	item_data = item
