@@ -1,7 +1,8 @@
-[gd_scene load_steps=8 format=3 uid="uid://rm0npb5j2kr5"]
+[gd_scene load_steps=9 format=3 uid="uid://rm0npb5j2kr5"]
 
 [ext_resource type="PackedScene" uid="uid://yyt7yjtqdboi" path="res://scenes/test/test_plateform.tscn" id="1_egkgl"]
 [ext_resource type="PackedScene" uid="uid://bkfsjygkoggm0" path="res://scenes/manager/GameManager.tscn" id="1_igihp"]
+[ext_resource type="PackedScene" uid="uid://b0fwiyec7c18c" path="res://scenes/manager/AudioManager.tscn" id="1_piusn"]
 [ext_resource type="PackedScene" uid="uid://cx6drcd7vxfvd" path="res://scenes/objects/Player.tscn" id="1_pjlcp"]
 [ext_resource type="PackedScene" uid="uid://bmxqrx242yj5q" path="res://scenes/objects/WorldItem.tscn" id="4_04ith"]
 [ext_resource type="Resource" uid="uid://dy7wf77dsqfle" path="res://assets/resources/watering_can.tres" id="5_y1kra"]
@@ -9,6 +10,8 @@
 [ext_resource type="Script" path="res://scripts/test/TestInventory.gd" id="9_0pygw"]
 
 [node name="TestScene" type="Node3D"]
+
+[node name="AudioManager" parent="." instance=ExtResource("1_piusn")]
 
 [node name="GameManager" parent="." instance=ExtResource("1_igihp")]
 

@@ -69,10 +69,14 @@ func toggle_inventory():
 	
 	if inventory_ui.visible:
 		# Fermer
+		UIAudioManager.play_sound("ui_pop_off_1")
+		
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		inventory_ui.hide_animated()
 	else:
 		# Ouvrir
+		UIAudioManager.play_sound("ui_pop_on_1")
+		
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		inventory_ui.show_animated()
 
