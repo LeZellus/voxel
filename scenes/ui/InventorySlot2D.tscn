@@ -9,9 +9,12 @@
 content_margin_right = 4.0
 bg_color = Color(0.6, 0.6, 0.6, 0)
 
-[node name="InventorySlot2D" type="Button"]
+[node name="InventorySlot2D" type="Control"]
+process_mode = 3
 z_index = 11
 custom_minimum_size = Vector2(64, 64)
+layout_mode = 3
+anchors_preset = 0
 offset_right = 64.0
 offset_bottom = 64.0
 theme = ExtResource("1_4i8cp")
