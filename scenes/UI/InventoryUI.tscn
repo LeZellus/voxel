@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://bgbwhja5u15sr"]
 
-[ext_resource type="Script" path="res://scripts/ui/InventoryUI.gd" id="1_js2po"]
+[ext_resource type="Script" path="res://scripts/game_ui/InventoryUI.gd" id="1_js2po"]
 [ext_resource type="FontFile" uid="uid://b2ovnq4y084qx" path="res://assets/fonts/awcathode-webfont.ttf" id="2_0shbe"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xsy5f"]
@@ -16,6 +16,8 @@ content_margin_right = 4.0
 bg_color = Color(0.063, 0.078, 0.122, 0.9)
 
 [node name="InventoryUI" type="Control"]
+process_mode = 3
+visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0

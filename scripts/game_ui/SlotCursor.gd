@@ -14,7 +14,6 @@ func _draw():
 	if not visible:
 		return
 	
-	var rect = Rect2(Vector2.ZERO, size)
 	var color = Color.html("#577277")
 	
 	# Coin haut-gauche

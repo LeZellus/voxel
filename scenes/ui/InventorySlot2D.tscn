@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://db3u1n1acklfl"]
 
 [ext_resource type="Theme" uid="uid://dcsalqn1jq3b" path="res://assets/resources/game_theme.tres" id="1_4i8cp"]
-[ext_resource type="Script" path="res://scripts/ui/InventorySlot2D.gd" id="1_jjwjd"]
+[ext_resource type="Script" path="res://scripts/game_ui/InventorySlot2D.gd" id="1_jjwjd"]
 [ext_resource type="Texture2D" uid="uid://dbo6crr5i74gn" path="res://assets/icons/sack_of_seed.webp" id="2_fhohn"]
 [ext_resource type="FontFile" uid="uid://b2ovnq4y084qx" path="res://assets/fonts/awcathode-webfont.ttf" id="3_vlj4i"]
 

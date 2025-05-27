@@ -38,7 +38,7 @@ func create_drag_preview():
 		panel.add_child(drag_preview)
 
 func create_slot_cursor():
-	slot_cursor = preload("res://scripts/ui/SlotCursor.gd").new()
+	slot_cursor = preload("res://scripts/game_ui/SlotCursor.gd").new()
 	panel.add_child(slot_cursor)
 
 func setup_inventory(inv: Inventory, manager: Node):
@@ -51,7 +51,7 @@ func show_animated():
 	visible = true
 	await get_tree().process_frame
 	
-	var estimated_height = (INVENTORY_SIZE / GRID_COLUMNS) * 64 + ((INVENTORY_SIZE / GRID_COLUMNS) * 4) + 32
+	var estimated_height = (INVENTORY_SIZE / float(GRID_COLUMNS)) * 64 + ((INVENTORY_SIZE / float(GRID_COLUMNS)) * 4) + 32
 	UIAnimator.slide_inventory_from_bottom(panel, estimated_height)
 
 func hide_animated():

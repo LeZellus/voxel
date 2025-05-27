@@ -48,11 +48,11 @@ func handle_input(event: InputEvent):
 	elif event is InputEventMouseMotion:
 		_on_mouse_drag(event)
 
-func _on_mouse_down(event: InputEventMouseButton):
+func _on_mouse_down(_event: InputEventMouseButton):
 	if item_data != null:
 		drag_start_position = get_global_mouse_position()
 
-func _on_mouse_up(event: InputEventMouseButton):
+func _on_mouse_up(_event: InputEventMouseButton):
 	if is_dragging:
 		drag_ended.emit()
 	is_dragging = false
