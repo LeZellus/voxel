@@ -1,0 +1,18 @@
+[gd_scene load_steps=2 format=3 uid="uid://itoeosjfeegm"]
+
+[ext_resource type="PackedScene" uid="uid://bgkb06u4slgef" path="res://assets/tests/character_run.glb" id="1_4lyeo"]
+
+[node name="PlayerRun" instance=ExtResource("1_4lyeo")]
+
+[node name="Skeleton3D" parent="Armature" index="0"]
+bones/0/position = Vector3(0, 0.0771168, -7.14832e-11)
+bones/1/position = Vector3(-2.38834e-24, 0.676647, -7.14832e-11)
+bones/1/rotation = Quaternion(0.0744974, 1.18878e-07, 8.88079e-09, 0.997221)
+bones/2/position = Vector3(-0.199025, 0.180061, -6.81419e-09)
+bones/2/rotation = Quaternion(0.808659, 0, 0, -0.588277)
+bones/4/position = Vector3(-0.100656, 0.576967, -6.72307e-08)
+bones/4/rotation = Quaternion(0.318975, 0.22836, 0.747927, 0.535454)
+bones/6/position = Vector3(0.199025, 0.180061, -2.08045e-08)
+bones/6/rotation = Quaternion(0.829685, 0, 0, 0.558232)
+bones/8/position = Vector3(0.100656, 0.576967, -6.72307e-08)
+bones/8/rotation = Quaternion(-0.313208, 0.224231, -0.750361, 0.537196)

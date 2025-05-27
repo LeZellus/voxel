@@ -23,8 +23,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.88931, 0)
 [node name="Environment" type="Node3D" parent="."]
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="Environment"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.59069, 22.3423)
-light_color = Color(0.674048, 0.581462, 0.515484, 1)
+transform = Transform3D(1, 0, 0, 0, 0.755888, 0.654701, 0, -0.654701, 0.755888, 0, 12.015, 22.3423)
+light_indirect_energy = 10.0
 
 [node name="TestInventory" type="Node" parent="."]
 script = ExtResource("9_0pygw")

@@ -17,8 +17,8 @@ func physics_update(delta):
 	if Input.is_action_just_pressed("jump") and player.is_on_floor():
 		state_machine.change_state("jumping")
 	
-	# Arrêter le mouvement
-	player.apply_movement(Vector3.ZERO, 0)
+	# Arrêter le mouvement (pas de rotation en idle)
+	player.apply_movement(Vector3.ZERO, 0, delta)
 	player.move_and_slide()
 
 func handle_input(_event):

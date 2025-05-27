@@ -2,7 +2,9 @@ extends State
 class_name WalkingState
 
 func enter():
-	print("Joueur: En marche")
+	if player.animation_player:
+		player.animation_player.play("ArmatureAction")
+		player.animation_player.speed_scale = 2.0
 
 func physics_update(delta):
 	player.apply_gravity(delta)
@@ -23,12 +25,17 @@ func physics_update(delta):
 	var speed = player.run_speed if Input.is_action_pressed("run") else player.walk_speed
 	
 	# Direction relative au joueur
-	var direction = (player.transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+	var direction = player.get_movement_direction_from_camera()
 	
 	# Appliquer mouvement
-	player.apply_movement(direction, speed)
+	player.apply_movement(direction, speed, delta)
 	player.move_and_slide()
 
 func handle_input(_event):
 	# Caméra gérée par PlayerController
 	pass
+	
+func exit():
+	# Arrêter l'animation si nécessaire
+	if player.animation_player:
+		player.animation_player.stop()
