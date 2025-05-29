@@ -12,11 +12,6 @@ func _ready():
 		print("Joueur non trouvé! Assurez-vous d'ajouter votre Player au groupe 'player'")
 		return
 	
-	print("Joueur trouvé: ", player.name)
-	print("Enfants du joueur: ")
-	for child in player.get_children():
-		print("  - ", child.name, " (", child.get_class(), ")")
-	
 	var inventory_manager = player.get_node_or_null("InventoryManager")
 	if not inventory_manager:
 		print("InventoryManager non trouvé avec get_node!")
@@ -24,17 +19,11 @@ func _ready():
 		if not inventory_manager:
 			print("InventoryManager non trouvé avec find_child non plus!")
 			return
-		else:
-			print("InventoryManager trouvé avec find_child!")
-	else:
-		print("InventoryManager trouvé avec get_node!")
 	
 	# Teste les items
 	test_items(inventory_manager)
 
 func test_items(inventory_manager):
-	print("Test des items...")
-	
 	# Crée des items de test avec la bonne signature
 	var test_item_1 = Item.new()
 	test_item_1.id = "test_seeds"
@@ -60,21 +49,13 @@ func test_items(inventory_manager):
 	test_item_3.stack_size = 32
 	test_item_3.is_stackable = true
 	
-	print("Items de test créés")
-	
 	# Ajoute les items via l'inventory_manager
 	if inventory_manager.has_method("add_item_to_inventory"):
-		print("Ajout des graines...")
 		var result1 = inventory_manager.add_item_to_inventory(test_item_1, 4000)
-		print("Graines ajoutées, reste: ", result1)
 		
-		print("Ajout de l'arrosoir...")
 		var result2 = inventory_manager.add_item_to_inventory(test_item_2, 1)
-		print("Arrosoir ajouté, reste: ", result2)
 		
-		print("Ajout des carottes...")
 		var result3 = inventory_manager.add_item_to_inventory(test_item_3, 5)
-		print("Carottes ajoutées, reste: ", result3)
 	else:
 		print("Erreur: Méthode add_item_to_inventory non trouvée!")
 		
@@ -84,4 +65,3 @@ func test_items(inventory_manager):
 			inventory_manager.inventory.add_item(test_item_1, 10)
 			inventory_manager.inventory.add_item(test_item_2, 1)
 			inventory_manager.inventory.add_item(test_item_3, 5)
-			print("Items ajoutés directement")

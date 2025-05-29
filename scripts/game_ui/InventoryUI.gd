@@ -84,11 +84,9 @@ func create_game_slots():
 	clear_existing_slots()
 	
 	var slot_scene = preload("res://scenes/ui/InventorySlot2D.tscn")
-	print("Slot scene loaded: ", slot_scene != null)
 	
 	for i in INVENTORY_SIZE:
 		var slot = slot_scene.instantiate()
-		print("Slot ", i, " created: ", slot != null)
 		
 		if not Engine.is_editor_hint():
 			# ← AJOUTER CETTE LIGNE IMPORTANTE
@@ -103,8 +101,6 @@ func create_game_slots():
 			
 		inventory_grid.add_child(slot)
 		slot_scenes.append(slot)
-	
-	print("Total slots created: ", slot_scenes.size())
 
 func _on_slot_drag_started(slot: Control, slot_index: int):
 	if slot.has_item():
@@ -221,10 +217,6 @@ func show_item_info(slot_index: int):
 		print("Slot vide")
 		return
 	
-	print("=== %s ===" % slot.item.name)
-	print(slot.item.description)
-	print("Quantité: %d" % slot.quantity)
-
 func update_all_slots():
 	if not inventory:
 		return

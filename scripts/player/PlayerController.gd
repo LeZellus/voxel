@@ -24,8 +24,6 @@ func _ready():
 	setup_spring_arm()
 	add_to_group("player")
 	
-	print("JE SUIS LE ANIMATION PLAYER : ", animation_player)
-
 func setup_spring_arm():
 	spring_arm.spring_length = 8.0
 	spring_arm.collision_mask = 1

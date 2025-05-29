@@ -16,7 +16,8 @@ config/features=PackedStringArray("4.3", "Forward Plus")
 
 [autoload]
 
-UIAudioManager="*res://scripts/manager/UIAudioManager.gd"
+AudioConfigManager="*res://scripts/manager/audio/AudioConfigManager.gd"
+AudioManager="*res://scripts/manager/audio/AudioManager.gd"
 
 [file_customization]
 

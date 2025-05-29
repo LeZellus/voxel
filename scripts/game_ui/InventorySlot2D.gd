@@ -31,7 +31,7 @@ func _on_hover():
 	if not is_inventory_active():
 		return
 	
-	UIAudioManager.play_sound("ui_click_4", "hover")
+	AudioManager.play_ui_sound("ui_click_4")
 	add_theme_stylebox_override("panel", theme.get_stylebox("panel_hover", "Panel"))
 
 func _on_unhover():
@@ -47,7 +47,7 @@ func handle_input(event: InputEvent):
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			if event.pressed:
-				UIAudioManager.play_sound("ui_click_6")
+				AudioManager.play_ui_sound("ui_click_6")
 				_on_mouse_down(event)
 			else:
 				_on_mouse_up(event)
