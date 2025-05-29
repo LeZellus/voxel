@@ -101,6 +101,14 @@ func _play_footstep(step_index: int):
 	player.stream = sounds[sound_name]
 	player.play()
 
+func set_footstep_positions(positions: Array):
+	# Utilise une constante modifiable si nécessaire
+	pass
+
+func set_position_tolerance(tolerance: float):
+	# Utilise une constante modifiable si nécessaire
+	pass
+
 func _on_volume_changed(category: String, new_volume: float):
 	if category in audio_players:
 		audio_players[category].volume_db = linear_to_db(new_volume)
