@@ -10,7 +10,6 @@ func _ready():
 	load_ui_sounds()
 
 func setup_audio_players():
-	# Un seul player pour l'UI
 	create_audio_player("ui")
 
 func create_audio_player(category: String):
