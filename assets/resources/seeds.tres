@@ -16,3 +16,4 @@ is_stackable = true
 rarity = "common"
 item_type = "tool"
 durability = -1
+max_stack_size = 4000

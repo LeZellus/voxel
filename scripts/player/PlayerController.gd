@@ -13,8 +13,8 @@ extends CharacterBody3D
 @onready var spring_arm: SpringArm3D = $SpringArm3D
 @onready var camera: Camera3D = $SpringArm3D/Camera3D
 @onready var state_machine: StateMachine = $StateMachine
-@onready var model_root: Node3D = $ModelRoot
-@onready var animation_player: AnimationPlayer = $ModelRoot/AnimationPlayerWalk
+@onready var model_root: Node3D = $CharacterSkin
+@onready var animation_player: AnimationPlayer = $CharacterSkin/AnimationPlayer
 # Variables partagées
 var current_speed: float
 var gravity = ProjectSettings.get_setting("physics/3d/default_gravity")

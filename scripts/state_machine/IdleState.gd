@@ -25,3 +25,8 @@ func handle_input(_event):
 	# Les inputs caméra sont gérés par PlayerController
 	# Ici on gère seulement les inputs spécifiques à cet état
 	pass
+	
+func enter():
+	if player.animation_player:
+		player.animation_player.play("Idle")
+		player.animation_player.speed_scale = 2.0

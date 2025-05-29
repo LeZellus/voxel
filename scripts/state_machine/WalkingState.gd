@@ -3,8 +3,8 @@ class_name WalkingState
 
 func enter():
 	if player.animation_player:
-		player.animation_player.play("ArmatureAction")
-		player.animation_player.speed_scale = 2.0
+		player.animation_player.play("Run")
+		player.animation_player.speed_scale = 4.0
 
 func physics_update(delta):
 	player.apply_gravity(delta)
