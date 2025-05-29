@@ -1,12 +1,10 @@
-[gd_scene load_steps=8 format=3 uid="uid://rm0npb5j2kr5"]
+[gd_scene load_steps=6 format=3 uid="uid://rm0npb5j2kr5"]
 
 [ext_resource type="PackedScene" uid="uid://b0fwiyec7c18c" path="res://scenes/manager/AudioManager.tscn" id="1_ap22l"]
 [ext_resource type="PackedScene" uid="uid://qd85q6gaduf2" path="res://scenes/test/WorldGround.tscn" id="1_xvw0r"]
 [ext_resource type="PackedScene" uid="uid://bkfsjygkoggm0" path="res://scenes/manager/GameManager.tscn" id="2_0cjkd"]
 [ext_resource type="PackedScene" uid="uid://cx6drcd7vxfvd" path="res://scenes/objects/Player.tscn" id="3_tup3i"]
 [ext_resource type="Script" path="res://scripts/test/TestInventory.gd" id="4_tea0x"]
-[ext_resource type="PackedScene" uid="uid://bmxqrx242yj5q" path="res://scenes/objects/WorldItem.tscn" id="5_j0osa"]
-[ext_resource type="Resource" uid="uid://dy7wf77dsqfle" path="res://assets/resources/watering_can.tres" id="6_mtp7u"]
 
 [node name="MainScène" type="Node3D"]
 
@@ -29,6 +27,3 @@ light_indirect_energy = 10.0
 script = ExtResource("4_tea0x")
 
 [node name="Items" type="Node" parent="."]
-
-[node name="WorldItem" parent="Items" instance=ExtResource("5_j0osa")]
-item_data = ExtResource("6_mtp7u")

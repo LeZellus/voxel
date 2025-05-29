@@ -1,7 +1,11 @@
 extends State
 class_name WalkingState
 
+@onready var _dust_particles: GPUParticles3D = %DustParticles
+
 func enter():
+	
+	UIAudioManager.play_sound("ui_pop_1", "sfx")
 	if player.animation_player:
 		player.animation_player.play("Run")
 		player.animation_player.speed_scale = 4.0
@@ -28,6 +32,7 @@ func physics_update(delta):
 	var direction = player.get_movement_direction_from_camera()
 	
 	# Appliquer mouvement
+	_dust_particles.emitting = true
 	player.apply_movement(direction, speed, delta)
 	player.move_and_slide()
 
@@ -38,4 +43,5 @@ func handle_input(_event):
 func exit():
 	# Arrêter l'animation si nécessaire
 	if player.animation_player:
+		_dust_particles.emitting = false
 		player.animation_player.stop()
