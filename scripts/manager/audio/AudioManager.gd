@@ -24,8 +24,11 @@ func play_player_sound(sound_name: String, category: String = "actions", volume:
 	player_manager.play_sound(sound_name, category, volume)
 
 # Sons de pas
-func start_footsteps(speed: float, surface: String = "grass"):
-	player_manager.start_footsteps(speed, surface)
+func start_footsteps(speed: float, surface: String = "grass", anim_player: AnimationPlayer = null):
+	player_manager.start_footsteps(speed, surface, anim_player)
+
+func update_footsteps():
+	player_manager.update_footsteps()
 
 func stop_footsteps():
 	player_manager.stop_footsteps()
@@ -46,3 +49,12 @@ func set_action_volume(volume: float):
 
 func set_ui_volume(volume: float):
 	set_volume("ui", volume)
+
+func set_footstep_positions(positions: Array):
+	player_manager.set_footstep_positions(positions)
+
+func set_footstep_tolerance(tolerance: float):
+	player_manager.set_position_tolerance(tolerance)
+
+func set_footstep_debug(enabled: bool):
+	player_manager.set_debug_enabled(enabled)
