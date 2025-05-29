@@ -33,29 +33,6 @@ static func get_node_safe(parent: Node, path: String, fallback: Node = null) -> 
 			print("ERREUR: Node introuvable: ", path)
 	return node
 
-# Validation pour l'inventaire
-static func validate_inventory_operation(inventory: Inventory, slot_index: int, operation: String = "") -> bool:
-	if not validate_node(inventory, "Inventory", operation):
-		return false
-		
-	if slot_index < 0 or slot_index >= inventory.size:
-		print("ERREUR: Index de slot invalide (%d) pour %s" % [slot_index, operation])
-		return false
-		
-	return true
-
-# Validation pour les items
-static func validate_item_stack(item_stack: ItemStack, operation: String = "") -> bool:
-	if item_stack == null:
-		print("ERREUR: ItemStack null pour %s" % operation)
-		return false
-		
-	if item_stack.item == null and item_stack.quantity > 0:
-		print("ATTENTION: Quantité sans item pour %s" % operation)
-		return false
-		
-	return true
-
 # Validation audio
 static func validate_audio_setup(player: AudioStreamPlayer, sound: AudioStream, operation: String = "") -> bool:
 	if not validate_node(player, "AudioStreamPlayer", operation):
