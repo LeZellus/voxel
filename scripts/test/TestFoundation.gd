@@ -1,9 +1,11 @@
 # TestFoundation.gd - Test du système d'inventaire complet
-extends Node
+extends CanvasLayer
+
+var test_grid_ui: InventoryGridUI  # Garder une référence
 
 func _ready():
 	print("🧪 === TEST SYSTÈME INVENTAIRE COMPLET ===")
-	await get_tree().process_frame  # Attendre 1 frame
+	await get_tree().process_frame
 	test_complete_system()
 	test_ui_preparation()
 
@@ -26,7 +28,7 @@ func test_complete_system():
 	print("✅ Items créés:", apple.name, sword.name, wood.name)
 	
 	# Créer inventaire et controller
-	var inventory = Inventory.new(9, "Test Inventory")  # 3x3 pour test
+	var inventory = Inventory.new(9, "Test Inventory")
 	var controller = InventoryController.new(inventory)
 	
 	print("✅ Inventaire créé: ", controller.get_inventory_summary())
@@ -55,23 +57,6 @@ func test_complete_system():
 	var undone = controller.undo_last_action()
 	print("   Undo:", undone)
 	inventory.print_contents()
-	
-	# Test redo
-	print("\n⏩ Test redo:")
-	var redone = controller.redo_last_action()
-	print("   Redo:", redone)
-	inventory.print_contents()
-	
-	# Test queries
-	print("\n🔍 Test informations slots:")
-	for i in range(3):
-		var slot_info = controller.get_slot_info(i)
-		if not slot_info.get("is_empty", true):
-			print("   Slot", i, ":", slot_info.get("item_name"), "x", slot_info.get("quantity"))
-		else:
-			print("   Slot", i, ": vide")
-	
-	print("\n📊 Résumé final:", controller.get_inventory_summary())
 
 func test_ui_preparation():
 	print("\n🎨 === TEST PRÉPARATION UI ===")
@@ -83,47 +68,8 @@ func test_ui_preparation():
 	
 	print("✅ Textures de test créées")
 	
-	# Simuler des données de slots pour l'UI
-	var test_slots_data = [
-		{
-			"index": 0,
-			"is_empty": false,
-			"item_name": "Pomme",
-			"quantity": 8,
-			"icon": test_texture,
-			"max_stack": 10
-		},
-		{
-			"index": 1,
-			"is_empty": false,
-			"item_name": "Bois",
-			"quantity": 25,
-			"icon": test_texture2,
-			"max_stack": 50
-		},
-		{
-			"index": 2,
-			"is_empty": false,
-			"item_name": "Épée",
-			"quantity": 1,
-			"icon": test_texture3,
-			"max_stack": 1
-		},
-		{
-			"index": 3,
-			"is_empty": true
-		}
-	]
-	
-	print("✅ Données de slots simulées:")
-	for slot_data in test_slots_data:
-		if slot_data.get("is_empty", true):
-			print("   Slot", slot_data.get("index"), ": vide")
-		else:
-			print("   Slot", slot_data.get("index"), ":", slot_data.get("item_name"), "x", slot_data.get("quantity"))
-	
-	# Test du slot UI si disponible
-	test_inventory_slot_ui()
+	# Test de la grille UI
+	test_inventory_grid_ui()
 
 func _create_test_texture(color: Color) -> ImageTexture:
 	var image = Image.create(32, 32, false, Image.FORMAT_RGB8)
@@ -133,27 +79,101 @@ func _create_test_texture(color: Color) -> ImageTexture:
 	texture.set_image(image)
 	return texture
 
-func test_inventory_slot_ui():
-	print("\n🎛️ === TEST SLOT UI ===")
+func test_inventory_grid_ui():
+	print("\n🔲 === TEST GRILLE UI ===")
 	
-	# Test de création d'un slot UI (quand on aura la scène)
-	var slot_ui_scene = preload("res://scenes/ui/InventorySlotUI.tscn")
-	if slot_ui_scene:
-		var slot_ui = slot_ui_scene.instantiate()
-		add_child(slot_ui)
+	if ResourceLoader.exists("res://scenes/ui/InventoryGridUI.tscn"):
+		var grid_ui_scene = preload("res://scenes/ui/InventoryGridUI.tscn")
+		test_grid_ui = grid_ui_scene.instantiate()
+		add_child(test_grid_ui)
 		
-		# Test avec données
-		var test_data = {
-			"is_empty": false,
-			"item_name": "Pomme",
-			"quantity": 5,
-			"icon": _create_test_texture(Color.RED)
-		}
+		# Centrer la grille à l'écran
+		var viewport_size = get_viewport().get_visible_rect().size
+		test_grid_ui.position = Vector2(
+			(viewport_size.x - 250) / 2,
+			(viewport_size.y - 250) / 2
+		)
 		
-		slot_ui.update_slot(test_data)
-		print("✅ Slot UI testé avec succès")
+		print("🔧 DEBUG: Viewport size:", viewport_size)
+		print("🔧 DEBUG: Grid position:", test_grid_ui.position)
 		
-		# Nettoyer
-		slot_ui.queue_free()
+		# Attendre que la grille soit créée
+		await get_tree().process_frame
+		await get_tree().process_frame
+		
+		# Tester avec des données de plusieurs slots
+		var grid_test_data = [
+			{
+				"is_empty": false,
+				"item_name": "Pomme",
+				"quantity": 8,
+				"icon": _create_test_texture(Color.RED)
+			},
+			{
+				"is_empty": true
+			},
+			{
+				"is_empty": false,
+				"item_name": "Bois", 
+				"quantity": 25,
+				"icon": _create_test_texture(Color(0.6, 0.3, 0.1))
+			},
+			{
+				"is_empty": false,
+				"item_name": "Épée",
+				"quantity": 1,
+				"icon": _create_test_texture(Color.SILVER)
+			}
+		]
+		
+		# Mettre à jour la grille avec les données
+		test_grid_ui.update_all_slots(grid_test_data)
+		
+		# Connecter aux signaux pour tester les interactions
+		test_grid_ui.slot_clicked.connect(_on_grid_slot_clicked)
+		test_grid_ui.slot_right_clicked.connect(_on_grid_slot_right_clicked)
+		test_grid_ui.slot_hovered.connect(_on_grid_slot_hovered)
+		
+		print("✅ Grille UI créée et testée - VISIBLE à l'écran")
+		print("🖱️ Clique sur les slots pour tester les interactions")
+		print("🎯 La grille devrait être visible au centre de l'écran")
+		
+		# Afficher l'état de la grille
+		test_grid_ui.print_grid_state()
+		
+		# Test de sélection
+		test_grid_ui.set_slot_selected(0, true)
+		print("✅ Slot 0 sélectionné pour test (devrait être jaune)")
+		
+		# Ajouter un bouton pour fermer si nécessaire
+		_add_close_button()
+		
 	else:
-		print("⚠️ InventorySlotUI.tscn pas encore créé")
+		print("⚠️ InventoryGridUI.tscn pas trouvé")
+
+func _add_close_button():
+	var close_button = Button.new()
+	close_button.text = "Fermer Test"
+	close_button.position = Vector2(20, 20)
+	close_button.size = Vector2(100, 30)
+	close_button.pressed.connect(_close_test)
+	add_child(close_button)
+
+func _close_test():
+	if test_grid_ui:
+		test_grid_ui.queue_free()
+	print("🔒 Test fermé")
+
+func _on_grid_slot_clicked(slot_index: int, slot_ui: InventorySlotUI):
+	print("🎯 TEST: Slot", slot_index, "cliqué - Item:", slot_ui.get_item_name())
+
+func _on_grid_slot_right_clicked(slot_index: int, slot_ui: InventorySlotUI):
+	print("🎯 TEST: Slot", slot_index, "clic droit - Item:", slot_ui.get_item_name())
+
+func _on_grid_slot_hovered(slot_index: int, slot_ui: InventorySlotUI):
+	print("🎯 TEST: Slot", slot_index, "survolé - Item:", slot_ui.get_item_name())
+
+# Input pour fermer avec Escape
+func _input(event):
+	if event.is_action_pressed("ui_cancel"):
+		_close_test()

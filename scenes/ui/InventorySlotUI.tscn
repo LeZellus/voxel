@@ -4,9 +4,11 @@
 
 [node name="InventorySlotUI" type="Control"]
 layout_mode = 3
-anchors_preset = 0
-offset_right = 64.0
-offset_bottom = 64.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("1_u3wbx")
 
 [node name="ColorRect" type="ColorRect" parent="."]
@@ -16,7 +18,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.751395, 8.47101e-06, 0.490248, 1)
+color = Color(7.21961e-07, 0.513176, 0.191138, 1)
 
 [node name="Background" type="NinePatchRect" parent="."]
 layout_mode = 1
