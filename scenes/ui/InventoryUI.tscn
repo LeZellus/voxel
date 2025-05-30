@@ -1,0 +1,48 @@
+[gd_scene load_steps=3 format=3 uid="uid://dpoib7th7wgl5"]
+
+[ext_resource type="PackedScene" uid="uid://bv46b6l2la66h" path="res://scenes/ui/InventoryGridUI.tscn" id="1_nceh4"]
+[ext_resource type="Script" path="res://scripts/inventory/ui/InventoryUI.gd" id="1_rjtal"]
+
+[node name="InventoryUI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_rjtal")
+
+[node name="Background" type="NinePatchRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VboxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -250.0
+offset_top = -164.0
+offset_right = 250.0
+offset_bottom = 164.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TitleLabel" type="Label" parent="VboxContainer"]
+layout_mode = 2
+text = "Inventaire"
+
+[node name="InventoryGrid" parent="VboxContainer" instance=ExtResource("1_nceh4")]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VboxContainer"]
+layout_mode = 2
+
+[node name="CloseButton" type="Button" parent="VboxContainer/HBoxContainer"]
+layout_mode = 2
