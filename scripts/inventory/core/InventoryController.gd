@@ -22,7 +22,9 @@ func _connect_signals():
 # === ACTIONS PRINCIPALES ===
 func move_item(from_slot: int, to_slot: int) -> bool:
 	var command = MoveItemCommand.new(inventory, from_slot, to_slot)
+	
 	var result = command_system.execute(command)
+	
 	action_performed.emit("move_item", result)
 	return result
 
@@ -40,17 +42,17 @@ func remove_item_from_inventory(item_id: String, quantity: int = 1) -> int:
 	return removed
 
 # === COMMANDES AVANCÉES ===
-func quick_move_item(slot_index: int) -> bool:
+func quick_move_item(_slot_index: int) -> bool:
 	# TODO: Implémenter QuickMoveCommand
 	print("Quick move pas encore implémenté")
 	return false
 
-func split_stack(slot_index: int, split_amount: int) -> bool:
+func split_stack(_slot_index: int, _split_amount: int) -> bool:
 	# TODO: Implémenter SplitStackCommand  
 	print("Split stack pas encore implémenté")
 	return false
 
-func stack_all_items(item_id: String) -> bool:
+func stack_all_items(_item_id: String) -> bool:
 	# TODO: Implémenter StackAllCommand
 	print("Stack all pas encore implémenté")
 	return false
@@ -113,7 +115,7 @@ func can_move_item(from_slot: int, to_slot: int) -> bool:
 	var command = MoveItemCommand.new(inventory, from_slot, to_slot)
 	return command.can_execute()
 
-func can_add_item(item: Item, quantity: int = 1) -> bool:
+func can_add_item(item: Item, _quantity: int = 1) -> bool:
 	if not item:
 		return false
 	return inventory.get_free_slots_count() > 0 or inventory.find_stackable_slot(item) >= 0

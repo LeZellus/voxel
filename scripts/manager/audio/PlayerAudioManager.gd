@@ -45,7 +45,7 @@ func play_sound(sound_name: String, category: String = "actions", volume: float 
 	player.stream = sound
 	player.play()
 
-func start_footsteps(speed: float, surface: String = "grass", anim_player: AnimationPlayer = null):
+func start_footsteps(_speed: float, surface: String = "grass", anim_player: AnimationPlayer = null):
 	current_surface = surface
 	is_walking = true
 	animation_player = anim_player
@@ -84,7 +84,7 @@ func _should_play_step(current_pos: float, step_index: int) -> bool:
 	
 	return false
 
-func _play_footstep(step_index: int):
+func _play_footstep(_step_index: int):
 	var sound_name = AudioUtils.select_footstep_sound(sounds, current_surface, last_step_sound)
 	if sound_name == "":
 		return
@@ -101,11 +101,11 @@ func _play_footstep(step_index: int):
 	player.stream = sounds[sound_name]
 	player.play()
 
-func set_footstep_positions(positions: Array):
+func set_footstep_positions(_positions: Array):
 	# Utilise une constante modifiable si nécessaire
 	pass
 
-func set_position_tolerance(tolerance: float):
+func set_position_tolerance(_tolerance: float):
 	# Utilise une constante modifiable si nécessaire
 	pass
 

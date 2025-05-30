@@ -61,7 +61,7 @@ func _start_potential_drag(pos: Vector2):
 	mouse_down_pos = pos
 	drag_started_flag = false
 
-func _end_potential_drag(pos: Vector2):
+func _end_potential_drag(_pos: Vector2):
 	"""Termine la détection de drag"""
 	if is_mouse_down and not drag_started_flag:
 		# C'était un simple clic, pas un drag

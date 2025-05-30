@@ -23,9 +23,9 @@ var is_open: bool = false
 var auto_setup_input: bool = false
 var input_action: String = ""
 
-func _init(id: String, size: int, name: String = "", ui_scene_path: String = ""):
+func _init(id: String, size: int, display_name: String, ui_scene_path: String = ""):
 	container_id = id
-	container_name = name if not name.is_empty() else id
+	container_name = display_name if not display_name.is_empty() else id
 	
 	# Créer l'inventaire et le contrôleur
 	inventory = Inventory.new(size, container_name)
@@ -71,15 +71,13 @@ func setup_ui(parent_node: Node = null) -> bool:
 	
 	# Initialiser l'UI avec les données
 	if ui and ui.has_method("setup_inventory"):
-		ui.setup_inventory(inventory, controller)
-		print("✅ UI configurée pour ", container_id)
+		ui.hide_immediately()
 	else:
-		print("⚠️ L'UI n'a pas de méthode setup_inventory")
+		ui.visible = false
 	
 	return true
 
 func show_ui():
-	"""Affiche l'UI avec animation de glissement"""
 	if not ui:
 		print("❌ Pas d'UI à afficher pour ", container_id)
 		return
@@ -88,18 +86,12 @@ func show_ui():
 		print("⚠️ UI déjà ouverte pour ", container_id)
 		return
 	
-	print("🔍 Ouverture animée de l'UI pour ", container_id)
-	print("🔍 UI visible avant: ", ui.visible)
-	print("🔍 UI position avant: ", ui.position if ui.has_method("get_position") else "N/A")
-	
 	is_open = true
 	
 	# Utiliser l'animation native de l'UI si disponible
 	if ui.has_method("show_animated"):
-		print("🎬 Utilisation de show_animated()")
 		ui.show_animated()
 	else:
-		print("🎬 Fallback: affichage simple")
 		ui.visible = true
 		ui.modulate = Color.WHITE
 	
@@ -108,24 +100,18 @@ func show_ui():
 	container_opened.emit()
 
 func hide_ui():
-	"""Masque l'UI avec animation de glissement"""
 	if not ui:
 		return
 	
 	if not is_open:
-		print("⚠️ UI déjà fermée pour ", container_id)
 		return
-	
-	print("🔍 Fermeture animée de l'UI pour ", container_id)
 	
 	is_open = false
 	
 	# Utiliser l'animation native de l'UI si disponible
 	if ui.has_method("hide_animated"):
-		print("🎬 Utilisation de hide_animated()")
 		ui.hide_animated()
 	else:
-		print("🎬 Fallback: masquage simple")
 		ui.visible = false
 	
 	_play_ui_sound("ui_pop_off_1")
@@ -133,9 +119,6 @@ func hide_ui():
 	container_closed.emit()
 
 func toggle_ui():
-	"""Bascule l'affichage de l'UI avec animation"""
-	print("🔄 Toggle UI pour ", container_id, " (actuellement ouvert: ", is_open, ")")
-	
 	if is_open:
 		hide_ui()
 	else:
@@ -143,7 +126,6 @@ func toggle_ui():
 
 # === GESTION INPUT (OPTIONNEL) ===
 func setup_input_toggle(action_name: String):
-	"""Configure un input pour toggler l'UI"""
 	auto_setup_input = true
 	input_action = action_name
 	set_process_unhandled_input(true)
@@ -194,15 +176,15 @@ func _on_container_closed():
 	"""Override dans les classes filles si nécessaire"""
 	pass
 
-func _on_action_performed(action_type: String, result: bool):
+func _on_action_performed(_action_type: String, _result: bool):
 	"""Gestion des actions d'inventaire"""
 	# Override si besoin de logique spécifique
 	pass
 
-func _on_item_added(item: Item, quantity: int, slot_index: int):
+func _on_item_added(item: Item, quantity: int, _slot_index: int):
 	item_added.emit(item, quantity)
 
-func _on_item_removed(item: Item, quantity: int, slot_index: int):
+func _on_item_removed(item: Item, quantity: int, _slot_index: int):
 	item_removed.emit(item, quantity)
 
 # === UTILITAIRES ===

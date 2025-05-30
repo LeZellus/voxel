@@ -69,7 +69,7 @@ func start_split(slot_index: int, split_amount: int) -> bool:
 	interaction_started.emit("split")
 	return true
 
-func complete_split(target_slot: int) -> bool:
+func complete_split(_target_slot: int) -> bool:
 	if not _is_interaction_type(InteractionType.SPLITTING):
 		return false
 	

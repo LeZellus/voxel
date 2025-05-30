@@ -9,9 +9,9 @@ signal slot_changed(slot_index: int)
 
 var slots: Array[InventorySlot] = []
 var size: int
-var name: String = "Inventory"
+var name: String
 
-func _init(inventory_size: int, inventory_name: String = "Main Inventory"):
+func _init(inventory_size: int, inventory_name):
 	size = inventory_size
 	name = inventory_name
 	_initialize_slots()

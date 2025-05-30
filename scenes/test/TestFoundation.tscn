@@ -1,6 +1,9 @@
-[gd_scene load_steps=2 format=3 uid="uid://c08m4hgu0dvln"]
+[gd_scene load_steps=3 format=3 uid="uid://c08m4hgu0dvln"]
 
 [ext_resource type="Script" path="res://scripts/test/TestFoundation.gd" id="1_pr5cg"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_w552a"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
 
 [node name="TestFoundation" type="CanvasLayer"]
 script = ExtResource("1_pr5cg")
@@ -12,3 +15,4 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_vertical = 8
+theme_override_styles/panel = SubResource("StyleBoxFlat_w552a")

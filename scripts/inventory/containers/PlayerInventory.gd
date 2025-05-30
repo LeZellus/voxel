@@ -15,11 +15,7 @@ func _ready():
 	# Setup automatique de l'UI D'ABORD
 	var success = await setup_ui()
 	if success:
-		print("✅ PlayerInventory UI créée avec succès")
-		
-		# Configuration spécifique au joueur APRÈS
-		#setup_input_toggle("toggle_inventory")
-		print("✅ PlayerInventory initialisé avec succès")
+		pass
 	else:
 		print("❌ Erreur lors de l'initialisation de PlayerInventory")
 

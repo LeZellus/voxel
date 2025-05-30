@@ -4,13 +4,10 @@ extends CanvasLayer
 var inventory_manager: PlayerInventory
 
 func _ready():
-	print("🧪 === TEST INVENTORY MANAGER CORRIGÉ ===")
 	await get_tree().process_frame
 	test_inventory_manager()
 
 func test_inventory_manager():
-	print("\n📦 === TEST BACKEND AVEC MANAGER ===")
-	
 	# Créer le manager
 	inventory_manager = PlayerInventory.new()
 	add_child(inventory_manager)
@@ -19,36 +16,16 @@ func test_inventory_manager():
 	await get_tree().process_frame
 	await get_tree().process_frame
 	
-	print("✅ InventoryManager créé et initialisé")
-	
 	# Créer des items de test APRÈS l'initialisation
 	await create_and_test_items()
 	
-	# NOUVEAU : Afficher automatiquement l'inventaire pour les tests
-	print("\n🖥️ Affichage automatique de l'inventaire...")
-	inventory_manager.show_ui()
-
 func create_and_test_items():
 	# Créer des items de test avec icônes
 	var apple = create_test_item("apple", "Pomme", 10, Color.RED)
 	var wood = create_test_item("wood", "Bois", 50, Color(0.6, 0.3, 0.1))
 	var sword = create_test_item("sword", "Épée", 1, Color.SILVER)
 	
-	print("✅ Items de test créés")
-	
-	# Test d'ajout avec vérification
-	print("\n➕ Test ajout d'items:")
-	
 	if inventory_manager and inventory_manager.controller:
-		var surplus1 = inventory_manager.add_item(apple, 7)
-		print("   Pommes ajoutées (surplus: %d)" % surplus1)
-		
-		var surplus2 = inventory_manager.add_item(wood, 23)
-		print("   Bois ajouté (surplus: %d)" % surplus2)
-		
-		var surplus3 = inventory_manager.add_item(sword, 1)
-		print("   Épée ajoutée (surplus: %d)" % surplus3)
-		
 		# Vérification
 		print("\n📊 État de l'inventaire:")
 		print("   Pommes: %d" % inventory_manager.get_item_count("apple"))
@@ -63,8 +40,6 @@ func create_and_test_items():
 func test_commands():
 	print("\n🔄 Test des commandes:")
 	var controller = inventory_manager.controller
-	
-	print("Je suis le controller : ",controller)
 	
 	if controller:
 		# Test move
@@ -83,13 +58,13 @@ func test_commands():
 	else:
 		print("❌ Controller non disponible")
 
-func create_test_item(id: String, name: String, stack_size: int, color: Color) -> Item:
+func create_test_item(id: String, item_name: String, stack_size: int, color: Color) -> Item:
 	"""Crée un item de test avec icône colorée"""
-	var item = Item.new(id, name)
+	var item = Item.new(id, item_name)
 	item.max_stack_size = stack_size
 	item.is_stackable = stack_size > 1
 	item.icon = create_test_texture(color)
-	item.description = "Item de test: " + name
+	item.description = "Item de test: " + item_name
 	return item
 
 func create_test_texture(color: Color) -> ImageTexture:
@@ -107,15 +82,8 @@ func _input(event):
 		return
 	
 	# Toggle inventaire avec Espace OU Tab
-	if event.is_action_pressed("ui_accept") or event.is_action_pressed("toggle_inventory"):
-		print("🔄 Toggle inventaire manuel")
+	if event.is_action_pressed("toggle_inventory"):
 		inventory_manager.toggle_ui()
-	
-	# Debug: Forcer l'affichage avec Enter
-	if event.is_action_pressed("ui_select"):
-		print("🔄 Forcer l'affichage de l'inventaire")
-		inventory_manager.show_ui()
-		add_random_test_item()
 	
 	# Fermer test avec Escape
 	if event.is_action_pressed("ui_cancel"):

@@ -27,9 +27,11 @@ func can_execute() -> bool:
 		return false
 	
 	var from_slot = inventory.get_slot(from_slot_index)
+	
 	return not from_slot.is_empty()
 
 func execute() -> bool:
+	
 	if not can_execute():
 		return false
 	

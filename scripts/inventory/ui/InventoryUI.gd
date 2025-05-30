@@ -1,4 +1,4 @@
-# scripts/inventory/ui/InventoryUI.gd - VERSION AVEC ANIMATION GLISSANTE
+# scripts/inventory/ui/InventoryUI.gd - VERSION CORRIGÉE
 class_name InventoryUI
 extends Control
 
@@ -11,46 +11,21 @@ var controller: InventoryController
 var drag_manager: DragDropManager
 var is_setup: bool = false
 
-# Animation
+# Animation - Variables simplifiées
 var tween: Tween
 var animation_duration: float = 0.4
-var slide_distance: float = 0.0  # Calculé automatiquement
 
 func _ready():
 	setup_drag_manager()
 	setup_ui()
-	# Démarrer caché et positionné
-	call_deferred("setup_animation_positions")
+	# IMPORTANT : Forcer l'UI à être cachée au démarrage
+	hide_immediately()
 
-func setup_animation_positions():
-	"""Configure les positions pour l'animation de glissement"""
-	# S'assurer que la taille est calculée
-	if size.y <= 0:
-		await get_tree().process_frame
-		await get_tree().process_frame  # Double attente pour être sûr
-	
-	# Forcer le recalcul de la taille si nécessaire
-	if size.y <= 0:
-		custom_minimum_size = Vector2(640, 400)  # Taille de secours
-		await get_tree().process_frame
-	
-	# Position finale : 4px du bas
-	set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
-	
-	# Calculer la distance de glissement AVANT de positionner
-	slide_distance = size.y + 50  # Plus de marge pour l'effet
-	
-	# Position finale (visible)
-	var final_position = -size.y - 4
-	
-	# Position de départ (cachée) - PLUS BAS que l'écran
-	var hidden_position = final_position + slide_distance
-	
-	# Démarrer en position cachée
-	offset_top = hidden_position
-	visible = false  # S'assurer qu'on démarre caché
-	
-	print("🎬 Animation setup - Taille: ", size, " Final: ", final_position, " Caché: ", hidden_position)
+func hide_immediately():
+	"""Cache immédiatement l'UI sans animation"""
+	visible = false
+	# Position hors écran (en bas)
+	position.y = get_viewport().get_visible_rect().size.y + size.y
 
 func setup_drag_manager():
 	drag_manager = DragDropManager.new()
@@ -109,23 +84,34 @@ func refresh_ui():
 	
 	inventory_grid.update_all_slots(slots_data)
 
-# === ANIMATIONS OPTIMISÉES ===
+# === ANIMATIONS SIMPLIFIÉES ET CORRIGÉES ===
 func show_animated():
-	"""Animation de glissement depuis le bas"""
-	print("🎬 Début show_animated - Taille: ", size, " Position actuelle: ", offset_top)
+	"""Animation de glissement depuis le bas - VERSION CORRIGÉE"""
+	print("🎬 Début show_animated")
 	
 	if tween and tween.is_valid():
 		tween.kill()
 	
-	# Positions calculées
-	var final_position = -size.y - 4  # Position finale : 4px du bas
-	var hidden_position = final_position + slide_distance  # Position cachée
+	# S'assurer que la taille est calculée
+	if size.y <= 0:
+		await get_tree().process_frame
 	
-	print("🎬 Positions - Final: ", final_position, " Caché: ", hidden_position)
+	var viewport_size = get_viewport().get_visible_rect().size
 	
-	# S'assurer qu'on démarre de la bonne position
-	offset_top = hidden_position
+	# Position finale : centré horizontalement, 20px du bas
+	var final_x = (viewport_size.x - size.x) / 2
+	var final_y = viewport_size.y - size.y - 4
+	
+	# Position de départ : même X, mais complètement en bas (cachée)
+	var start_x = final_x
+	var start_y = viewport_size.y + 50  # 50px en dessous de l'écran
+	
+	print("🎬 Positions - Start: (", start_x, ", ", start_y, ") Final: (", final_x, ", ", final_y, ")")
+	
+	# Positionner au point de départ
+	position = Vector2(start_x, start_y)
 	visible = true
+	modulate = Color(1, 1, 1, 0.8)  # Légèrement transparent au début
 	
 	# Créer l'animation
 	tween = create_tween()
@@ -133,30 +119,32 @@ func show_animated():
 	tween.set_trans(Tween.TRANS_BACK)
 	
 	# Animation de glissement
-	tween.tween_property(self, "offset_top", final_position, animation_duration)
+	tween.tween_property(self, "position", Vector2(final_x, final_y), animation_duration)
 	
 	# Animation de fade en parallèle
-	modulate = Color(1, 1, 1, 0.0)
 	tween.parallel().tween_property(self, "modulate", Color.WHITE, animation_duration * 0.6)
 	
-	print("🎬 Animation lancée vers position: ", final_position)
+	print("🎬 Animation de montée lancée")
 
 func hide_animated():
-	"""Animation de glissement vers le bas"""
+	"""Animation de glissement vers le bas - VERSION CORRIGÉE"""
 	print("🎬 Début hide_animated")
 	
 	if tween and tween.is_valid():
 		tween.kill()
 	
-	# Position cachée = position actuelle + slide_distance
-	var hidden_position = (-size.y - 4) + slide_distance
+	var viewport_size = get_viewport().get_visible_rect().size
+	
+	# Position finale : même X, complètement en bas (cachée)
+	var final_x = position.x
+	var final_y = viewport_size.y + 50  # 50px en dessous de l'écran
 	
 	tween = create_tween()
 	tween.set_ease(Tween.EASE_IN)
 	tween.set_trans(Tween.TRANS_CUBIC)
 	
 	# Animation de glissement vers le bas
-	tween.tween_property(self, "offset_top", hidden_position, animation_duration * 0.7)
+	tween.tween_property(self, "position", Vector2(final_x, final_y), animation_duration * 0.7)
 	
 	# Fade out en parallèle
 	tween.parallel().tween_property(self, "modulate", Color(1, 1, 1, 0), animation_duration * 0.5)
@@ -164,7 +152,7 @@ func hide_animated():
 	# Masquer à la fin
 	tween.tween_callback(func(): 
 		visible = false
-		print("🎬 Animation terminée - UI masquée")
+		print("🎬 Animation de descente terminée - UI masquée")
 	)
 
 # === GESTION DU DRAG & DROP ===
@@ -173,7 +161,7 @@ func _on_slot_drag_started(slot_ui: InventorySlotUI, mouse_pos: Vector2):
 		return
 	drag_manager.start_drag(slot_ui, mouse_pos)
 
-func _on_drag_started(slot_index: int):
+func _on_drag_started(_slot_index: int):
 	_play_ui_sound("ui_drag_start")
 
 func _on_drag_completed(from_slot: int, to_slot: int):
@@ -185,13 +173,13 @@ func _on_drag_cancelled():
 	_play_ui_sound("ui_drag_cancel")
 
 # === GESTION DES CLICS ===
-func _on_slot_clicked(slot_index: int, slot_ui: InventorySlotUI):
+func _on_slot_clicked(_slot_index: int, _slot_ui: InventorySlotUI):
 	pass
 
-func _on_slot_right_clicked(slot_index: int, slot_ui: InventorySlotUI):
+func _on_slot_right_clicked(_slot_index: int, _slot_ui: InventorySlotUI):
 	pass
 
-func _on_slot_hovered(slot_index: int, slot_ui: InventorySlotUI):
+func _on_slot_hovered(_slot_index: int, _slot_ui: InventorySlotUI):
 	pass
 
 func _on_inventory_changed():
