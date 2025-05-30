@@ -22,6 +22,7 @@ var hotbar_container: HotbarContainer
 var inventory: Inventory 
 var controller: InventoryController
 var selected_slot_index: int = 0
+var drag_manager: DragDropManager
 
 func _ready():
 	setup_grid()
@@ -107,6 +108,8 @@ func setup_hotbar(inv: Inventory, ctrl: InventoryController, container: HotbarCo
 	controller = ctrl
 	hotbar_container = container
 	
+	_setup_drag_manager()
+	
 	if inventory and inventory.has_signal("inventory_changed"):
 		inventory.inventory_changed.connect(_on_inventory_changed)
 	
@@ -171,3 +174,15 @@ func _on_slot_drag_started(slot_ui: InventorySlotUI, mouse_pos: Vector2):
 
 func _on_inventory_changed():
 	refresh_ui()
+
+func _setup_drag_manager():
+	"""Configure le drag manager pour la hotbar"""
+	# Récupérer le drag manager de l'inventaire principal
+	var panel_ui = get_node("../../../../")  # Remonter jusqu'à PanelUI
+	if panel_ui and panel_ui.has_method("get_inventory"):
+		var main_inventory = panel_ui.get_inventory()
+		if main_inventory and main_inventory.ui:
+			drag_manager = main_inventory.ui.drag_manager
+			if drag_manager:
+				drag_manager.set_inventory_grid(self)
+				print("✅ Drag manager partagé configuré pour la hotbar")

@@ -29,6 +29,8 @@ func setup_hotbar():
 	hotbar.item_selected.connect(_on_hotbar_item_selected)
 	hotbar.hotbar_item_used.connect(_on_hotbar_item_used)
 	
+	call_deferred("_connect_cross_container_drag")
+	
 	print("✅ Hotbar créée et connectée")
 
 func setup_input():
@@ -237,3 +239,16 @@ func add_test_items():
 	hotbar.add_item(test_items[1], 2)
 	
 	print("🧪 Items de test ajoutés")
+
+func _connect_cross_container_drag():
+	"""Connecte le drag & drop entre inventaire et hotbar"""
+	await get_tree().process_frame
+	
+	if inventory and inventory.ui and hotbar and hotbar.ui:
+		var main_drag_manager = inventory.ui.drag_manager
+		if main_drag_manager:
+			# Ajouter la hotbar au système de drag
+			main_drag_manager.set_inventory_grid(hotbar.ui)
+			print("✅ Cross-container drag configuré")
+	else:
+		print("❌ Impossible de configurer le cross-container drag")

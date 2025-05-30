@@ -13,13 +13,24 @@ var drag_source_slot: int = -1
 var drag_offset: Vector2
 var original_slot_ui: InventorySlotUI
 var inventory_grid: InventoryGridUI
+var inventory_grids: Array = []
 
 func _ready():
 	set_process_input(true)
 
-func set_inventory_grid(grid: InventoryGridUI):
-	"""Définir la grille d'inventaire pour le drag & drop"""
-	inventory_grid = grid
+func set_inventory_grid(grid):
+	"""Définir une grille d'inventaire pour le drag & drop"""
+	if not grid:
+		return
+		
+	# Vérifier que l'objet a les propriétés nécessaires
+	if not grid.has_method("get_slot") or not grid.get("slots"):
+		print("❌ Grille invalide pour drag & drop: %s" % str(grid))
+		return
+	
+	if not inventory_grids.has(grid):
+		inventory_grids.append(grid)
+		print("✅ Grille ajoutée: %s" % grid.get_script().resource_path.get_file())
 
 func start_drag(slot_ui: InventorySlotUI, mouse_pos: Vector2) -> bool:
 	if is_dragging or slot_ui.is_empty():
@@ -171,17 +182,23 @@ func start_shake_animation(icon: TextureRect):
 	shake_tween.tween_property(icon, "position", original_pos, shake_speed)
 
 func find_slot_at_position(pos: Vector2) -> InventorySlotUI:
-	"""Trouve le slot à la position donnée"""
-	if not inventory_grid:
-		return null
-	
-	for slot_ui in inventory_grid.slots:
-		if not slot_ui or not is_instance_valid(slot_ui):
+	"""Trouve le slot à la position donnée dans toutes les grilles"""
+	for grid in inventory_grids:
+		if not grid or not is_instance_valid(grid):
+			continue
+		
+		# Vérifier si grid a la propriété slots
+		var slots_array = grid.get("slots")
+		if not slots_array:
 			continue
 			
-		var rect = Rect2(slot_ui.global_position, slot_ui.size)
-		if rect.has_point(pos):
-			return slot_ui
+		for slot_ui in slots_array:
+			if not slot_ui or not is_instance_valid(slot_ui):
+				continue
+				
+			var rect = Rect2(slot_ui.global_position, slot_ui.size)
+			if rect.has_point(pos):
+				return slot_ui
 	
 	return null
 
