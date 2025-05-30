@@ -3,8 +3,8 @@ class_name InventoryUI
 extends Control
 
 @onready var background: NinePatchRect = $Background
-@onready var title_label: Label = $VboxContainer/TitleLabel
-@onready var inventory_grid: InventoryGridUI = $VboxContainer/InventoryGrid
+@onready var title_label: Label = $BottomContainer/CenterContainer/VboxContainer/TitleLabel
+@onready var inventory_grid: InventoryGridUI = $BottomContainer/CenterContainer/VboxContainer/InventoryGrid
 
 var inventory: Inventory
 var controller: InventoryController
@@ -26,7 +26,8 @@ func setup_drag_manager():
 	drag_manager.drag_cancelled.connect(_on_drag_cancelled)
 
 func setup_ui():
-	set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	# SUPPRIMÉ : set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	# On laisse la scène gérer le positionnement
 	
 	set_process_unhandled_input(true)
 
@@ -47,8 +48,6 @@ func setup_inventory(inv: Inventory, ctrl: InventoryController):
 	# Configurer la grille
 	if inventory_grid:
 		setup_inventory_grid()
-		
-		# IMPORTANT : Donner la référence de la grille au drag manager
 		drag_manager.set_inventory_grid(inventory_grid)
 	
 	if title_label:
@@ -60,10 +59,9 @@ func setup_inventory_grid():
 	inventory_grid.grid_columns = Constants.GRID_COLUMNS
 	inventory_grid.grid_rows = Constants.GRID_ROWS
 	
-	# Reconfigurer la grille
 	inventory_grid.setup_grid()
 	
-	# Connecter les signaux - VÉRIFIER QU'ILS EXISTENT
+	# Connecter les signaux
 	if inventory_grid.has_signal("slot_clicked"):
 		inventory_grid.slot_clicked.connect(_on_slot_clicked)
 	if inventory_grid.has_signal("slot_right_clicked"):
@@ -96,19 +94,16 @@ func hide_animated():
 
 # === GESTION DU DRAG & DROP ===
 func _on_slot_drag_started(slot_ui: InventorySlotUI, mouse_pos: Vector2):
-	"""Démarrer un drag depuis un slot"""
 	if not controller or slot_ui.is_empty():
 		return
 	
 	drag_manager.start_drag(slot_ui, mouse_pos)
 
 func _on_drag_started(slot_index: int):
-	"""Callback quand un drag commence"""
 	print("🎯 Drag started from slot ", slot_index)
 	_play_ui_sound("ui_drag_start")
 
 func _on_drag_completed(from_slot: int, to_slot: int):
-	"""Callback quand un drag se termine avec succès"""
 	print("🎯 Drag completed: ", from_slot, " → ", to_slot)
 	
 	if controller:
@@ -120,21 +115,17 @@ func _on_drag_completed(from_slot: int, to_slot: int):
 			_play_ui_sound("ui_drag_fail")
 
 func _on_drag_cancelled():
-	"""Callback quand un drag est annulé"""
 	print("🎯 Drag cancelled")
 	_play_ui_sound("ui_drag_cancel")
 
-# === GESTION DES CLICS (fallback) ===
+# === GESTION DES CLICS ===
 func _on_slot_clicked(slot_index: int, slot_ui: InventorySlotUI):
-	"""Gestion des clics simples (sans drag)"""
 	print("🖱️ Simple click on slot ", slot_index)
 
 func _on_slot_right_clicked(slot_index: int, slot_ui: InventorySlotUI):
 	print("🖱️ Right click on slot ", slot_index)
-	# TODO: Menu contextuel
 
 func _on_slot_hovered(slot_index: int, slot_ui: InventorySlotUI):
-	# TODO: Tooltip
 	pass
 
 func _on_inventory_changed():
@@ -142,7 +133,6 @@ func _on_inventory_changed():
 
 # === UTILITAIRES ===
 func _play_ui_sound(sound_name: String):
-	"""Version sécurisée pour jouer des sons"""
 	var audio_manager = get_node_or_null("/root/AudioManager")
 	if audio_manager and audio_manager.has_method("play_ui_sound"):
 		audio_manager.play_ui_sound(sound_name)
