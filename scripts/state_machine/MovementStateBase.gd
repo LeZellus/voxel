@@ -9,7 +9,7 @@ var audio_state_name: String = "walking"
 var animation_name: String = "Run"
 var base_animation_speed: float = 4.0
 var running_animation_speed: float = 6.0
-var base_model_rotation: Vector3
+var base_model_lean: float = 0.0
 var target_lean_angle: float = 0.0
 var lean_speed: float = 8.0
 var running_lean: float = -0.15
@@ -140,12 +140,12 @@ func _stop_effects():
 func _save_model_state():
 	var model = get_model_root()
 	if model:
-		base_model_rotation = model.rotation
+		base_model_lean = model.rotation.x
 
 func _restore_model_state():
 	var model = get_model_root()
 	if model:
-		model.rotation = base_model_rotation
+		model.rotation.x = base_model_lean
 
 func _update_model_lean(delta: float):
 	var model = get_model_root()

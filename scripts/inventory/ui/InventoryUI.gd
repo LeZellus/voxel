@@ -1,4 +1,4 @@
-# scripts/inventory/ui/InventoryUI.gd - VERSION CORRIGÉE
+# scripts/inventory/ui/InventoryUI.gd - VERSION SANS ÉCHAP
 class_name InventoryUI
 extends Control
 
@@ -36,12 +36,9 @@ func setup_drag_manager():
 	drag_manager.drag_cancelled.connect(_on_drag_cancelled)
 
 func setup_ui():
-	set_process_unhandled_input(true)
-
-func _unhandled_input(event):
-	if visible and event.is_action_pressed("ui_cancel"):
-		hide_animated()
-		get_viewport().set_input_as_handled()
+	# SUPPRIMÉ : set_process_unhandled_input(true)
+	# SUPPRIMÉ : La gestion de ui_cancel dans _unhandled_input
+	pass
 
 func setup_inventory(inv: Inventory, ctrl: InventoryController):
 	inventory = inv

@@ -15,10 +15,10 @@ func _ready():
 			states[child.name.to_lower()] = child
 			child.state_machine = self
 			child.player = player_ref  # Assigner directement !
-	
+			
 	# Démarrer avec l'état initial
 	if initial_state:
-		change_state(initial_state.name.to_lower())
+		call_deferred("_start_initial_state")
 		
 	print("🔍 États disponibles:", states.keys())
 	print("🔍 État initial défini:", initial_state.name if initial_state else "AUCUN")
@@ -28,6 +28,15 @@ func _ready():
 		print("✅ État initial démarré:", current_state.name if current_state else "ÉCHEC")
 	else:
 		print("❌ Aucun état initial défini!")
+		
+func _start_initial_state():
+	await get_tree().process_frame
+
+	# Vérifier s'il faut démarrer en mouvement
+	if InputHelper.is_moving():
+		change_state("walking")
+	else:
+		change_state(initial_state.name.to_lower())
 
 func _process(delta):
 	if current_state:

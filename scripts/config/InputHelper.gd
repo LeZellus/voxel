@@ -1,4 +1,4 @@
-# InputHelper.gd
+# InputHelper.gd - VERSION SANS ÉCHAP
 class_name InputHelper
 
 # Movement
@@ -21,6 +21,3 @@ static func should_interact() -> bool:
 # Camera
 static func is_camera_captured() -> bool:
 	return Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
-
-static func should_toggle_mouse() -> bool:
-	return Input.is_action_pressed("ui_cancel")

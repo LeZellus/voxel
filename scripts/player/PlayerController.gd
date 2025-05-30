@@ -1,4 +1,4 @@
-# PlayerController.gd - Version améliorée utilisant les nouvelles classes
+# PlayerController.gd - Version sans touche Échap
 extends CharacterBody3D
 
 # Configuration depuis GameConfig
@@ -55,8 +55,7 @@ func handle_camera_input(event: InputEvent):
 	elif event is InputEventMouseButton and Input.is_key_pressed(KEY_CTRL):
 		_handle_zoom(event)
 	
-	elif event.is_action_pressed("ui_cancel"):
-		_toggle_mouse_mode()
+	# SUPPRIMÉ : La gestion de ui_cancel (Échap)
 
 func _handle_zoom(event: InputEventMouseButton):
 	var config = GameConfig.CAMERA
@@ -74,11 +73,7 @@ func _handle_zoom(event: InputEventMouseButton):
 			config.zoom_max
 		)
 
-func _toggle_mouse_mode():
-	if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
-	else:
-		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+# SUPPRIMÉ : La fonction _toggle_mouse_mode() entière
 
 # Méthodes de mouvement simplifiées
 func apply_gravity(delta):
