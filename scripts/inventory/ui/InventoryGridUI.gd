@@ -27,8 +27,15 @@ func setup_grid():
 	# Nettoyer les slots existants
 	clear_existing_slots()
 	
+	# Configurer le GridContainer
+	if grid_container:
+		grid_container.columns = Constants.GRID_COLUMNS
+	
+	# Créer les slots
 	for i in Constants.INVENTORY_SIZE:
 		create_slot(i)
+	
+	print("✅ Grille d'inventaire créée avec %d slots" % Constants.INVENTORY_SIZE)
 
 func clear_existing_slots():
 	"""Nettoie les slots existants avant d'en créer de nouveaux"""
@@ -47,9 +54,13 @@ func create_slot(index: int):
 		return
 	
 	var slot_ui = slot_scene.instantiate()
-	slot_ui.set_slot_index(index)  # Utiliser la méthode setter
+	slot_ui.set_slot_index(index)
 	
-	# Connecter TOUS les signaux avec vérification
+	# Forcer la taille du slot
+	slot_ui.custom_minimum_size = Vector2(Constants.SLOT_SIZE, Constants.SLOT_SIZE)
+	slot_ui.size = Vector2(Constants.SLOT_SIZE, Constants.SLOT_SIZE)
+	
+	# Connecter les signaux
 	if slot_ui.has_signal("slot_clicked"):
 		slot_ui.slot_clicked.connect(_on_slot_clicked)
 	if slot_ui.has_signal("slot_right_clicked"):
