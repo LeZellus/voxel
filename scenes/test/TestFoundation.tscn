@@ -1,12 +1,12 @@
 [gd_scene load_steps=3 format=3 uid="uid://c08m4hgu0dvln"]
 
-[ext_resource type="Script" path="res://scripts/test/TestFoundation.gd" id="1_pr5cg"]
+[ext_resource type="Script" path="res://scripts/test/DebugInventory.gd" id="1_2chw1"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_w552a"]
 bg_color = Color(0.6, 0.6, 0.6, 0)
 
 [node name="TestFoundation" type="CanvasLayer"]
-script = ExtResource("1_pr5cg")
+script = ExtResource("1_2chw1")
 
 [node name="Container" type="PanelContainer" parent="."]
 anchors_preset = 15

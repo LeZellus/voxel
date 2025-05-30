@@ -2,6 +2,8 @@ extends State
 class_name WalkingState
 
 @onready var dust_particles: GPUParticles3D = %DustParticles
+@onready var model_root: Node3D = ValidationUtils.get_node_safe(self, "CharacterSkin")
+@onready var animation_player: AnimationPlayer = ValidationUtils.get_node_safe(model_root, "AnimationPlayer") if model_root else null
 
 var last_speed: float = 0.0
 var last_surface: String = ""

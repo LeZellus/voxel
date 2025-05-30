@@ -16,7 +16,7 @@ extends CharacterBody3D
 @onready var camera: Camera3D = ValidationUtils.get_node_safe(spring_arm, "Camera3D") if spring_arm else null
 @onready var state_machine: StateMachine = ValidationUtils.get_node_safe(self, "StateMachine")
 @onready var model_root: Node3D = ValidationUtils.get_node_safe(self, "CharacterSkin")
-@onready var animation_player: AnimationPlayer = ValidationUtils.get_node_safe(model_root, "AnimationPlayer") if model_root else null
+@onready var animation_player: AnimationPlayer = $CharacterSkin/AnimationPlayer 
 
 var current_speed: float
 var gravity = ProjectSettings.get_setting("physics/3d/default_gravity")

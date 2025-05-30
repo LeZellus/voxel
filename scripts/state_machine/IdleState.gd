@@ -27,6 +27,4 @@ func handle_input(_event):
 	pass
 	
 func enter():
-	if player.animation_player:
-		player.animation_player.play("Idle")
-		player.animation_player.speed_scale = 2.0
+	pass

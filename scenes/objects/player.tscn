@@ -8,7 +8,7 @@
 [ext_resource type="Script" path="res://scripts/state_machine/JumpingState.gd" id="6_6gvi2"]
 [ext_resource type="Script" path="res://scripts/manager/ToolSystem.gd" id="7_yvlqr"]
 [ext_resource type="PackedScene" uid="uid://2oiup8qitv4y" path="res://assets/models/blender_exports/player.glb" id="9_lxqm3"]
-[ext_resource type="PackedScene" uid="uid://cum2gmj3w84xp" path="res://scenes/ui/PanelUI.tscn" id="9_rxjpj"]
+[ext_resource type="PackedScene" path="res://scenes/ui/PanelUI.tscn" id="9_rxjpj"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_4h0dh"]
 
