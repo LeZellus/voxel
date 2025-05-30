@@ -3,8 +3,8 @@ class_name InventoryUI
 extends Control
 
 @onready var background: NinePatchRect = $Background
-@onready var title_label: Label = $BottomContainer/CenterContainer/VboxContainer/TitleLabel
-@onready var inventory_grid: InventoryGridUI = $BottomContainer/CenterContainer/VboxContainer/InventoryGrid
+@onready var title_label: Label = $MarginContainer/CenterContainer/VboxContainer/TitleLabel
+@onready var inventory_grid: InventoryGridUI = $MarginContainer/CenterContainer/VboxContainer/InventoryGrid
 
 var inventory: Inventory
 var controller: InventoryController
