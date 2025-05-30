@@ -9,21 +9,29 @@ extends Control
 
 var inventory: Inventory
 var controller: InventoryController
+var drag_manager: DragDropManager
 var is_setup: bool = false
 
 func _ready():
 	visible = false
+	setup_drag_manager()
 	setup_ui()
 
+func setup_drag_manager():
+	drag_manager = DragDropManager.new()
+	add_child(drag_manager)
+	
+	# Connecter les signaux du drag manager
+	drag_manager.drag_started.connect(_on_drag_started)
+	drag_manager.drag_completed.connect(_on_drag_completed)
+	drag_manager.drag_cancelled.connect(_on_drag_cancelled)
+
 func setup_ui():
-	# Configuration de base
 	set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	
-	# Connecter le bouton fermer
 	if close_button:
 		close_button.pressed.connect(hide)
 	
-	# Gestion de l'échappement
 	set_process_unhandled_input(true)
 
 func _unhandled_input(event):
@@ -41,66 +49,87 @@ func setup_inventory(inv: Inventory, ctrl: InventoryController):
 	
 	# Configurer la grille
 	if inventory_grid:
-		# Calculer colonnes basé sur la taille
 		var cols = int(sqrt(inventory.get_size()))
 		inventory_grid.grid_columns = cols
 		inventory_grid.grid_rows = int(ceil(float(inventory.get_size()) / cols))
 		inventory_grid.setup_grid()
 		
-		# Connecter signaux de la grille
+		# Connecter signaux de la grille INCLUANT le drag
 		inventory_grid.slot_clicked.connect(_on_slot_clicked)
 		inventory_grid.slot_right_clicked.connect(_on_slot_right_clicked)
 		inventory_grid.slot_hovered.connect(_on_slot_hovered)
+		inventory_grid.slot_drag_started.connect(_on_slot_drag_started)
 	
-	# Mettre à jour le titre
 	if title_label:
 		title_label.text = inventory.name
 	
-	# Mise à jour initiale
 	refresh_ui()
 
 func refresh_ui():
 	if not is_setup or not inventory_grid:
 		return
 	
-	# Récupérer toutes les données des slots
 	var slots_data = []
 	for i in inventory.get_size():
 		slots_data.append(controller.get_slot_info(i))
 	
-	# Mettre à jour la grille
 	inventory_grid.update_all_slots(slots_data)
 
 func show_animated():
 	visible = true
-	# Animation d'apparition simple
 	modulate.a = 0.0
 	var tween = create_tween()
 	tween.tween_property(self, "modulate:a", 1.0, 0.3)
 
 func hide_animated():
-	# Animation de disparition
 	var tween = create_tween()
 	tween.tween_property(self, "modulate:a", 0.0, 0.2)
 	tween.tween_callback(hide)
 
-# === GESTION DES INTERACTIONS ===
-func _on_slot_clicked(slot_index: int, slot_ui: InventorySlotUI):
-	if not controller:
+# === GESTION DU DRAG & DROP ===
+func _on_slot_drag_started(slot_ui: InventorySlotUI, mouse_pos: Vector2):
+	"""Démarrer un drag depuis un slot"""
+	if not controller or slot_ui.is_empty():
 		return
 	
-	# Gestion simple : commencer un drag ou compléter un drag
-	var interaction_manager = controller.interaction_manager
+	drag_manager.start_drag(slot_ui, mouse_pos)
+
+func _on_drag_started(slot_index: int):
+	"""Callback quand un drag commence"""
+	print("🎯 Drag started from slot ", slot_index)
 	
-	if interaction_manager.is_interacting():
-		# Compléter l'interaction en cours
-		interaction_manager.complete_drag(slot_index)
-	else:
-		# Commencer une nouvelle interaction
-		interaction_manager.start_drag(slot_index)
+	# Optionnel: feedback visuel global
+	if AudioManager:
+		AudioManager.play_ui_sound("ui_drag_start")
+
+func _on_drag_completed(from_slot: int, to_slot: int):
+	"""Callback quand un drag se termine avec succès"""
+	print("🎯 Drag completed: ", from_slot, " → ", to_slot)
+	
+	if controller:
+		var success = controller.move_item(from_slot, to_slot)
+		
+		if success:
+			if AudioManager:
+				AudioManager.play_ui_sound("ui_drag_success")
+		else:
+			if AudioManager:
+				AudioManager.play_ui_sound("ui_drag_fail")
+
+func _on_drag_cancelled():
+	"""Callback quand un drag est annulé"""
+	print("🎯 Drag cancelled")
+	
+	if AudioManager:
+		AudioManager.play_ui_sound("ui_drag_cancel")
+
+# === GESTION DES CLICS (fallback) ===
+func _on_slot_clicked(slot_index: int, slot_ui: InventorySlotUI):
+	"""Gestion des clics simples (sans drag)"""
+	print("🖱️ Simple click on slot ", slot_index)
 
 func _on_slot_right_clicked(slot_index: int, slot_ui: InventorySlotUI):
-	print("🖱️ Clic droit sur slot ", slot_index)
+	print("🖱️ Right click on slot ", slot_index)
 	# TODO: Menu contextuel
 
 func _on_slot_hovered(slot_index: int, slot_ui: InventorySlotUI):
@@ -110,7 +139,6 @@ func _on_slot_hovered(slot_index: int, slot_ui: InventorySlotUI):
 func _on_inventory_changed():
 	refresh_ui()
 
-# === UTILS ===
 func get_inventory_stats() -> String:
 	if not inventory:
 		return "Aucun inventaire"

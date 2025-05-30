@@ -5,6 +5,7 @@ extends Control
 signal slot_clicked(slot_index: int, slot_ui: InventorySlotUI)
 signal slot_right_clicked(slot_index: int, slot_ui: InventorySlotUI)  
 signal slot_hovered(slot_index: int, slot_ui: InventorySlotUI)
+signal slot_drag_started(slot_ui: InventorySlotUI, mouse_pos: Vector2)
 
 @onready var grid_container: GridContainer = $GridContainer
 @export var slot_scene: PackedScene = preload("res://scenes/ui/InventorySlotUI.tscn")
@@ -25,7 +26,7 @@ func setup_grid():
 	grid_container.columns = grid_columns
 	
 	# Calculer la taille totale de la grille
-	var total_width = (slot_size * grid_columns) + (4 * (grid_columns - 1)) # 4 = separation
+	var total_width = (slot_size * grid_columns) + (4 * (grid_columns - 1))
 	var total_height = (slot_size * grid_rows) + (4 * (grid_rows - 1))
 	
 	custom_minimum_size = Vector2(total_width, total_height)
@@ -45,19 +46,16 @@ func create_slot(index: int):
 	slot_ui.slot_index = index
 	slot_ui.custom_minimum_size = Vector2(slot_size, slot_size)
 	
-	# Connecter les signaux
+	# Connecter TOUS les signaux y compris le drag
 	slot_ui.slot_clicked.connect(_on_slot_clicked)
 	slot_ui.slot_right_clicked.connect(_on_slot_right_clicked)
 	slot_ui.slot_hovered.connect(_on_slot_hovered)
+	slot_ui.drag_started.connect(_on_slot_drag_started)  # NOUVEAU
 	
 	grid_container.add_child(slot_ui)
 	slots.append(slot_ui)
-	
-	print("✅ Slot ", index, " créé")
 
 func update_all_slots(slots_data: Array):
-	print("🔄 Mise à jour de ", slots_data.size(), " slots")
-	
 	for i in slots.size():
 		var slot_ui = slots[i]
 		
@@ -84,17 +82,6 @@ func set_slot_selected(slot_index: int, selected: bool):
 	if slot_ui:
 		slot_ui.set_selected(selected)
 
-func print_grid_state():
-	print("📊 État de la grille:")
-	print("   - Colonnes:", grid_columns)
-	print("   - Slots créés:", slots.size())
-	print("   - Taille:", size)
-	print("   - Position:", position)
-	
-	for i in min(3, slots.size()):
-		var slot = slots[i]
-		print("   - Slot", i, ":", slot.get_item_name() if not slot.is_empty() else "vide")
-
 # === GESTION DES SIGNAUX ===
 func _on_slot_clicked(slot_ui: InventorySlotUI):
 	slot_clicked.emit(slot_ui.get_slot_index(), slot_ui)
@@ -104,3 +91,7 @@ func _on_slot_right_clicked(slot_ui: InventorySlotUI):
 
 func _on_slot_hovered(slot_ui: InventorySlotUI):
 	slot_hovered.emit(slot_ui.get_slot_index(), slot_ui)
+
+func _on_slot_drag_started(slot_ui: InventorySlotUI, mouse_pos: Vector2):
+	"""Propager le signal de drag vers l'UI parent"""
+	slot_drag_started.emit(slot_ui, mouse_pos)
