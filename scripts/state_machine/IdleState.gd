@@ -1,4 +1,5 @@
-extends State
+# IdleState.gd - VERSION REFACTORISÉE
+extends State  # Garde State car idle est différent des mouvements
 class_name IdleState
 
 func physics_update(delta):
@@ -8,23 +9,27 @@ func physics_update(delta):
 	player.velocity.x = 0 
 	player.velocity.z = 0 
 	
-	# Vérifier transitions
-	var input_dir = Input.get_vector("move_left", "move_right", "move_forward", "move_back")
-	
-	if input_dir.length() > 0:
+	# Transitions vers mouvement
+	if InputHelper.is_moving():
 		state_machine.change_state("walking")
+		return
 	
-	if Input.is_action_just_pressed("jump") and player.is_on_floor():
+	if InputHelper.should_jump() and player.is_on_floor():
+		SimpleAudioHelper.play_action_sound("jump")
 		state_machine.change_state("jumping")
+		return
 	
-	# Arrêter le mouvement (pas de rotation en idle)
+	# Arrêter le mouvement
 	player.apply_movement(Vector3.ZERO, 0, delta)
 	player.move_and_slide()
 
 func handle_input(_event):
 	# Les inputs caméra sont gérés par PlayerController
-	# Ici on gère seulement les inputs spécifiques à cet état
 	pass
 	
 func enter():
-	pass
+	# Arrêter tous les effets de mouvement
+	if player.get_node_or_null("DustEffects/DustParticles"):
+		player.get_node("DustEffects/DustParticles").emitting = false
+	
+	AudioManager.stop_footsteps()

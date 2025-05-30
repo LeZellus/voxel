@@ -1,11 +1,12 @@
+# scripts/player/PanelUI.gd
 extends CanvasLayer
 
 var inventory: PlayerInventory
 
-# Called when the node enters the scene tree for the first time.
 func _ready():
 	print("🔧 PanelUI._ready() démarré")
 	setup_inventory()
+	setup_input()  # Nouveau
 	
 	# Debug
 	await get_tree().process_frame
@@ -23,6 +24,24 @@ func _ready():
 func setup_inventory():
 	inventory = PlayerInventory.new()
 	add_child(inventory)
+
+func setup_input():
+	"""Configure l'action d'input si elle n'existe pas"""
+	if not InputMap.has_action("toggle_inventory"):
+		InputMap.add_action("toggle_inventory")
+		var key_event = InputEventKey.new()
+		key_event.keycode = KEY_TAB
+		InputMap.action_add_event("toggle_inventory", key_event)
+		print("✅ Action toggle_inventory créée (Tab)")
+
+# NOUVEAU : Gestion de l'input
+func _input(event):
+	if not inventory:
+		return
+		
+	if event.is_action_pressed("toggle_inventory"):
+		inventory.toggle_ui()
+		print("🔄 Toggle inventaire depuis PanelUI")
 
 # === API INVENTAIRE POUR LES AUTRES SCRIPTS ===
 func add_item_to_inventory(item: Item, quantity: int = 1) -> int:
