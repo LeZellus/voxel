@@ -79,42 +79,63 @@ func setup_ui(parent_node: Node = null) -> bool:
 	return true
 
 func show_ui():
-	"""Affiche l'UI avec animation si disponible"""
-	print("🔍 show_ui appelé pour ", container_id)
-	
+	"""Affiche l'UI avec animation de glissement"""
 	if not ui:
 		print("❌ Pas d'UI à afficher pour ", container_id)
 		return
 	
+	if is_open:
+		print("⚠️ UI déjà ouverte pour ", container_id)
+		return
+	
+	print("🔍 Ouverture animée de l'UI pour ", container_id)
+	print("🔍 UI visible avant: ", ui.visible)
+	print("🔍 UI position avant: ", ui.position if ui.has_method("get_position") else "N/A")
+	
 	is_open = true
 	
-	# FORCER l'affichage direct sans animation pour debug
-	ui.visible = true
-	ui.modulate = Color(1, 1, 1, 1)  # Forcer alpha à 1
-	
-	print("🔍 ui visible forcé ? ", ui.visible)
-	print("🔍 ui modulate forcé : ", ui.modulate)
+	# Utiliser l'animation native de l'UI si disponible
+	if ui.has_method("show_animated"):
+		print("🎬 Utilisation de show_animated()")
+		ui.show_animated()
+	else:
+		print("🎬 Fallback: affichage simple")
+		ui.visible = true
+		ui.modulate = Color.WHITE
 	
 	_play_ui_sound("ui_pop_on_1")
 	_on_container_opened()
 	container_opened.emit()
 
 func hide_ui():
-	"""Masque l'UI avec animation si disponible"""
+	"""Masque l'UI avec animation de glissement"""
 	if not ui:
 		return
 	
+	if not is_open:
+		print("⚠️ UI déjà fermée pour ", container_id)
+		return
+	
+	print("🔍 Fermeture animée de l'UI pour ", container_id)
+	
 	is_open = false
 	
-	# FORCER le masquage direct
-	ui.visible = false
+	# Utiliser l'animation native de l'UI si disponible
+	if ui.has_method("hide_animated"):
+		print("🎬 Utilisation de hide_animated()")
+		ui.hide_animated()
+	else:
+		print("🎬 Fallback: masquage simple")
+		ui.visible = false
 	
 	_play_ui_sound("ui_pop_off_1")
 	_on_container_closed()
 	container_closed.emit()
 
 func toggle_ui():
-	"""Bascule l'affichage de l'UI"""
+	"""Bascule l'affichage de l'UI avec animation"""
+	print("🔄 Toggle UI pour ", container_id, " (actuellement ouvert: ", is_open, ")")
+	
 	if is_open:
 		hide_ui()
 	else:
