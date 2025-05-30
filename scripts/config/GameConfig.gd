@@ -22,14 +22,6 @@ const CAMERA = {
 	"zoom_step": 1.0
 }
 
-# Configuration de l'inventaire
-const INVENTORY = {
-	"size": 36,
-	"grid_columns": 9,
-	"slot_size": Vector2(64, 64),
-	"estimated_height": 400
-}
-
 # Configuration UI
 const UI = {
 	"animation_duration": 0.4,
@@ -79,7 +71,6 @@ const GROUPS = {
 # Validation des configs
 static func validate_config():
 	assert(PLAYER.walk_speed > 0, "Vitesse de marche invalide")
-	assert(INVENTORY.size > 0, "Taille d'inventaire invalide")
 	assert(CAMERA.spring_length > 0, "Longueur de spring arm invalide")
 	
 	print("Configuration validée avec succès")

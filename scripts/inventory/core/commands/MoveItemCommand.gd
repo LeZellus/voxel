@@ -17,10 +17,10 @@ func can_execute() -> bool:
 	if not inventory:
 		return false
 	
-	if from_slot_index < 0 or from_slot_index >= inventory.get_size():
+	if from_slot_index < 0 or from_slot_index >= Constants.INVENTORY_SIZE:
 		return false
 	
-	if to_slot_index < 0 or to_slot_index >= inventory.get_size():
+	if to_slot_index < 0 or to_slot_index >= Constants.INVENTORY_SIZE:
 		return false
 	
 	if from_slot_index == to_slot_index:

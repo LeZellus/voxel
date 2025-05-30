@@ -11,7 +11,7 @@ var slots: Array[InventorySlot] = []
 var size: int
 var name: String = "Inventory"
 
-func _init(inventory_size: int = 20, inventory_name: String = "Main Inventory"):
+func _init(inventory_size: int, inventory_name: String = "Main Inventory"):
 	size = inventory_size
 	name = inventory_name
 	_initialize_slots()
@@ -24,8 +24,6 @@ func _initialize_slots():
 		slots.append(slot)
 
 # === ACCESSEURS DE BASE ===
-func get_size() -> int:
-	return size
 
 func get_slot(index: int) -> InventorySlot:
 	if index < 0 or index >= size:

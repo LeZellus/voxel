@@ -2,8 +2,9 @@
 class_name Constants
 
 # Inventaire
-const INVENTORY_SIZE = 36
+const INVENTORY_SIZE = 45
 const GRID_COLUMNS = 9
+const GRID_ROWS = 5
 const SLOT_SIZE = 64
 
 # Audio

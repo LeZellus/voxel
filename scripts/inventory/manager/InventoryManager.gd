@@ -12,6 +12,8 @@ var controller: InventoryController
 var inventory_ui: Control
 var is_open: bool = false
 
+var size = Constants.INVENTORY_SIZE
+
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	setup_inventory()
@@ -19,13 +21,7 @@ func _ready():
 	print("✅ InventoryManager initialisé")
 
 func setup_inventory():
-	# Créer l'inventaire principal avec vérification de Constants
-	var size = 36  # Fallback si Constants n'existe pas
-	if GameConfig and GameConfig.get_player_config():
-		# Utiliser GameConfig si disponible
-		pass
-	
-	inventory = Inventory.new(size, "Player Inventory")
+	inventory = Inventory.new(size, "Inventory")
 	controller = InventoryController.new(inventory)
 	
 	# Connecter les signaux avec vérification

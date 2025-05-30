@@ -9,8 +9,10 @@ signal slot_drag_started(slot_ui: InventorySlotUI, mouse_pos: Vector2)
 
 @onready var grid_container: GridContainer = $GridContainer
 @export var slot_scene: PackedScene = preload("res://scenes/ui/InventorySlotUI.tscn")
-@export var grid_columns: int = 3
-@export var grid_rows: int = 3
+
+var grid_columns: int = Constants.GRID_COLUMNS
+var grid_rows: int = Constants.GRID_ROWS
+
 @export var slot_size: int = 64
 
 var slots: Array[InventorySlotUI] = []
@@ -25,18 +27,7 @@ func setup_grid():
 	# Nettoyer les slots existants
 	clear_existing_slots()
 	
-	grid_container.columns = grid_columns
-	
-	# Calculer la taille totale de la grille
-	var total_width = (slot_size * grid_columns) + (4 * (grid_columns - 1))
-	var total_height = (slot_size * grid_rows) + (4 * (grid_rows - 1))
-	
-	custom_minimum_size = Vector2(total_width, total_height)
-	
-	# Créer les slots
-	var total_slots = grid_columns * grid_rows
-	
-	for i in total_slots:
+	for i in Constants.INVENTORY_SIZE:
 		create_slot(i)
 
 func clear_existing_slots():
@@ -57,7 +48,6 @@ func create_slot(index: int):
 	
 	var slot_ui = slot_scene.instantiate()
 	slot_ui.set_slot_index(index)  # Utiliser la méthode setter
-	slot_ui.custom_minimum_size = Vector2(slot_size, slot_size)
 	
 	# Connecter TOUS les signaux avec vérification
 	if slot_ui.has_signal("slot_clicked"):

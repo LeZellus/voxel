@@ -5,7 +5,6 @@ extends Control
 @onready var background: NinePatchRect = $Background
 @onready var title_label: Label = $VboxContainer/TitleLabel
 @onready var inventory_grid: InventoryGridUI = $VboxContainer/InventoryGrid
-@onready var close_button: Button = $VboxContainer/HBoxContainer/CloseButton
 
 var inventory: Inventory
 var controller: InventoryController
@@ -28,9 +27,6 @@ func setup_drag_manager():
 
 func setup_ui():
 	set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	
-	if close_button:
-		close_button.pressed.connect(hide)
 	
 	set_process_unhandled_input(true)
 
@@ -61,10 +57,8 @@ func setup_inventory(inv: Inventory, ctrl: InventoryController):
 	refresh_ui()
 
 func setup_inventory_grid():
-	var grid_size = inventory.get_size()
-	var cols = int(sqrt(grid_size))
-	inventory_grid.grid_columns = cols
-	inventory_grid.grid_rows = int(ceil(float(grid_size) / cols))
+	inventory_grid.grid_columns = Constants.GRID_COLUMNS
+	inventory_grid.grid_rows = Constants.GRID_ROWS
 	
 	# Reconfigurer la grille
 	inventory_grid.setup_grid()
@@ -84,7 +78,7 @@ func refresh_ui():
 		return
 	
 	var slots_data = []
-	for i in inventory.get_size():
+	for i in Constants.INVENTORY_SIZE:
 		slots_data.append(controller.get_slot_info(i))
 	
 	inventory_grid.update_all_slots(slots_data)
