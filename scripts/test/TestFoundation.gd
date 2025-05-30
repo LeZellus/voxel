@@ -1,7 +1,7 @@
-# scripts/test/TestFoundation.gd - VERSION CORRIGÉE
+# scripts/test/TestFoundation.gd - VERSION AVEC TOGGLE MANUEL
 extends CanvasLayer
 
-var inventory_manager: InventoryManager
+var inventory_manager: PlayerInventory
 
 func _ready():
 	print("🧪 === TEST INVENTORY MANAGER CORRIGÉ ===")
@@ -12,7 +12,7 @@ func test_inventory_manager():
 	print("\n📦 === TEST BACKEND AVEC MANAGER ===")
 	
 	# Créer le manager
-	inventory_manager = InventoryManager.new()
+	inventory_manager = PlayerInventory.new()
 	add_child(inventory_manager)
 	
 	# Attendre l'initialisation complète
@@ -23,6 +23,10 @@ func test_inventory_manager():
 	
 	# Créer des items de test APRÈS l'initialisation
 	await create_and_test_items()
+	
+	# NOUVEAU : Afficher automatiquement l'inventaire pour les tests
+	print("\n🖥️ Affichage automatique de l'inventaire...")
+	inventory_manager.show_ui()
 
 func create_and_test_items():
 	# Créer des items de test avec icônes
@@ -35,7 +39,7 @@ func create_and_test_items():
 	# Test d'ajout avec vérification
 	print("\n➕ Test ajout d'items:")
 	
-	if inventory_manager and inventory_manager.get_controller():
+	if inventory_manager and inventory_manager.controller:
 		var surplus1 = inventory_manager.add_item(apple, 7)
 		print("   Pommes ajoutées (surplus: %d)" % surplus1)
 		
@@ -58,7 +62,7 @@ func create_and_test_items():
 
 func test_commands():
 	print("\n🔄 Test des commandes:")
-	var controller = inventory_manager.get_controller()
+	var controller = inventory_manager.controller
 	
 	print("Je suis le controller : ",controller)
 	
@@ -102,19 +106,21 @@ func _input(event):
 	if not inventory_manager:
 		return
 	
-	# Toggle inventaire avec Espace
-	if event.is_action_pressed("ui_accept"):
+	# Toggle inventaire avec Espace OU Tab
+	if event.is_action_pressed("ui_accept") or event.is_action_pressed("toggle_inventory"):
 		print("🔄 Toggle inventaire manuel")
-		inventory_manager.toggle_inventory()
+		inventory_manager.toggle_ui()
 	
-	# Ajouter item random avec Tab
-	if event.is_action_pressed("ui_select") and inventory_manager.is_open:
+	# Debug: Forcer l'affichage avec Enter
+	if event.is_action_pressed("ui_select"):
+		print("🔄 Forcer l'affichage de l'inventaire")
+		inventory_manager.show_ui()
 		add_random_test_item()
 	
 	# Fermer test avec Escape
 	if event.is_action_pressed("ui_cancel"):
 		if inventory_manager.is_open:
-			inventory_manager.close_inventory()
+			inventory_manager.hide_ui()
 		else:
 			print("🔒 Test fermé")
 			get_tree().quit()
