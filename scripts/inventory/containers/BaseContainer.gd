@@ -12,7 +12,8 @@ var container_system: ContainerSystem
 
 func _init(id: String, size: int, name: String = ""):
 	container_id = id
-	inventory = Inventory.new(size, name.is_empty() and id or name)
+	# inventory = Inventory.new(size, name.is_empty() and id or name)
+	inventory = Inventory.new(size, "Inventory")
 	controller = InventoryController.new(inventory)
 
 func show_ui():

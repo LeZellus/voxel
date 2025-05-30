@@ -1,4 +1,4 @@
-# scripts/inventory/ui/DragDropManager.gd
+# scripts/inventory/ui/DragDropManager.gd - VERSION SIMPLIFIÉE ET CORRIGÉE
 class_name DragDropManager
 extends Control
 
@@ -11,12 +11,15 @@ var is_dragging: bool = false
 var drag_source_slot: int = -1
 var drag_offset: Vector2
 var original_slot_ui: InventorySlotUI
-
-@onready var drag_layer = CanvasLayer.new()
+var inventory_grid: InventoryGridUI  # Référence directe à la grille
 
 func _ready():
-	add_child(drag_layer)
-	drag_layer.layer = 100  # Au-dessus de tout
+	# Pas besoin de CanvasLayer complexe
+	set_process_input(true)
+
+func set_inventory_grid(grid: InventoryGridUI):
+	"""Définir la grille d'inventaire pour le drag & drop"""
+	inventory_grid = grid
 
 func start_drag(slot_ui: InventorySlotUI, mouse_pos: Vector2) -> bool:
 	if is_dragging or slot_ui.is_empty():
@@ -33,7 +36,7 @@ func start_drag(slot_ui: InventorySlotUI, mouse_pos: Vector2) -> bool:
 	drag_offset = slot_ui.size * 0.5
 	
 	# Masquer temporairement l'item original
-	slot_ui.modulate.a = 0.5
+	slot_ui.set_drag_preview_mode(true)
 	
 	drag_started.emit(drag_source_slot)
 	return true
@@ -56,11 +59,11 @@ func update_drag_position(mouse_pos: Vector2):
 		drag_preview.global_position = mouse_pos - drag_offset
 
 func complete_drag_at_position(mouse_pos: Vector2):
-	var target_slot = find_slot_at_position(mouse_pos)
+	var target_slot_ui = find_slot_at_position(mouse_pos)
 	
-	if target_slot != null and target_slot.get_slot_index() != drag_source_slot:
+	if target_slot_ui and target_slot_ui.get_slot_index() != drag_source_slot:
 		# Drop valide
-		drag_completed.emit(drag_source_slot, target_slot.get_slot_index())
+		drag_completed.emit(drag_source_slot, target_slot_ui.get_slot_index())
 	else:
 		# Drop invalide
 		cancel_drag()
@@ -77,7 +80,7 @@ func end_drag():
 		drag_preview = null
 	
 	if original_slot_ui:
-		original_slot_ui.modulate.a = 1.0
+		original_slot_ui.set_drag_preview_mode(false)
 		original_slot_ui = null
 	
 	is_dragging = false
@@ -86,42 +89,43 @@ func end_drag():
 func create_drag_preview(slot_ui: InventorySlotUI):
 	drag_preview = Control.new()
 	drag_preview.size = slot_ui.size
+	drag_preview.z_index = 1000  # Au-dessus de tout
 	
-	# Copier l'apparence du slot
+	# Background simple
 	var preview_bg = ColorRect.new()
 	preview_bg.color = Color(0.2, 0.2, 0.2, 0.8)
 	preview_bg.size = slot_ui.size
 	drag_preview.add_child(preview_bg)
 	
-	if slot_ui.item_icon.texture:
+	# Icône de l'item
+	var slot_data = slot_ui.get_slot_data()
+	var icon_texture = slot_data.get("icon")
+	if icon_texture:
 		var preview_icon = TextureRect.new()
-		preview_icon.texture = slot_ui.item_icon.texture
+		preview_icon.texture = icon_texture
 		preview_icon.size = slot_ui.size * 0.8
 		preview_icon.position = slot_ui.size * 0.1
 		preview_icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 		drag_preview.add_child(preview_icon)
 	
-	# Ajouter un effet de transparence
+	# Effet de transparence
 	drag_preview.modulate.a = 0.8
 	
-	drag_layer.add_child(drag_preview)
+	# Ajouter au parent direct
+	add_child(drag_preview)
 
 func find_slot_at_position(pos: Vector2) -> InventorySlotUI:
-	# Chercher récursivement tous les InventorySlotUI
-	return _find_slot_recursive(get_tree().current_scene, pos)
-
-func _find_slot_recursive(node: Node, pos: Vector2) -> InventorySlotUI:
-	# Vérifier si c'est un InventorySlotUI
-	if node is InventorySlotUI:
-		var slot_ui = node as InventorySlotUI
+	"""Version optimisée - utilise la référence directe à la grille"""
+	if not inventory_grid:
+		return null
+	
+	# Parcourir seulement les slots de la grille connue
+	for slot_ui in inventory_grid.slots:
+		if not slot_ui:
+			continue
+			
 		var rect = Rect2(slot_ui.global_position, slot_ui.size)
 		if rect.has_point(pos):
 			return slot_ui
-	
-	# Chercher dans les enfants
-	for child in node.get_children():
-		var result = _find_slot_recursive(child, pos)
-		if result:
-			return result
 	
 	return null

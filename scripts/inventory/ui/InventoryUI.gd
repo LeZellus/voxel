@@ -1,4 +1,4 @@
-# scripts/inventory/ui/InventoryUI.gd
+# scripts/inventory/ui/InventoryUI.gd - VERSION CORRIGÉE
 class_name InventoryUI
 extends Control
 
@@ -45,28 +45,42 @@ func setup_inventory(inv: Inventory, ctrl: InventoryController):
 	is_setup = true
 	
 	# Connecter les signaux
-	inventory.inventory_changed.connect(_on_inventory_changed)
+	if inventory and inventory.has_signal("inventory_changed"):
+		inventory.inventory_changed.connect(_on_inventory_changed)
 	
 	# Configurer la grille
 	if inventory_grid:
-		var cols = int(sqrt(inventory.get_size()))
-		inventory_grid.grid_columns = cols
-		inventory_grid.grid_rows = int(ceil(float(inventory.get_size()) / cols))
-		inventory_grid.setup_grid()
+		setup_inventory_grid()
 		
-		# Connecter signaux de la grille INCLUANT le drag
-		inventory_grid.slot_clicked.connect(_on_slot_clicked)
-		inventory_grid.slot_right_clicked.connect(_on_slot_right_clicked)
-		inventory_grid.slot_hovered.connect(_on_slot_hovered)
-		inventory_grid.slot_drag_started.connect(_on_slot_drag_started)
+		# IMPORTANT : Donner la référence de la grille au drag manager
+		drag_manager.set_inventory_grid(inventory_grid)
 	
 	if title_label:
-		title_label.text = inventory.name
+		title_label.text = inventory.name if inventory else "Inventaire"
 	
 	refresh_ui()
 
+func setup_inventory_grid():
+	var grid_size = inventory.get_size()
+	var cols = int(sqrt(grid_size))
+	inventory_grid.grid_columns = cols
+	inventory_grid.grid_rows = int(ceil(float(grid_size) / cols))
+	
+	# Reconfigurer la grille
+	inventory_grid.setup_grid()
+	
+	# Connecter les signaux - VÉRIFIER QU'ILS EXISTENT
+	if inventory_grid.has_signal("slot_clicked"):
+		inventory_grid.slot_clicked.connect(_on_slot_clicked)
+	if inventory_grid.has_signal("slot_right_clicked"):
+		inventory_grid.slot_right_clicked.connect(_on_slot_right_clicked)
+	if inventory_grid.has_signal("slot_hovered"):
+		inventory_grid.slot_hovered.connect(_on_slot_hovered)
+	if inventory_grid.has_signal("slot_drag_started"):
+		inventory_grid.slot_drag_started.connect(_on_slot_drag_started)
+
 func refresh_ui():
-	if not is_setup or not inventory_grid:
+	if not is_setup or not inventory_grid or not controller:
 		return
 	
 	var slots_data = []
@@ -97,10 +111,7 @@ func _on_slot_drag_started(slot_ui: InventorySlotUI, mouse_pos: Vector2):
 func _on_drag_started(slot_index: int):
 	"""Callback quand un drag commence"""
 	print("🎯 Drag started from slot ", slot_index)
-	
-	# Optionnel: feedback visuel global
-	if AudioManager:
-		AudioManager.play_ui_sound("ui_drag_start")
+	_play_ui_sound("ui_drag_start")
 
 func _on_drag_completed(from_slot: int, to_slot: int):
 	"""Callback quand un drag se termine avec succès"""
@@ -110,18 +121,14 @@ func _on_drag_completed(from_slot: int, to_slot: int):
 		var success = controller.move_item(from_slot, to_slot)
 		
 		if success:
-			if AudioManager:
-				AudioManager.play_ui_sound("ui_drag_success")
+			_play_ui_sound("ui_drag_success")
 		else:
-			if AudioManager:
-				AudioManager.play_ui_sound("ui_drag_fail")
+			_play_ui_sound("ui_drag_fail")
 
 func _on_drag_cancelled():
 	"""Callback quand un drag est annulé"""
 	print("🎯 Drag cancelled")
-	
-	if AudioManager:
-		AudioManager.play_ui_sound("ui_drag_cancel")
+	_play_ui_sound("ui_drag_cancel")
 
 # === GESTION DES CLICS (fallback) ===
 func _on_slot_clicked(slot_index: int, slot_ui: InventorySlotUI):
@@ -138,6 +145,13 @@ func _on_slot_hovered(slot_index: int, slot_ui: InventorySlotUI):
 
 func _on_inventory_changed():
 	refresh_ui()
+
+# === UTILITAIRES ===
+func _play_ui_sound(sound_name: String):
+	"""Version sécurisée pour jouer des sons"""
+	var audio_manager = get_node_or_null("/root/AudioManager")
+	if audio_manager and audio_manager.has_method("play_ui_sound"):
+		audio_manager.play_ui_sound(sound_name)
 
 func get_inventory_stats() -> String:
 	if not inventory:
