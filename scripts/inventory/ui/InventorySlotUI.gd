@@ -38,14 +38,14 @@ func _on_gui_input(event: InputEvent):
 		
 		if mouse_event.button_index == MOUSE_BUTTON_LEFT:
 			if mouse_event.pressed:
+				print("🖱️ SLOT %d: Mouse down détecté" % slot_index)  # DEBUG
 				_start_potential_drag(mouse_event.position)
 			else:
+				print("🖱️ SLOT %d: Mouse up détecté" % slot_index)  # DEBUG
 				_end_potential_drag(mouse_event.position)
-		
-		elif mouse_event.button_index == MOUSE_BUTTON_RIGHT and mouse_event.pressed:
-			slot_right_clicked.emit(slot_index, self)
 	
 	elif event is InputEventMouseMotion and is_mouse_down and not drag_started_flag:
+		print("🖱️ SLOT %d: Mouse motion pendant drag potential" % slot_index)  # DEBUG
 		_check_drag_threshold(event.position)
 
 func _start_potential_drag(pos: Vector2):
@@ -68,7 +68,10 @@ func _check_drag_threshold(current_pos: Vector2):
 		return
 		
 	var distance = mouse_down_pos.distance_to(current_pos)
+	print("🖱️ SLOT %d: Distance drag = %.2f (seuil: %.2f)" % [slot_index, distance, drag_threshold])  # DEBUG
+	
 	if distance > drag_threshold:
+		print("🚀 SLOT %d: DRAG STARTED!" % slot_index)  # DEBUG
 		drag_started_flag = true
 		is_mouse_down = false
 		drag_started.emit(self, get_global_mouse_position())

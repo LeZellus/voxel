@@ -241,14 +241,36 @@ func add_test_items():
 	print("🧪 Items de test ajoutés")
 
 func _connect_cross_container_drag():
-	"""Connecte le drag & drop entre inventaire et hotbar"""
+	print("🔗 PanelUI: Connexion cross-container drag")
 	await get_tree().process_frame
 	
-	if inventory and inventory.ui and hotbar and hotbar.ui:
-		var main_drag_manager = inventory.ui.drag_manager
-		if main_drag_manager:
-			# Ajouter la hotbar au système de drag
-			main_drag_manager.set_inventory_grid(hotbar.ui)
-			print("✅ Cross-container drag configuré")
-	else:
-		print("❌ Impossible de configurer le cross-container drag")
+	if not inventory:
+		print("❌ PanelUI: Inventory null!")
+		return
+	
+	if not inventory.ui:
+		print("❌ PanelUI: Inventory UI null!")
+		return
+		
+	if not hotbar:
+		print("❌ PanelUI: Hotbar null!")
+		return
+		
+	if not hotbar.ui:
+		print("❌ PanelUI: Hotbar UI null!")
+		return
+	
+	var main_drag_manager = inventory.ui.drag_manager
+	if not main_drag_manager:
+		print("❌ PanelUI: Drag manager null!")
+		return
+	
+	print("🔗 Ajout de la hotbar au drag manager...")
+	main_drag_manager.set_inventory_grid(hotbar.ui)
+	
+	print("✅ Cross-container drag configuré")
+	
+	# DEBUG: Vérifier l'état final
+	print("📊 État final:")
+	print("   - Inventory grids: %d" % main_drag_manager.inventory_grids.size())
+	print("   - Hotbar slots: %d" % (hotbar.ui.slots.size() if hotbar.ui.get("slots") else 0))

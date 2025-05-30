@@ -103,18 +103,23 @@ func create_slot(index: int):
 # === SETUP HOTBAR (équivalent de setup_inventory) ===
 
 func setup_hotbar(inv: Inventory, ctrl: InventoryController, container: HotbarContainer):
-	"""Équivalent de InventoryUI.setup_inventory()"""
+	"""Équivalent de InventoryUI.setup_inventory() - VERSION AVEC DRAG"""
+	print("🔧 HotbarUI.setup_hotbar() démarré")
+	
 	inventory = inv
 	controller = ctrl
 	hotbar_container = container
 	
-	_setup_drag_manager()
+	# IMPORTANT: Setup du drag manager AVANT les signaux
+	await _setup_drag_manager()
 	
 	if inventory and inventory.has_signal("inventory_changed"):
 		inventory.inventory_changed.connect(_on_inventory_changed)
 	
 	refresh_ui()
 	set_selected_slot(0)
+	
+	print("✅ HotbarUI setup terminé")
 
 # === MÉTHODES RÉUTILISÉES (copies exactes) ===
 
@@ -170,19 +175,152 @@ func _on_slot_hovered(slot_index: int, slot_ui: InventorySlotUI):
 	slot_hovered.emit(slot_index, slot_ui)
 
 func _on_slot_drag_started(slot_ui: InventorySlotUI, mouse_pos: Vector2):
-	slot_drag_started.emit(slot_ui, mouse_pos)
+	print("🎯 Hotbar: Slot drag started - slot %d" % slot_ui.get_slot_index())
+	
+	if not drag_manager:
+		print("❌ Pas de drag manager - tentative de récupération...")
+		_setup_drag_manager()
+		await get_tree().process_frame
+	
+	if drag_manager and not slot_ui.is_empty():
+		print("🎯 Démarrage du drag via drag manager")
+		drag_manager.start_drag(slot_ui, mouse_pos)
+	else:
+		print("❌ Impossible de démarrer le drag")
+		if not drag_manager:
+			print("   - Drag manager manquant")
+		if slot_ui.is_empty():
+			print("   - Slot vide")
 
 func _on_inventory_changed():
 	refresh_ui()
 
 func _setup_drag_manager():
-	"""Configure le drag manager pour la hotbar"""
-	# Récupérer le drag manager de l'inventaire principal
-	var panel_ui = get_node("../../../../")  # Remonter jusqu'à PanelUI
+	"""Configure le drag manager pour la hotbar - VERSION CORRIGÉE"""
+	print("🔧 Setup drag manager hotbar démarré")
+	
+	# Attendre que tout soit initialisé
+	await get_tree().process_frame
+	
+	# Méthode 1: Chercher le drag manager via PanelUI
+	var panel_ui = _find_panel_ui()
 	if panel_ui and panel_ui.has_method("get_inventory"):
 		var main_inventory = panel_ui.get_inventory()
-		if main_inventory and main_inventory.ui:
+		if main_inventory and main_inventory.ui and main_inventory.ui.get("drag_manager"):
 			drag_manager = main_inventory.ui.drag_manager
-			if drag_manager:
-				drag_manager.set_inventory_grid(self)
-				print("✅ Drag manager partagé configuré pour la hotbar")
+			print("✅ Drag manager récupéré via PanelUI")
+		else:
+			print("❌ Impossible de récupérer le drag manager via PanelUI")
+	
+	# Méthode 2: Chercher dans l'arbre de scène
+	if not drag_manager:
+		print("🔍 Recherche du drag manager dans l'arbre de scène...")
+		drag_manager = _find_drag_manager_in_scene()
+	
+	# Méthode 3: En dernier recours, utiliser le drag manager du premier InventoryGridUI trouvé
+	if not drag_manager:
+		print("🔍 Recherche d'un InventoryGridUI existant...")
+		var inventory_grid = _find_inventory_grid()
+		if inventory_grid and inventory_grid.get_parent() and inventory_grid.get_parent().get("drag_manager"):
+			drag_manager = inventory_grid.get_parent().drag_manager
+			print("✅ Drag manager trouvé via InventoryGridUI")
+	
+	# Vérifier le résultat
+	if drag_manager:
+		# IMPORTANT: Ajouter cette hotbar aux grilles du drag manager
+		drag_manager.set_inventory_grid(self)
+		print("✅ Hotbar ajoutée au drag manager existant")
+		
+		# Connecter les signaux de drag
+		_connect_drag_signals()
+	else:
+		print("❌ Aucun drag manager trouvé pour la hotbar")
+		
+func _find_panel_ui() -> Node:
+	"""Trouve PanelUI dans l'arbre de scène"""
+	var current = self
+	while current:
+		if current.name == "PanelUI" or "PanelUI" in current.name:
+			return current
+		current = current.get_parent()
+		# Sécurité pour éviter de remonter trop loin
+		if current is CanvasLayer or current.name == "MainScene":
+			break
+			
+	# Chercher dans toute la scène si pas trouvé
+	var root = get_tree().current_scene
+	return _find_node_recursive(root, "PanelUI")
+	
+func _find_node_recursive(node: Node, name_pattern: String) -> Node:
+	"""Recherche récursive d'un node par nom"""
+	if node.name == name_pattern or name_pattern in node.name:
+		return node
+	
+	for child in node.get_children():
+		var result = _find_node_recursive(child, name_pattern)
+		if result:
+			return result
+	
+	return null
+
+func _find_drag_manager_in_scene() -> DragDropManager:
+	"""Cherche un DragDropManager dans toute la scène"""
+	var root = get_tree().current_scene
+	return _find_drag_manager_recursive(root)
+
+func _find_drag_manager_recursive(node: Node) -> DragDropManager:
+	"""Recherche récursive d'un DragDropManager"""
+	if node is DragDropManager:
+		return node
+	
+	for child in node.get_children():
+		var result = _find_drag_manager_recursive(child)
+		if result:
+			return result
+	
+	return null
+
+func _find_inventory_grid() -> Control:
+	"""Trouve un InventoryGridUI dans la scène"""
+	var root = get_tree().current_scene
+	return _find_inventory_grid_recursive(root)
+
+func _find_inventory_grid_recursive(node: Node) -> Control:
+	"""Recherche récursive d'un InventoryGridUI"""
+	if node.get_script() and "InventoryGridUI" in str(node.get_script().resource_path):
+		return node
+	
+	for child in node.get_children():
+		var result = _find_inventory_grid_recursive(child)
+		if result:
+			return result
+	
+	return null
+
+func _connect_drag_signals():
+	"""Connecte les signaux de drag si pas déjà fait"""
+	if not drag_manager:
+		return
+	
+	# Vérifier si les signaux sont déjà connectés pour éviter les doublons
+	if not drag_manager.drag_started.is_connected(_on_drag_started):
+		drag_manager.drag_started.connect(_on_drag_started)
+		print("🔗 Signal drag_started connecté")
+	
+	if not drag_manager.drag_completed.is_connected(_on_drag_completed):
+		drag_manager.drag_completed.connect(_on_drag_completed)
+		print("🔗 Signal drag_completed connecté")
+	
+	if not drag_manager.drag_cancelled.is_connected(_on_drag_cancelled):
+		drag_manager.drag_cancelled.connect(_on_drag_cancelled)
+		print("🔗 Signal drag_cancelled connecté")
+
+# Ajouter ces méthodes de gestion des signaux :
+func _on_drag_started(slot_index: int):
+	print("🎯 Hotbar: Drag démarré depuis slot %d" % slot_index)
+
+func _on_drag_completed(from_slot: int, to_slot: int):
+	print("🎯 Hotbar: Drag terminé %d -> %d" % [from_slot, to_slot])
+
+func _on_drag_cancelled():
+	print("🎯 Hotbar: Drag annulé")
