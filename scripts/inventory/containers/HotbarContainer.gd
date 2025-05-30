@@ -40,14 +40,26 @@ func _setup_ui_hotbar():
 	print("🔧 Configuration de la Hotbar UI")
 	ui.setup_hotbar(inventory, controller, self)
 	
-	# IMPORTANT: Forcer l'affichage permanent de la hotbar
 	ui.visible = true
 	ui.show()
+	is_open = true
 	
 	# Sélectionner le premier slot par défaut
 	select_slot(0)
 	
-	print("✅ Hotbar maintenant visible")
+func show_ui():
+	"""Override: La hotbar est toujours visible, pas d'animation"""
+	if not ui:
+		print("❌ Pas d'UI à afficher pour la hotbar")
+		return
+	
+	print("🎯 Affichage permanent de la hotbar")
+	ui.visible = true
+	ui.show()
+	is_open = true
+	
+	# Pas d'animation ni de son pour la hotbar
+	_on_container_opened()
 
 # === API HOTBAR SPÉCIFIQUE ===
 
@@ -161,36 +173,12 @@ func transfer_from_inventory(source_inventory: Inventory, source_slot: int, targ
 
 # === OVERRIDE POUR COMPORTEMENT SPÉCIFIQUE ===
 
-func show_ui():
-	"""Override: La hotbar est toujours visible, pas d'animation"""
-	if not ui:
-		print("❌ Pas d'UI à afficher pour la hotbar")
-		return
-	
-	print("🎯 Affichage permanent de la hotbar")
-	ui.visible = true
-	ui.show()
-	is_open = true
-	
-	# Pas d'animation ni de son pour la hotbar
-	_on_container_opened()
-
-func hide_ui():
-	"""Override: La hotbar ne se cache jamais"""
-	print("⚠️ Tentative de masquer la hotbar ignorée (elle reste visible)")
-	# Ne rien faire - la hotbar reste toujours visible
-
-func toggle_ui():
-	"""Override: La hotbar ne se toggle pas"""
-	print("⚠️ Toggle de la hotbar ignoré (elle reste visible)")
-	# Ne rien faire - la hotbar reste toujours visible
-
 func _on_container_opened():
-	"""La hotbar ne change pas le mode souris"""
+	"""La hotbar ne s'ouvre/ferme pas comme un inventaire normal"""
 	pass
 
 func _on_container_closed():
-	"""La hotbar ne change pas le mode souris"""
+	"""La hotbar reste toujours visible"""
 	pass
 
 # === DEBUG ===

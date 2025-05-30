@@ -15,7 +15,7 @@ signal slot_drag_started(slot_ui: InventorySlotUI, mouse_pos: Vector2)
 @export var slot_scene: PackedScene = preload("res://scenes/ui/InventorySlotUI.tscn")
 
 const HOTBAR_SIZE = 9
-const SLOT_SIZE = 56
+const SLOT_SIZE = 64
 
 var slots: Array[InventorySlotUI] = []
 var hotbar_container: HotbarContainer
@@ -40,14 +40,13 @@ func _position_hotbar():
 	
 	var viewport_size = get_viewport().get_visible_rect().size
 	
-	# Calculer la largeur totale de la hotbar
-	var total_width = HOTBAR_SIZE * SLOT_SIZE + (HOTBAR_SIZE - 1) * 4 + 16  # slots + espacement + marges
+	var total_width = 608
 	
 	# Centrer horizontalement, positionner en haut
 	position.x = (viewport_size.x - total_width) / 2
-	position.y = 20  # 20px du haut
+	position.y = 4  # 20px du haut
 	size.x = total_width
-	size.y = SLOT_SIZE + 16
+	size.y = SLOT_SIZE
 	
 	print("🎯 Hotbar positionnée: %s (taille: %s)" % [position, size])
 
