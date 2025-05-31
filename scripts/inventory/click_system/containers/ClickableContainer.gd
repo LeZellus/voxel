@@ -1,4 +1,4 @@
-# scripts/click_system/containers/ClickableContainer.gd
+# scripts/inventory/click_system/containers/ClickableContainer.gd
 class_name ClickableContainer
 extends Node
 
@@ -7,8 +7,8 @@ signal container_ready(container_id: String, controller)
 
 # === PROPRIÉTÉS ===
 var container_id: String
-var inventory: Inventory
-var controller: ClickableInventoryController
+var inventory # Pas de typage strict pour éviter les erreurs de référence
+var controller # Pas de typage strict
 var ui_scene_path: String
 
 # === UI ===
@@ -140,37 +140,46 @@ func toggle_ui():
 
 # === API CONTAINER ===
 
-func add_item(item: Item, quantity: int = 1) -> int:
+func add_item(item, quantity: int = 1) -> int:
 	"""Ajoute un item au container"""
-	return inventory.add_item(item, quantity)
+	if inventory and inventory.has_method("add_item"):
+		return inventory.add_item(item, quantity)
+	return quantity
 
 func remove_item(item_id: String, quantity: int = 1) -> int:
 	"""Retire un item du container"""
-	return inventory.remove_item(item_id, quantity)
+	if inventory and inventory.has_method("remove_item"):
+		return inventory.remove_item(item_id, quantity)
+	return 0
 
 func has_item(item_id: String, quantity: int = 1) -> bool:
 	"""Vérifie si le container a un item"""
-	return inventory.has_item(item_id, quantity)
+	if inventory and inventory.has_method("has_item"):
+		return inventory.has_item(item_id, quantity)
+	return false
 
 func get_item_count(item_id: String) -> int:
 	"""Compte les items d'un type"""
-	return inventory.get_item_count(item_id)
+	if inventory and inventory.has_method("get_item_count"):
+		return inventory.get_item_count(item_id)
+	return 0
 
 # === GETTERS ===
 
 func get_container_id() -> String:
 	return container_id
 
-func get_controller() -> ClickableInventoryController:
+func get_controller():
 	return controller
 
-func get_inventory() -> Inventory:
+func get_inventory():
 	return inventory
 
 # === DEBUG ===
 
 func debug_info():
 	print("\n📊 ClickableContainer '%s':" % container_id)
-	print("   - Slots utilisés: %d/%d" % [inventory.get_used_slots_count(), inventory.size])
+	if inventory and inventory.has_method("get_used_slots_count"):
+		print("   - Slots utilisés: %d/%d" % [inventory.get_used_slots_count(), inventory.size])
 	print("   - UI visible: %s" % is_ui_visible)
 	print("   - Controller: %s" % str(controller))
