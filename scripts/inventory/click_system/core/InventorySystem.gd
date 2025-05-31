@@ -46,7 +46,7 @@ func _create_containers():
 	var hotbar = ClickableContainer.new(
 		"player_hotbar", 
 		9, 
-		"res://scenes/click_system/ui/TestHotbarUI.tscn"
+		"res://scenes/click_system/ui/TestHotbarUI.tscn",
 	)
 	add_child(hotbar)
 	hotbar.container_ready.connect(_on_container_ready)
@@ -68,9 +68,15 @@ func _setup_input():
 		hotbar.show_ui()
 
 func _input(event):
-	"""Gestion des inputs globaux"""
 	if event.is_action_pressed("toggle_inventory"):
-		toggle_main_inventory()
+		var main_inv = get_main_inventory()
+		if main_inv:
+			if main_inv.is_ui_visible:
+				main_inv.hide_ui()
+				Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+			else:
+				main_inv.show_ui()
+				Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
 # === GESTION CONTAINERS ===
 

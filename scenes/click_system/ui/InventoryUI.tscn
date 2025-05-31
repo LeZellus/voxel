@@ -1,19 +1,19 @@
-[gd_scene load_steps=2 format=3 uid="uid://cvcnlewtk3y1o"]
+[gd_scene load_steps=3 format=3 uid="uid://cvcnlewtk3y1o"]
 
 [ext_resource type="Script" path="res://scripts/inventory/click_system/ui/InventoryUI.gd" id="1_p673n"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_awj4p"]
+content_margin_left = 4.0
+bg_color = Color(0.09, 0.125, 0.22, 0.9)
 
 [node name="InventoryUI" type="Control"]
 custom_minimum_size = Vector2(608, 336)
 layout_mode = 3
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
+anchors_preset = 15
+anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -304.0
-offset_right = 304.0
 grow_horizontal = 2
-grow_vertical = 0
+grow_vertical = 2
 script = ExtResource("1_p673n")
 
 [node name="BackgroundStyle" type="ColorRect" parent="."]
@@ -26,18 +26,24 @@ grow_vertical = 2
 color = Color(0.798, 0.339, 0.48, 0)
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
-custom_minimum_size = Vector2(608, 0)
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+custom_minimum_size = Vector2(608, 356)
+layout_mode = 2
+offset_left = 272.0
+offset_top = 288.0
+offset_right = 880.0
+offset_bottom = 644.0
 grow_horizontal = 2
-grow_vertical = 2
+grow_vertical = 0
+size_flags_vertical = 8
 
 [node name="TitleLabel" type="Label" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 16)
 layout_mode = 2
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("StyleBoxFlat_awj4p")
 text = "INVENTAIRE"
 
 [node name="SlotsGrid" type="GridContainer" parent="VBoxContainer"]
 layout_mode = 2
+size_flags_vertical = 3
 columns = 9

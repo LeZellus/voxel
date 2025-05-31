@@ -27,6 +27,9 @@ const SLIDE_TRANS: Tween.TransitionType = Tween.TRANS_BACK
 const FADE_DURATION: float = 0.3
 
 func _ready():
+	print("📏 Position UI: %s" % position)
+	print("📏 Taille UI: %s" % size)
+	print("📏 Viewport: %s" % get_viewport().get_visible_rect().size)
 	print("📦 InventoryUI ready - en attente de setup")
 	_setup_animations()
 

@@ -1,6 +1,6 @@
 [gd_resource type="Theme" load_steps=9 format=3 uid="uid://dcsalqn1jq3b"]
 
-[ext_resource type="FontFile" uid="uid://b2ovnq4y084qx" path="res://assets/fonts/awcathode-webfont.ttf" id="1_culsm"]
+[ext_resource type="FontFile" uid="uid://cyyh2c2wtue4y" path="res://assets/fonts/JetBrainsMono-VariableFont_wght.ttf" id="1_edvu5"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gvomj"]
 bg_color = Color(0.125, 0.18, 0.216, 0.9)
@@ -23,8 +23,8 @@ bg_color = Color(0, 0.734585, 0.440145, 1)
 bg_color = Color(0.125, 0.18, 0.216, 0.9)
 
 [resource]
-default_font = ExtResource("1_culsm")
-default_font_size = 16
+default_font = ExtResource("1_edvu5")
+default_font_size = 12
 Button/styles/focus = SubResource("StyleBoxFlat_gvomj")
 Button/styles/hover = SubResource("StyleBoxFlat_xof4f")
 Button/styles/normal = SubResource("StyleBoxFlat_bcc5d")
