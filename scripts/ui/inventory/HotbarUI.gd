@@ -44,10 +44,9 @@ func _setup_hotbar_position():
 	var viewport_size = get_viewport().get_visible_rect().size
 	
 	# Position centrée en bas avec marge
-	var margin_bottom = 20
+	var margin_top = 4
 	var new_position = Vector2(
-		(viewport_size.x - size.x) / 2,
-		viewport_size.y - size.y - margin_bottom
+		(viewport_size.x - size.x) / 2, margin_top
 	)
 	
 	position = new_position

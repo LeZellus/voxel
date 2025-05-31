@@ -46,20 +46,25 @@ func _create_container_from_config(config_key: String):
 	container.container_ready.connect(_on_container_ready)
 
 func _on_container_ready(container_id: String, controller):
-	"""Callback quand un container est prêt"""
 	var container = _find_container_by_id(container_id)
-	
-	_apply_display_name(container, container_id)
-	
 	if not container:
 		return
 	
-	# Enregistrer
+	# Configuration centralisée
+	var config_key = _get_config_key_for_container_id(container_id)
+	InventoryConfigHelper.apply_config_to_container(container, config_key)
+	
+	# Enregistrement
 	containers[container_id] = container
 	click_integrator.register_container(container_id, controller, container.ui)
 	
-	_apply_default_visibility(container, container_id)
-	print("📦 Container prêt: %s" % container_id)
+func _get_config_key_for_container_id(container_id: String) -> String:
+	"""Trouve la clé de config pour un container ID"""
+	for config_key in InventoryConfig.INVENTORIES.keys():
+		var config = InventoryConfig.get_inventory_config(config_key)
+		if config.id == container_id:
+			return config_key
+	return ""
 
 func _apply_display_name(container: ClickableContainer, container_id: String):
 	"""Applique le nom depuis la config"""
