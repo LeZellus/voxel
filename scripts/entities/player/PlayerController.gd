@@ -21,6 +21,8 @@ extends CharacterBody3D
 # === NOUVEAU SYSTÈME D'INVENTAIRE ===
 @onready var inventory_system: InventorySystem = $InventorySystem
 
+var audio_system: AudioSystem
+
 var current_speed: float
 var gravity = ProjectSettings.get_setting("physics/3d/default_gravity")
 
@@ -297,3 +299,60 @@ func _create_test_wood() -> Item:
 	wood.is_stackable = true
 	wood.icon = _create_test_icon(Color(0.6, 0.3, 0.1))
 	return wood
+		
+func setup_audio_system():
+	"""Configure le nouveau système audio unifié"""
+	# Essayer de récupérer depuis ServiceLocator
+	audio_system = ServiceLocator.get_service("audio") as AudioSystem
+	
+	if not audio_system:
+		print("⚠️ AudioSystem non trouvé dans ServiceLocator, recherche dans la scène...")
+		# Chercher dans la scène courante
+		audio_system = get_tree().get_first_node_in_group("audio_system")
+	
+	if not audio_system:
+		print("⚠️ AudioSystem introuvable, création temporaire...")
+		# En dernier recours, chercher un AudioManager existant
+		var old_audio_manager = get_tree().get_first_node_in_group("audio_managers")
+		if old_audio_manager:
+			print("📻 Utilisation de l'ancien AudioManager en attendant la migration")
+		else:
+			print("❌ Aucun système audio trouvé!")
+		return
+	
+	print("✅ AudioSystem connecté au joueur")
+	
+	
+	# === FONCTIONS AUDIO SIMPLIFIÉES ===
+func play_action_sound(sound_name: String, volume: float = 1.0):
+	"""Joue un son d'action du joueur"""
+	if audio_system:
+		audio_system.play_player_sound(sound_name, volume)
+	else:
+		# FALLBACK vers l'ancien système pendant la migration
+		print("⚠️ Fallback vers ancien système pour: %s" % sound_name)
+		# Tu peux garder temporairement : AudioManager.play_player_sound(sound_name, "actions", volume)
+
+func play_footsteps(surface: String = "grass"):
+	"""Démarre les sons de pas avec le nouveau système"""
+	if audio_system:
+		audio_system.start_footsteps(animation_player, surface)
+	else:
+		# FALLBACK vers l'ancien système pendant la migration
+		print("⚠️ Fallback vers ancien système pour footsteps")
+
+func stop_footsteps():
+	"""Arrête les sons de pas"""
+	if audio_system:
+		audio_system.stop_footsteps()
+	else:
+		# FALLBACK
+		print("⚠️ Fallback vers ancien système pour stop footsteps")
+
+func update_footsteps():
+	"""Met à jour les footsteps (appelé depuis les états)"""
+	if audio_system:
+		audio_system.update_footsteps()
+	else:
+		# FALLBACK
+		pass

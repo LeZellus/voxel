@@ -3,6 +3,7 @@ class_name JumpingState
 
 func on_enter():
 	player.velocity.y = player.jump_velocity
+	player.play_action_sound("jump")
 
 func physics_update(delta):
 	player.apply_gravity(delta)

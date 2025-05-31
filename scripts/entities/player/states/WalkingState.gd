@@ -5,6 +5,10 @@ class_name WalkingState
 # Plus besoin de toutes les variables répétitives ! 
 # Elles sont dans MovementStateBase
 
+func physics_update(delta):
+	# NOUVEAU : mise à jour automatique
+	player.update_footsteps()
+	
 func configure_state():
 	"""Configuration spécifique à la marche"""
 	configure_for_walking()  # Utilise la config par défaut
@@ -25,6 +29,8 @@ func handle_specific_logic(delta: float):
 # Si vous voulez ajouter de la logique spécifique :
 func on_enter():
 	print("Mode marche activé")
+	player.play_footsteps("grass")
 
 func on_exit():
 	print("Fin du mode marche")
+	player.stop_footsteps()

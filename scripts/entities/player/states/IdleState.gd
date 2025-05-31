@@ -15,7 +15,7 @@ func enter():
 	if player.get_node_or_null("DustEffects/DustParticles"):
 		player.get_node("DustEffects/DustParticles").emitting = false
 	
-	AudioManager.stop_footsteps()
+	player.stop_footsteps()
 	
 	# Lancer l'animation idle avec délai pour l'initialisation
 	call_deferred("_start_idle_animation")
