@@ -20,8 +20,14 @@ var double_click_time: float = 0.3
 var last_click_time: float = 0.0
 var last_clicked_slot: Dictionary = {}  # Pour détecter les double-clics
 
+var action_manager: ActionManager
+
 func _ready():
 	print("🎮 ClickSystemManager initialisé")
+	
+	action_manager = ActionManager.new()
+	print("✅ ActionManager intégré")
+	
 	_register_default_actions()
 
 # === ENREGISTREMENT DES ACTIONS ===
@@ -58,7 +64,7 @@ func handle_slot_click(slot_index: int, container_id: String, slot_data: Diction
 	if is_waiting_for_target and pending_context:
 		return _handle_target_click(context)
 	
-	return _execute_click_action(context)
+	return _execute_click_action_v2(context)
 
 # Alternative plus simple pour les tests - désactiver complètement le double-clic :
 func _determine_click_type(mouse_event: InputEventMouseButton, slot_index: int, container_id: String) -> ClickContext.ClickType:
@@ -213,3 +219,22 @@ func print_debug_info():
 	print("\n🎮 ClickSystemManager État:")
 	for key in state.keys():
 		print("   - %s: %s" % [key, state[key]])
+	
+	# NOUVEAU : Debug du gestionnaire d'actions
+	if action_manager:
+		action_manager.debug_handlers()
+		
+func _execute_click_action_v2(context: ClickContext) -> bool:
+	"""Version améliorée utilisant ActionManager"""
+	
+	# Essayer le nouveau système d'abord
+	var success = action_manager.handle_click(context)
+	
+	if success:
+		_add_to_history(context)
+		click_interaction_completed.emit(context, true)
+		return true
+	
+	# Fallback vers l'ancien système si nécessaire
+	print("🔄 Fallback vers ancien système...")
+	return _execute_click_action(context)

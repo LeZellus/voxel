@@ -130,16 +130,17 @@ func _input(event):
 			
 			KEY_F2:
 				print("🧪 Test ajout item:")
-				var test_item = Item.new()
-				test_item.id = "debug_item"
-				test_item.name = "Item Debug"
-				test_item.item_type = Item.ItemType.CONSUMABLE
-				pickup_item(test_item, 3)
+				_force_add_test_item()
 			
 			KEY_F3:
 				print("🧪 État click system:")
 				if inventory_system.click_integrator:
 					inventory_system.click_integrator.click_system.print_debug_info()
+			
+			KEY_F4:
+				print("🧪 ActionManager debug:")
+				if inventory_system.click_integrator and inventory_system.click_integrator.click_system.action_manager:
+					inventory_system.click_integrator.click_system.action_manager.debug_handlers()
 
 func _unhandled_input(event: InputEvent):
 	handle_camera_input(event)
@@ -248,3 +249,25 @@ func debug_inventory():
 		inventory_system.debug_all_containers()
 	else:
 		print("❌ Pas d'inventory system")
+		
+func _force_add_test_item():
+	"""Force l'ajout d'un item de test visible"""
+	var test_item = Item.new()
+	test_item.id = "debug_apple"
+	test_item.name = "Pomme Debug"
+	test_item.item_type = Item.ItemType.CONSUMABLE
+	test_item.max_stack_size = 64
+	test_item.is_stackable = true
+	test_item.icon = _create_test_icon(Color.RED)
+	
+	var main_inv = inventory_system.get_main_inventory()
+	if main_inv:
+		var surplus = main_inv.add_item(test_item, 5)
+		print("📦 Item ajouté: %s x%d (surplus: %d)" % [test_item.name, 5-surplus, surplus])
+		
+		# Forcer le rafraîchissement de l'UI
+		if main_inv.ui and main_inv.ui.has_method("refresh_ui"):
+			main_inv.ui.refresh_ui()
+			print("🔄 UI rafraîchie")
+	else:
+		print("❌ Inventaire principal introuvable")
