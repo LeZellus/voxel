@@ -1,4 +1,4 @@
-# scripts/inventory/click_system/ui/InventoryUI.gd
+# scripts/inventory/click_system/ui/InventoryUI.gd - VERSION FINALE CORRIGÉE
 class_name InventoryUI
 extends Control
 
@@ -13,6 +13,7 @@ var container
 
 # === CONFIGURATION ===
 const SLOT_SCENE = preload("res://scenes/click_system/ui/ClickableSlotUI.tscn")
+const GRID_COLUMNS = 9  # Constante locale pour éviter les erreurs de référence
 var slots: Array[ClickableSlotUI] = []
 
 # === ANIMATION ===
@@ -27,9 +28,6 @@ const SLIDE_TRANS: Tween.TransitionType = Tween.TRANS_BACK
 const FADE_DURATION: float = 0.3
 
 func _ready():
-	print("📏 Position UI: %s" % position)
-	print("📏 Taille UI: %s" % size)
-	print("📏 Viewport: %s" % get_viewport().get_visible_rect().size)
 	print("📦 InventoryUI ready - en attente de setup")
 	_setup_animations()
 
@@ -102,27 +100,44 @@ func _setup_ui():
 		print("❌ SlotsGrid introuvable")
 		return
 	
-	slots_grid.columns = Constants.GRID_COLUMNS
+	# Utiliser la constante locale au lieu de Constants.GRID_COLUMNS
+	slots_grid.columns = GRID_COLUMNS
 	
+	# CORRECTION: Appliquer le nom d'affichage et forcer la mise à jour
 	if title_label and inventory:
 		title_label.text = inventory.name.to_upper()
+		print("📝 Titre mis à jour: '%s'" % title_label.text)
 
 func _create_slots():
 	"""Crée tous les slots de l'inventaire"""
 	if not inventory or not slots_grid:
-		print("❌ Impossible de créer les slots")
+		print("❌ Impossible de créer les slots - inventory: %s, slots_grid: %s" % [inventory != null, slots_grid != null])
 		return
 	
 	_clear_slots()
+	
+	print("🔧 Création de %d slots" % inventory.size)
 	
 	for i in range(inventory.size):
 		var slot = _create_slot(i)
 		if slot:
 			slots_grid.add_child(slot)
 			slots.append(slot)
+		else:
+			print("❌ Échec création slot %d" % i)
 	
-	print("✅ %d slots créés" % slots.size)
+	# CORRECTION: Utiliser slots.size() au lieu de Constants.SLOT_SIZE
+	print("✅ %d slots créés" % slots.size())
 	call_deferred("refresh_ui")
+	
+	# CORRECTION: Remettre à jour le titre après la création des slots
+	call_deferred("_update_title")
+
+func _update_title():
+	"""Met à jour le titre de l'inventaire (appelé après setup)"""
+	if title_label and inventory:
+		title_label.text = inventory.name.to_upper()
+		print("🔄 Titre final appliqué: '%s'" % title_label.text)
 
 func _create_slot(index: int) -> ClickableSlotUI:
 	"""Crée un slot individuel"""
@@ -136,7 +151,10 @@ func _create_slot(index: int) -> ClickableSlotUI:
 		return null
 	
 	slot.set_slot_index(index)
-	slot.custom_minimum_size = Vector2(Constants.SLOT_SIZE, Constants.SLOT_SIZE)
+	
+	# Utiliser une taille fixe au lieu de Constants.SLOT_SIZE
+	var slot_size = 64  # Constante locale
+	slot.custom_minimum_size = Vector2(slot_size, slot_size)
 	
 	if slot.has_signal("slot_clicked"):
 		slot.slot_clicked.connect(_on_slot_clicked)
@@ -177,7 +195,7 @@ func show_animated():
 		animation_tween.kill()
 	
 	animation_tween = create_tween()
-	animation_tween.set_parallel(true)  # Permet les animations simultanées
+	animation_tween.set_parallel(true)
 	
 	# Position de départ (hors écran)
 	var viewport_size = get_viewport().get_visible_rect().size
@@ -208,7 +226,7 @@ func show_animated():
 	animation_tween.tween_callback(_on_show_animation_finished)
 
 func hide_animated():
-	"""Cache l'UI avec animation de slide vers le bas (identique à l'ouverture)"""
+	"""Cache l'UI avec animation de slide vers le bas"""
 	if is_animating:
 		return
 	
@@ -225,23 +243,23 @@ func hide_animated():
 	var viewport_size = get_viewport().get_visible_rect().size
 	var end_position = Vector2(original_position.x, viewport_size.y)
 	
-	# Animation de slide vers le bas (MÊMES paramètres que l'ouverture)
+	# Animation de slide vers le bas
 	animation_tween.tween_property(
 		self, 
 		"position", 
 		end_position, 
-		SLIDE_DURATION  # Même durée que l'ouverture
-	).set_ease(Tween.EASE_IN).set_trans(SLIDE_TRANS)  # Même transition
+		SLIDE_DURATION
+	).set_ease(Tween.EASE_IN).set_trans(SLIDE_TRANS)
 	
-	# Animation de fade out (MÊMES paramètres)
+	# Animation de fade out
 	animation_tween.tween_property(
 		self, 
 		"modulate:a", 
 		0.0, 
-		FADE_DURATION  # Même durée de fade
+		FADE_DURATION
 	).set_ease(Tween.EASE_IN)
 	
-	# Animation des slots (effet cascade identique mais inverse)
+	# Animation des slots (effet cascade)
 	_animate_slots_cascade_out()
 	
 	# Callback de fin
@@ -262,7 +280,7 @@ func _animate_slots_cascade_in():
 		slot.scale = Vector2(0.8, 0.8)
 		
 		# Délai basé sur la position (ligne par ligne)
-		var row = i / Constants.GRID_COLUMNS
+		var row = i / GRID_COLUMNS  # Utiliser la constante locale
 		var delay = row * 0.03  # 30ms par ligne
 		
 		# Utiliser call_deferred avec un timer pour le délai
@@ -283,7 +301,7 @@ func _animate_single_slot_in(slot: ClickableSlotUI):
 	slot_tween.tween_property(slot, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 func _animate_slots_cascade_out():
-	"""Animation en cascade des slots à la fermeture (identique à l'ouverture mais inverse)"""
+	"""Animation en cascade des slots à la fermeture"""
 	if slots.is_empty():
 		return
 	
@@ -293,9 +311,9 @@ func _animate_slots_cascade_out():
 			continue
 		
 		# Délai inverse : les dernières lignes disparaissent en premier
-		var row = i / Constants.GRID_COLUMNS
-		var max_rows = (slots.size() - 1) / Constants.GRID_COLUMNS
-		var delay = (max_rows - row) * 0.03  # MÊME délai que l'ouverture
+		var row = i / GRID_COLUMNS  # Utiliser la constante locale
+		var max_rows = (slots.size() - 1) / GRID_COLUMNS
+		var delay = (max_rows - row) * 0.03
 		
 		# Utiliser call_deferred avec un timer pour le délai
 		if delay > 0:
@@ -304,16 +322,15 @@ func _animate_slots_cascade_out():
 			_animate_single_slot_out(slot)
 
 func _animate_single_slot_out(slot: ClickableSlotUI):
-	"""Anime un slot individuel à la fermeture (effet symétrique)"""
+	"""Anime un slot individuel à la fermeture"""
 	if not slot or not is_instance_valid(slot):
 		return
 	
 	var slot_tween = create_tween()
 	slot_tween.set_parallel(true)
 	
-	# MÊMES durées que l'ouverture mais vers les valeurs de départ
-	slot_tween.tween_property(slot, "modulate:a", 0.0, 0.2)  # Même durée
-	slot_tween.tween_property(slot, "scale", Vector2(0.8, 0.8), 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)  # Même transition mais EASE_IN
+	slot_tween.tween_property(slot, "modulate:a", 0.0, 0.2)
+	slot_tween.tween_property(slot, "scale", Vector2(0.8, 0.8), 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
 
 func _on_show_animation_finished():
 	"""Callback de fin d'animation d'ouverture"""
@@ -381,9 +398,17 @@ func _on_inventory_changed():
 # === UTILITAIRES ===
 
 func force_update_position():
-	"""Force la mise à jour de la position originale (utile si la fenêtre change)"""
+	"""Force la mise à jour de la position originale"""
 	if not visible:
 		original_position = position
+
+# === MÉTHODE PUBLIQUE POUR FORCER LA MISE À JOUR DU TITRE ===
+
+func update_inventory_name():
+	"""Force la mise à jour du nom d'inventaire (méthode publique)"""
+	if title_label and inventory:
+		title_label.text = inventory.name.to_upper()
+		print("🔄 Nom d'inventaire forcé: '%s'" % title_label.text)
 
 # === DEBUG ===
 
@@ -392,6 +417,8 @@ func debug_info():
 	print("\n📦 InventoryUI Debug:")
 	print("   - Container: %s" % (container.get_container_id() if container else "none"))
 	print("   - Inventory: %s" % ("ok" if inventory else "missing"))
+	print("   - Inventory name: '%s'" % (inventory.name if inventory else "none"))
+	print("   - Title label text: '%s'" % (title_label.text if title_label else "none"))
 	print("   - Controller: %s" % ("ok" if controller else "missing"))
 	print("   - Slots: %d" % slots.size())
 	print("   - Visible: %s" % visible)

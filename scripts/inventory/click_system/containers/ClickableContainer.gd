@@ -1,4 +1,4 @@
-# scripts/inventory/click_system/containers/ClickableContainer.gd
+# scripts/inventory/click_system/containers/ClickableContainer.gd - AVEC MISE À JOUR DU NOM
 class_name ClickableContainer
 extends Node
 
@@ -138,6 +138,20 @@ func toggle_ui():
 	else:
 		show_ui()
 
+# === NOUVELLE MÉTHODE POUR METTRE À JOUR LE NOM ===
+
+func update_inventory_name(new_name: String):
+	"""Met à jour le nom de l'inventaire et l'UI"""
+	if inventory:
+		inventory.name = new_name
+		print("📝 Nom d'inventaire mis à jour: '%s'" % new_name)
+		
+		# Mettre à jour l'UI si elle existe
+		if ui and ui.has_method("update_inventory_name"):
+			ui.update_inventory_name()
+		elif ui and ui.has_method("_update_title"):
+			ui._update_title()
+
 # === API CONTAINER ===
 
 func add_item(item, quantity: int = 1) -> int:
@@ -181,5 +195,6 @@ func debug_info():
 	print("\n📊 ClickableContainer '%s':" % container_id)
 	if inventory and inventory.has_method("get_used_slots_count"):
 		print("   - Slots utilisés: %d/%d" % [inventory.get_used_slots_count(), inventory.size])
+		print("   - Nom inventaire: '%s'" % inventory.name)
 	print("   - UI visible: %s" % is_ui_visible)
 	print("   - Controller: %s" % str(controller))
