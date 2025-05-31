@@ -1,4 +1,4 @@
-# scripts/systems/inventory/ActionRegistry.gd - VERSION FINALE CORRIGÉE
+# scripts/systems/inventory/ActionRegistry.gd - VERSION SANS DOUBLE RETRAIT
 class_name ActionRegistry
 extends RefCounted
 
@@ -10,8 +10,6 @@ func register(action: SimpleAction):
 
 func execute(context: ClickContext) -> bool:
 	print("🎮 Exécution pour: %s" % ClickContext.ClickType.keys()[context.click_type])
-	print("   - Source: slot %d (%s)" % [context.source_slot_index, context.source_container_id])
-	print("   - Target: slot %d (%s)" % [context.target_slot_index, context.target_container_id])
 	
 	for action in actions:
 		if action.can_execute(context):
@@ -46,7 +44,6 @@ class SimpleMoveAction extends SimpleAction:
 		super("move", 10)
 	
 	func can_execute(context: ClickContext) -> bool:
-		# Doit être un clic gauche avec une destination définie
 		return (context.click_type == ClickContext.ClickType.SIMPLE_LEFT_CLICK 
 				and context.target_slot_index != -1
 				and not context.source_slot_data.get("is_empty", true))
@@ -75,60 +72,111 @@ class SimpleMoveAction extends SimpleAction:
 		
 		# MÊME CONTAINER = déplacement interne
 		if context.source_container_id == context.target_container_id:
-			print("🏠 Déplacement interne dans %s" % context.source_container_id)
-			
 			var success = source_controller.move_item(context.source_slot_index, context.target_slot_index)
-			
 			if success:
-				print("✅ Déplacement interne réussi")
-				
-				# Émettre l'événement
 				Events.emit_item_moved(context.source_slot_index, context.target_slot_index, context.source_container_id)
-			else:
-				print("❌ Échec déplacement interne")
-			
 			return success
 		
-		# CONTAINERS DIFFÉRENTS = transfert
+		# CONTAINERS DIFFÉRENTS = transfert direct
 		else:
-			return _execute_transfer(context, source_controller, target_controller)
+			return _execute_direct_transfer(context, source_controller, target_controller)
 	
-	func _execute_transfer(context: ClickContext, source_controller, target_controller) -> bool:
-		print("🔄 Transfert: %s -> %s" % [context.source_container_id, context.target_container_id])
+	func _execute_direct_transfer(context: ClickContext, source_controller, target_controller) -> bool:
+		"""TRANSFERT DIRECT - utilise move_item_to pour éviter les doubles retraits"""
+		print("🔄 Transfert réel: %s -> %s" % [context.source_container_id, context.target_container_id])
 		
-		# Récupérer l'item source
-		var item_id = context.source_slot_data.get("item_id", "")
-		var quantity = context.source_slot_data.get("quantity", 0)
+		# Récupérer les slots directement
+		var source_slot = source_controller.inventory.get_slot(context.source_slot_index)
+		var target_slot = target_controller.inventory.get_slot(context.target_slot_index)
 		
-		if item_id == "" or quantity <= 0:
-			print("❌ Item source invalide")
+		if not source_slot or not target_slot:
+			print("❌ Slots introuvables")
 			return false
 		
-		# Vérifier si la destination peut accepter l'item
-		var target_slot_info = target_controller.get_slot_info(context.target_slot_index)
+		if source_slot.is_empty():
+			print("❌ Slot source vide")
+			return false
 		
-		# Si slot cible vide, on peut transférer
-		if target_slot_info.get("is_empty", true):
-			var removed = source_controller.remove_item(item_id, quantity)
-			if removed > 0:
-				# Ici on devrait pouvoir ajouter à un slot spécifique
-				# Pour l'instant, on simule le succès
-				print("✅ Transfert simulé: %s x%d" % [item_id, removed])
-				return true
+		var item = source_slot.get_item()
+		var quantity = source_slot.get_quantity()
 		
-		# Si même item, essayer de stacker
-		elif target_slot_info.get("item_id", "") == item_id:
+		print("📦 Transfert: %s x%d de %s[%d] vers %s[%d]" % [
+			item.name, quantity,
+			context.source_container_id, context.source_slot_index,
+			context.target_container_id, context.target_slot_index
+		])
+		
+		# TRANSFERT DIRECT SANS DOUBLE MANIPULATION
+		return _perform_atomic_transfer(source_slot, target_slot, item, quantity)
+	
+	func _perform_atomic_transfer(source_slot, target_slot, item, quantity) -> bool:
+		"""Transfert atomique pour éviter les états incohérents"""
+		
+		# CAS 1: Slot destination vide
+		if target_slot.is_empty():
+			print("📥 Destination vide - transfert direct")
+			
+			# OPÉRATION ATOMIQUE : retirer puis ajouter immédiatement
+			source_slot.clear()  # Retirer tout de la source
+			var surplus = target_slot.add_item(item, quantity)  # Ajouter à la destination
+			
+			if surplus > 0:
+				# En cas de surplus, remettre en source
+				source_slot.add_item(item, surplus)
+				print("⚠️ Transfert partiel: %d/%d (surplus: %d)" % [quantity - surplus, quantity, surplus])
+			else:
+				print("✅ Transfert complet: %s x%d" % [item.name, quantity])
+			
+			return true
+		
+		# CAS 2: Même item - tentative de stack
+		elif target_slot.get_item().id == item.id and item.is_stackable:
 			print("📚 Tentative de stack...")
-			# Logique de stack à implémenter
-			return true
+			
+			var can_add = min(quantity, target_slot.get_max_stack_size() - target_slot.get_quantity())
+			
+			if can_add > 0:
+				# Opération atomique pour le stack
+				var new_source_qty = quantity - can_add
+				var new_target_qty = target_slot.get_quantity() + can_add
+				
+				# Appliquer les changements atomiquement
+				if new_source_qty > 0:
+					source_slot.item_stack.quantity = new_source_qty
+				else:
+					source_slot.clear()
+				
+				target_slot.item_stack.quantity = new_target_qty
+				
+				# Déclencher les signaux
+				source_slot.slot_changed.emit()
+				target_slot.slot_changed.emit()
+				
+				print("✅ Stack réussi: %d items ajoutés" % can_add)
+				return true
+			else:
+				print("❌ Stack impossible - destination pleine")
+				return false
 		
-		# Sinon, swap
+		# CAS 3: Items différents - swap
 		else:
-			print("🔄 Tentative de swap...")
-			# Logique de swap à implémenter  
+			print("🔄 Swap d'items différents")
+			
+			# Sauvegarder les données
+			var source_item = item
+			var source_qty = quantity
+			var target_item = target_slot.get_item()
+			var target_qty = target_slot.get_quantity()
+			
+			# Swap atomique
+			source_slot.clear()
+			target_slot.clear()
+			
+			target_slot.add_item(source_item, source_qty)
+			source_slot.add_item(target_item, target_qty)
+			
+			print("✅ Swap réussi: %s <-> %s" % [source_item.name, target_item.name])
 			return true
-		
-		return false
 	
 	func _find_click_manager():
 		var scene = Engine.get_main_loop().current_scene
@@ -151,7 +199,7 @@ class SimpleUseAction extends SimpleAction:
 	func can_execute(context: ClickContext) -> bool:
 		return (context.click_type == ClickContext.ClickType.SIMPLE_RIGHT_CLICK 
 				and not context.source_slot_data.get("is_empty", true)
-				and context.target_slot_index == -1)  # Pas de destination = utilisation directe
+				and context.target_slot_index == -1)
 	
 	func execute(context: ClickContext) -> bool:
 		var item_type = context.source_slot_data.get("item_type", -1)
@@ -160,7 +208,6 @@ class SimpleUseAction extends SimpleAction:
 		match item_type:
 			Item.ItemType.CONSUMABLE:
 				print("🍎 %s consommé !" % item_name)
-				# TODO: Réduire la quantité dans l'inventaire
 				return true
 			Item.ItemType.TOOL:
 				print("🔨 %s équipé !" % item_name)

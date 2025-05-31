@@ -1,40 +1,31 @@
+# scripts/systems/inventory/InventorySystem.gd - GESTION SOURIS CORRIGÉE
 class_name InventorySystem
 extends Node
 
-# === SIGNAUX ===
 signal system_ready()
 
-# === COMPOSANTS ===
 var containers: Dictionary = {}
 var click_integrator: ClickSystemIntegrator
 
 func _ready():
-	print("🎮 InventorySystem simplifié")
+	print("🎮 InventorySystem avec gestion souris corrigée")
 	await _setup_system()
 	system_ready.emit()
 	print("✅ InventorySystem prêt")
 
 func _setup_system():
-	"""Configure le système simplifié"""
-	# Créer l'intégrateur de clic
 	click_integrator = ClickSystemIntegrator.new()
 	add_child(click_integrator)
 	
 	await get_tree().process_frame
-	
-	# Créer les containers de base
 	_create_default_containers()
-	
-	# Setup input
 	_setup_input()
 
 func _create_default_containers():
-	"""Crée les containers depuis la config"""
 	_create_container_from_config("main")
 	_create_container_from_config("hotbar")
 
 func _create_container_from_config(config_key: String):
-	"""Crée un container à partir de la configuration"""
 	var config = InventoryConfig.get_inventory_config(config_key)
 	
 	if config.is_empty():
@@ -50,57 +41,26 @@ func _on_container_ready(container_id: String, controller):
 	if not container:
 		return
 	
-	# Configuration centralisée
 	var config_key = _get_config_key_for_container_id(container_id)
 	InventoryConfigHelper.apply_config_to_container(container, config_key)
 	
-	# Enregistrement
 	containers[container_id] = container
 	click_integrator.register_container(container_id, controller, container.ui)
-	
+
 func _get_config_key_for_container_id(container_id: String) -> String:
-	"""Trouve la clé de config pour un container ID"""
 	for config_key in InventoryConfig.INVENTORIES.keys():
 		var config = InventoryConfig.get_inventory_config(config_key)
 		if config.id == container_id:
 			return config_key
 	return ""
 
-func _apply_display_name(container: ClickableContainer, container_id: String):
-	"""Applique le nom depuis la config"""
-	for config_key in InventoryConfig.INVENTORIES.keys():
-		var config = InventoryConfig.get_inventory_config(config_key)
-		if config.id == container_id:
-			container.update_inventory_name(config.display_name)
-			return
-			
-func _apply_default_visibility(container: ClickableContainer, container_id: String):
-	"""Applique la visibilité par défaut"""
-	for config_key in InventoryConfig.INVENTORIES.keys():
-		var config = InventoryConfig.get_inventory_config(config_key)
-		if config.id == container_id:
-			var should_be_visible = config.get("visible_by_default", false)
-			print("👁️ Visibilité par défaut pour %s: %s" % [container_id, should_be_visible])
-			
-			if should_be_visible:
-				# Délai pour s'assurer que l'UI est bien configurée
-				call_deferred("_show_container_ui", container)
-			return
-			
-func _show_container_ui(container: ClickableContainer):
-	"""Affiche l'UI d'un container avec délai"""
-	await get_tree().process_frame
-	container.show_ui()
-	
 func _find_container_by_id(container_id: String) -> ClickableContainer:
-	"""Trouve un container par ID"""
 	for child in get_children():
 		if child is ClickableContainer and child.get_container_id() == container_id:
 			return child
 	return null
 
 func _setup_input():
-	"""Configure les inputs de base"""
 	if not InputMap.has_action("toggle_inventory"):
 		InputMap.add_action("toggle_inventory")
 		var key_event = InputEventKey.new()
@@ -126,12 +86,19 @@ func toggle_main_inventory():
 	if main_inv:
 		main_inv.toggle_ui()
 		
-	if main_inv.is_ui_visible:
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-		print("🖱️ Souris visible")
+		# CORRECTION CRUCIALE : Gestion souris appropriée
+		_update_mouse_mode(main_inv.is_ui_visible)
+
+func _update_mouse_mode(inventory_is_open: bool):
+	"""Met à jour le mode souris selon l'état de l'inventaire"""
+	if inventory_is_open:
+		# Inventaire ouvert : souris visible pour les interactions UI
+		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+		print("🖱️ Souris visible - inventaire ouvert")
 	else:
-		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-		print("🖱️ Souris capturée")
+		# Inventaire fermé : souris capturée pour le jeu
+		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+		print("🖱️ Souris capturée - inventaire fermé")
 
 func add_item_to_inventory(item: Item, quantity: int = 1) -> int:
 	var main_inv = get_main_inventory()
