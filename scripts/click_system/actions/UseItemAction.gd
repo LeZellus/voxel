@@ -10,19 +10,29 @@ func _init(manager: ClickSystemManager):
 	can_undo = false  # L'utilisation d'items n'est généralement pas réversible
 
 func can_execute(context: ClickContext) -> bool:
+	print("🔍 UseItemAction.can_execute() - Debug")
+	print("   - target_slot_index: %d" % context.target_slot_index)
+	print("   - source_slot_data: %s" % context.source_slot_data)
+	
 	# Cette action ne fonctionne que sur des clics simples avec un item
 	if context.target_slot_index != -1:
+		print("   - Rejeté: target_slot_index != -1")
 		return false  # Pas d'action slot-to-slot pour "use"
 	
 	if not validate_source_slot(context):
+		print("   - Rejeté: validate_source_slot failed")
 		return false
 	
 	if not validate_has_source_item(context):
+		print("   - Rejeté: validate_has_source_item failed")
 		return false
 	
 	# Vérifier que l'item est utilisable
 	var item_type = context.source_slot_data.get("item_type", -1)
-	return _is_item_usable(item_type)
+	var usable = _is_item_usable(item_type)
+	print("   - item_type: %d, usable: %s" % [item_type, usable])
+	
+	return usable
 
 func _is_item_usable(item_type) -> bool:
 	"""Détermine si un type d'item est utilisable"""
@@ -74,12 +84,12 @@ func execute(context: ClickContext) -> bool:
 	emit_action_signals(context, success)
 	return success
 
-func _use_consumable(context: ClickContext, controller: InventoryController, item_id: String, item_name: String) -> bool:
+func _use_consumable(context: ClickContext, controller: RefCounted, item_id: String, item_name: String) -> bool:
 	"""Utilise un objet consommable"""
 	log_action(context, "Consommation de: %s" % item_name)
 	
 	# Retirer 1 quantité de l'inventaire
-	var removed = controller.remove_item_from_inventory(item_id, 1)
+	var removed = controller.remove_item(item_id, 1)
 	
 	if removed > 0:
 		# Ici on pourrait ajouter des effets spécifiques selon l'item
@@ -90,7 +100,7 @@ func _use_consumable(context: ClickContext, controller: InventoryController, ite
 		log_action(context, "❌ Impossible de consommer %s" % item_name)
 		return false
 
-func _equip_tool(context: ClickContext, controller: InventoryController, item_id: String, item_name: String) -> bool:
+func _equip_tool(context: ClickContext, controller: RefCounted, item_id: String, item_name: String) -> bool:
 	"""Équipe un outil"""
 	log_action(context, "Équipement de l'outil: %s" % item_name)
 	
@@ -103,7 +113,7 @@ func _equip_tool(context: ClickContext, controller: InventoryController, item_id
 	
 	return true
 
-func _equip_item(context: ClickContext, controller: InventoryController, item_id: String, item_name: String) -> bool:
+func _equip_item(context: ClickContext, controller: RefCounted, item_id: String, item_name: String) -> bool:
 	"""Équipe un équipement"""
 	log_action(context, "Équipement de: %s" % item_name)
 	

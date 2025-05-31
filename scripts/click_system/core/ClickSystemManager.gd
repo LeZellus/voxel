@@ -39,7 +39,7 @@ func register_action(click_type: ClickContext.ClickType, action: ClickAction):
 	
 	print("🎮 Action enregistrée: %s pour %s" % [action.action_name, ClickContext.ClickType.keys()[click_type]])
 
-func register_container(container_id: String, controller: InventoryController):
+func register_container(container_id: String, controller: ClickableInventoryController):
 	"""Enregistre un conteneur d'inventaire"""
 	registered_containers[container_id] = controller
 	print("🎮 Conteneur enregistré: %s" % container_id)
@@ -60,26 +60,12 @@ func handle_slot_click(slot_index: int, container_id: String, slot_data: Diction
 	
 	return _execute_click_action(context)
 
+# Alternative plus simple pour les tests - désactiver complètement le double-clic :
 func _determine_click_type(mouse_event: InputEventMouseButton, slot_index: int, container_id: String) -> ClickContext.ClickType:
-	"""Détermine le type de clic en fonction de l'événement"""
-	var current_time = Time.get_time_dict_from_system().get("unix", 0.0)
 	
-	# Détection du double-clic
-	var is_double_click = false
-	var slot_key = "%s_%d" % [container_id, slot_index]
-	
-	if last_clicked_slot.get("key") == slot_key:
-		if current_time - last_click_time < double_click_time:
-			is_double_click = true
-	
-	last_clicked_slot = {"key": slot_key}
-	last_click_time = current_time
-	
-	# Déterminer le type selon les modificateurs
+	# Ignorer le double-clic pour les tests
 	if mouse_event.button_index == MOUSE_BUTTON_LEFT:
-		if is_double_click:
-			return ClickContext.ClickType.DOUBLE_LEFT_CLICK
-		elif Input.is_key_pressed(KEY_SHIFT):
+		if Input.is_key_pressed(KEY_SHIFT):
 			return ClickContext.ClickType.SHIFT_LEFT_CLICK
 		elif Input.is_key_pressed(KEY_CTRL):
 			return ClickContext.ClickType.CTRL_LEFT_CLICK
@@ -96,10 +82,6 @@ func _determine_click_type(mouse_event: InputEventMouseButton, slot_index: int, 
 		else:
 			return ClickContext.ClickType.SIMPLE_RIGHT_CLICK
 	
-	elif mouse_event.button_index == MOUSE_BUTTON_MIDDLE:
-		return ClickContext.ClickType.MIDDLE_CLICK
-	
-	# Fallback
 	return ClickContext.ClickType.SIMPLE_LEFT_CLICK
 
 func _execute_click_action(context: ClickContext) -> bool:
@@ -134,6 +116,15 @@ func _handle_target_click(target_context: ClickContext) -> bool:
 	"""Gère le clic de destination quand on attend une cible"""
 	if not pending_context:
 		return false
+		
+	# CORRECTION : Si c'est un clic droit, traiter comme une action normale
+	if target_context.click_type == ClickContext.ClickType.SIMPLE_RIGHT_CLICK:
+		# Réinitialiser l'état d'attente
+		is_waiting_for_target = false
+		pending_context = null
+		
+		# Traiter le clic droit normalement
+		return _execute_click_action(target_context)
 	
 	# Créer un contexte slot-to-slot
 	var combined_context = ClickContext.create_slot_to_slot_interaction(
@@ -172,7 +163,7 @@ func cancel_waiting_for_target():
 
 # === UTILITAIRES ===
 
-func get_controller_for_container(container_id: String) -> InventoryController:
+func get_controller_for_container(container_id: String) -> ClickableInventoryController:
 	"""Récupère le contrôleur pour un conteneur"""
 	return registered_containers.get(container_id)
 

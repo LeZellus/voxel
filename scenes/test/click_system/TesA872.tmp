@@ -1,9 +1,11 @@
-[gd_scene load_steps=5 format=3 uid="uid://b8tqsnl8xq8hi"]
+[gd_scene load_steps=7 format=3 uid="uid://b8tqsnl8xq8hi"]
 
 [ext_resource type="Script" path="res://scripts/click_system/test/TestClickSystem.gd" id="1_greq0"]
 [ext_resource type="Script" path="res://scripts/click_system/test/TestClickSystemManager.gd" id="2_xhhda"]
 [ext_resource type="Script" path="res://scripts/click_system/test/TestInventoryData.gd" id="5_j8nui"]
+[ext_resource type="PackedScene" uid="uid://drfvlucsdw0xh" path="res://scenes/ui/HotbarUI.tscn" id="5_yk86f"]
 [ext_resource type="Script" path="res://scripts/click_system/test/TestHotbarData.gd" id="6_8v8tg"]
+[ext_resource type="PackedScene" uid="uid://dpoib7th7wgl5" path="res://scenes/ui/InventoryUI.tscn" id="6_caidt"]
 
 [node name="TestClickSystem" type="Node"]
 script = ExtResource("1_greq0")
@@ -13,13 +15,11 @@ script = ExtResource("2_xhhda")
 
 [node name="UI" type="CanvasLayer" parent="."]
 
+[node name="HotbarUI" parent="UI" instance=ExtResource("5_yk86f")]
+
 [node name="Instructions" type="Label" parent="UI"]
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -177.0
-offset_bottom = 158.0
-grow_horizontal = 0
+offset_right = 40.0
+offset_bottom = 20.0
 text = "🧪 TEST CLICK-AND-CLICK
 
 [T] - Clic gauche sur slot 0
@@ -27,6 +27,8 @@ text = "🧪 TEST CLICK-AND-CLICK
 [U] - État du système
 [I] - Aide
 [E] - Toggle inventaire"
+
+[node name="InventoryUI" parent="UI" instance=ExtResource("6_caidt")]
 
 [node name="InventoryData" type="Node" parent="."]
 

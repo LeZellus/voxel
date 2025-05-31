@@ -3,7 +3,7 @@ extends Node
 class_name TestHotbarData
 
 var inventory: Inventory
-var controller: InventoryController
+var controller: ClickableInventoryController
 var selected_slot: int = 0
 
 func _ready():
@@ -14,7 +14,7 @@ func _ready():
 func setup_test_hotbar():
 	"""Crée une hotbar simple pour les tests"""
 	inventory = Inventory.new(9, "Test Hotbar")  # 9 slots pour la hotbar
-	controller = InventoryController.new(inventory)
+	controller = ClickableInventoryController.new(inventory)
 	
 	print("✅ Hotbar de test créée (9 slots)")
 

@@ -33,7 +33,7 @@ var timestamp: float
 var is_cross_container: bool = false
 
 func _init():
-	timestamp = Time.get_time_dict_from_system()["unix"]
+	timestamp = Time.get_unix_time_from_system()
 
 # === BUILDERS ===
 static func create_slot_interaction(interaction_type: ClickType, slot_index: int, container_id: String, slot_data: Dictionary) -> ClickContext:

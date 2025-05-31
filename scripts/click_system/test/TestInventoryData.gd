@@ -3,7 +3,7 @@ extends Node
 class_name TestInventoryData
 
 var inventory: Inventory
-var controller: InventoryController
+var controller: ClickableInventoryController
 
 func _ready():
 	print("🧪 TestInventoryData initialisé")
@@ -13,7 +13,7 @@ func _ready():
 func setup_test_inventory():
 	"""Crée un inventaire simple pour les tests"""
 	inventory = Inventory.new(Constants.INVENTORY_SIZE, "Test Inventory")
-	controller = InventoryController.new(inventory)
+	controller = ClickableInventoryController.new(inventory)
 	
 	print("✅ Inventaire de test créé (%d slots)" % Constants.INVENTORY_SIZE)
 

@@ -44,11 +44,11 @@ func get_feedback_message(context: ClickContext, success: bool) -> String:
 
 # === MÉTHODES UTILITAIRES ===
 
-func get_source_controller(context: ClickContext, system_manager) -> InventoryController:
+func get_source_controller(context: ClickContext, system_manager) -> ClickableInventoryController:
 	"""Récupère le contrôleur du conteneur source"""
 	return system_manager.get_controller_for_container(context.source_container_id)
 
-func get_target_controller(context: ClickContext, system_manager) -> InventoryController:
+func get_target_controller(context: ClickContext, system_manager) -> ClickableInventoryController:
 	"""Récupère le contrôleur du conteneur cible"""
 	return system_manager.get_controller_for_container(context.target_container_id)
 

@@ -3,8 +3,8 @@ extends Node
 class_name TestClickSystemManager
 
 var click_system: ClickSystemManager
-var test_inventory: PlayerInventory
-var test_hotbar: HotbarContainer
+var test_inventory: TestInventoryData
+var test_hotbar: TestHotbarData
 
 func _ready():
 	print("🧪 TestClickSystemManager démarré")
@@ -39,7 +39,7 @@ func register_basic_actions():
 	
 	print("✅ Actions de base enregistrées")
 
-func connect_existing_inventory(inventory: PlayerInventory):
+func connect_existing_inventory(inventory: TestInventoryData):
 	"""Connecte l'inventaire existant au système de test"""
 	if not inventory:
 		print("❌ Inventaire null")
@@ -52,7 +52,7 @@ func connect_existing_inventory(inventory: PlayerInventory):
 	
 	print("✅ Inventaire connecté au système de clic")
 
-func connect_existing_hotbar(hotbar: HotbarContainer):
+func connect_existing_hotbar(hotbar: TestHotbarData):
 	"""Connecte la hotbar existante au système de test"""
 	if not hotbar:
 		print("❌ Hotbar null")
@@ -66,19 +66,24 @@ func connect_existing_hotbar(hotbar: HotbarContainer):
 	print("✅ Hotbar connectée au système de clic")
 
 func simulate_click_on_inventory_slot(slot_index: int, click_type: ClickContext.ClickType = ClickContext.ClickType.SIMPLE_LEFT_CLICK):
-	"""Simule un clic sur un slot d'inventaire pour les tests"""
 	if not test_inventory:
 		print("❌ Inventaire de test non connecté")
 		return
 	
 	var slot_data = test_inventory.controller.get_slot_info(slot_index)
 	
-	# Créer un faux événement de souris
+	# Créer le bon événement selon le type
 	var fake_event = InputEventMouseButton.new()
-	fake_event.button_index = MOUSE_BUTTON_LEFT
-	fake_event.pressed = false
+	fake_event.pressed = false  # Simule un release
 	
-	# Simuler le clic avec le bon container_id
+	# CORRECTION : Choisir le bon bouton selon le type de clic
+	match click_type:
+		ClickContext.ClickType.SIMPLE_RIGHT_CLICK:
+			fake_event.button_index = MOUSE_BUTTON_RIGHT
+		_:
+			fake_event.button_index = MOUSE_BUTTON_LEFT
+	
+	# Simuler le clic
 	click_system.handle_slot_click(slot_index, "test_inventory", slot_data, fake_event)
 
 func print_test_info():
@@ -93,11 +98,7 @@ func print_test_info():
 	print("   - Appuyez sur [U] pour afficher l'état du système")
 
 func _input(event):
-	"""Gestion des touches de test"""
-	if not event is InputEventKey:  # ← AJOUTER CETTE LIGNE
-		return
-	
-	if not event.pressed:
+	if not event is InputEventKey or not event.pressed:
 		return
 	
 	match event.keycode:
@@ -109,13 +110,13 @@ func _input(event):
 			print("🧪 Test: Clic droit sur slot 0")
 			simulate_click_on_inventory_slot(0, ClickContext.ClickType.SIMPLE_RIGHT_CLICK)
 		
-		KEY_U:
-			print("🧪 État du système:")
-			if click_system:
-				click_system.print_debug_info()
+		KEY_1:
+			print("🧪 Test: Clic destination slot 1")
+			simulate_click_on_inventory_slot(1, ClickContext.ClickType.SIMPLE_LEFT_CLICK)
 		
-		KEY_I:
-			print_test_info()
+		KEY_2:
+			print("🧪 Test: Clic destination slot 2")
+			simulate_click_on_inventory_slot(2, ClickContext.ClickType.SIMPLE_LEFT_CLICK)
 			
 func connect_test_inventory(inventory_data: TestInventoryData):
 	"""Connecte l'inventaire de test au système de clic"""
