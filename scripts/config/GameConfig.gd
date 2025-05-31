@@ -2,26 +2,6 @@
 class_name GameConfig
 extends RefCounted
 
-# Configuration du joueur
-const PLAYER = {
-	"walk_speed": 5.0,
-	"run_speed": 8.0,
-	"jump_velocity": 4.5,
-	"rotation_speed": 12.0,
-	"air_control": 0.8
-}
-
-# Configuration de la caméra
-const CAMERA = {
-	"mouse_sensitivity": 0.002,
-	"min_vertical_angle": -PI/2,
-	"max_vertical_angle": PI/4,
-	"spring_length": 8.0,
-	"zoom_min": 3.0,
-	"zoom_max": 15.0,
-	"zoom_step": 1.0
-}
-
 # Configuration UI
 const UI = {
 	"animation_duration": 0.4,
@@ -67,10 +47,6 @@ const GROUPS = {
 		"wood": "wood_surface"
 	}
 }
-
-# Getters simplifiés
-static func get_player_config() -> Dictionary:
-	return PLAYER
 
 static func get_audio_config(category: String) -> Dictionary:
 	return AUDIO.get(category, {})

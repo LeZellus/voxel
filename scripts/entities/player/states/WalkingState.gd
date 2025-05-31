@@ -6,7 +6,6 @@ func enter():
 	# Démarrer l'animation
 	if player.animation_player:
 		player.animation_player.play("Run")
-		player.animation_player.speed_scale = 4.0
 	
 	# Démarrer l'audio
 	player.start_footsteps("grass")
@@ -44,7 +43,7 @@ func physics_update(delta):
 		return
 	
 	# Mouvement
-	var speed = player.run_speed if Input.is_action_pressed("run") else player.walk_speed
+	var speed = ConstantsPlayer.RUN_SPEED if Input.is_action_pressed("run") else ConstantsPlayer.WALK_SPEED
 	var direction = player.get_movement_direction_from_camera()
 	
 	if direction.length() > 0:

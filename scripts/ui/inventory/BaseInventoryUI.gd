@@ -13,10 +13,10 @@ var slots: Array[ClickableSlotUI] = []
 const SLOT_SCENE = preload("res://scenes/click_system/ui/ClickableSlotUI.tscn")
 
 # Méthodes virtuelles
-func get_columns() -> int: return 9
-func get_slot_count() -> int: return inventory.size if inventory else 45
+func get_columns() -> int: return Constants.GRID_COLUMNS
+func get_slot_count() -> int: return inventory.size if inventory else Constants.MAIN_INVENTORY_SLOTS
 func has_title() -> bool: return true
-func get_slot_size() -> Vector2: return Vector2(64, 64)
+func get_slot_size() -> Vector2: return Constants.get_slot_size()
 
 func _ready():
 	_find_ui_components()

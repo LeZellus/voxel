@@ -3,10 +3,8 @@ extends State
 class_name JumpingState
 
 func enter():
-	print("Mode saut activé")
-	
 	# Impulse de saut
-	player.velocity.y = player.jump_velocity
+	player.velocity.y = ConstantsPlayer.JUMP_VELOCITY
 	
 	# Son de saut
 	player.play_action_sound("jump")
@@ -16,7 +14,7 @@ func enter():
 		player.animation_player.play("Jump")
 
 func exit():
-	print("🛑 Sortie de Jump")
+	pass
 
 func physics_update(delta):
 	# Gravité
@@ -27,7 +25,7 @@ func physics_update(delta):
 	
 	if input_dir.length() > 0:
 		var direction = player.get_movement_direction_from_camera()
-		var air_speed = player.walk_speed * 0.8  # Mouvement réduit en l'air
+		var air_speed = ConstantsPlayer.WALK_SPEED * ConstantsPlayer.IN_AIR_FRICTION  # Mouvement réduit en l'air
 		player.apply_movement(direction, air_speed, delta)
 	
 	# Appliquer le mouvement
@@ -42,7 +40,3 @@ func physics_update(delta):
 			state_machine.change_state("walking")
 		else:
 			state_machine.change_state("idle")
-
-func handle_input(event):
-	# Gestion caméra déjà dans PlayerController
-	pass

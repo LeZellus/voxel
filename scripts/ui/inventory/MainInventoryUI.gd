@@ -6,10 +6,10 @@ extends BaseInventoryUI
 var animation_tween: Tween
 var original_position: Vector2
 
-const SLIDE_DURATION: float = 0.8
+var FADE_DURATION: float = Constants.get_ui_fade_duration()
+var SLIDE_DURATION: float = Constants.get_ui_slide_duration()
 const SLIDE_EASE: Tween.EaseType = Tween.EASE_OUT
 const SLIDE_TRANS: Tween.TransitionType = Tween.TRANS_BACK
-const FADE_DURATION: float = 0.5
 
 # === SETUP ===
 

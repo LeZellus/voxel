@@ -1,0 +1,101 @@
+[gd_scene load_steps=18 format=3 uid="uid://dx4owx872ju0a"]
+
+[ext_resource type="Script" path="res://scripts/entities/player/PlayerController.gd" id="1_1yluk"]
+[ext_resource type="Script" path="res://scripts/entities/player/states/StateMachine.gd" id="2_mytfj"]
+[ext_resource type="Script" path="res://scripts/entities/player/states/IdleState.gd" id="3_qy6uw"]
+[ext_resource type="Script" path="res://scripts/entities/player/states/WalkingState.gd" id="4_rwr3b"]
+[ext_resource type="Script" path="res://scripts/entities/player/states/FarmingState.gd" id="5_vxp0e"]
+[ext_resource type="Script" path="res://scripts/entities/player/states/JumpingState.gd" id="6_6gvi2"]
+[ext_resource type="Script" path="res://scripts/manager/ToolSystem.gd" id="7_yvlqr"]
+[ext_resource type="Script" path="res://scripts/systems/inventory/InventorySystem.gd" id="9_7wrpq"]
+[ext_resource type="PackedScene" uid="uid://2oiup8qitv4y" path="res://assets/models/blender_exports/player.glb" id="9_lxqm3"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_4h0dh"]
+
+[sub_resource type="Curve" id="Curve_abvta"]
+_data = [Vector2(0, 0.718665), 0.0, 0.0, 0, 0, Vector2(0.144893, 1), 0.0, 0.0, 0, 0, Vector2(0.660333, 1), 0.0, 0.0, 0, 0, Vector2(0.824228, 0.8945), -1.78211, -1.78211, 0, 0, Vector2(1, 0), -6.70663, 0.0, 0, 0]
+point_count = 5
+
+[sub_resource type="CurveTexture" id="CurveTexture_7nnyw"]
+width = 32
+curve = SubResource("Curve_abvta")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_asvgt"]
+lifetime_randomness = 0.33
+emission_shape = 1
+emission_sphere_radius = 0.3
+direction = Vector3(0, 0, 0)
+spread = 90.0
+initial_velocity_min = -2.0
+initial_velocity_max = 0.5
+gravity = Vector3(0, 2, 0)
+linear_accel_min = -2.23517e-06
+linear_accel_max = 4.0
+tangential_accel_min = -2.23517e-06
+tangential_accel_max = 0.199998
+scale_min = 2.0
+scale_max = 2.0
+scale_curve = SubResource("CurveTexture_7nnyw")
+
+[sub_resource type="Gradient" id="Gradient_3hbs2"]
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_tjbeo"]
+gradient = SubResource("Gradient_3hbs2")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_aliim"]
+transparency = 1
+blend_mode = 2
+shading_mode = 2
+vertex_color_use_as_albedo = true
+albedo_texture = SubResource("GradientTexture1D_tjbeo")
+emission_energy_multiplier = 0.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_0h7bh"]
+material = SubResource("StandardMaterial3D_aliim")
+size = Vector3(0.1, 0.1, 0.1)
+
+[node name="Character" type="CharacterBody3D"]
+script = ExtResource("1_1yluk")
+
+[node name="SpringArm3D" type="SpringArm3D" parent="."]
+
+[node name="Camera3D" type="Camera3D" parent="SpringArm3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.00633, 0)
+
+[node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("initial_state")]
+script = ExtResource("2_mytfj")
+initial_state = NodePath("Idle")
+
+[node name="Idle" type="Node" parent="StateMachine"]
+script = ExtResource("3_qy6uw")
+
+[node name="Walking" type="Node" parent="StateMachine"]
+script = ExtResource("4_rwr3b")
+
+[node name="Farming" type="Node" parent="StateMachine"]
+script = ExtResource("5_vxp0e")
+
+[node name="Jumping" type="Node" parent="StateMachine"]
+script = ExtResource("6_6gvi2")
+
+[node name="ToolSystem" type="Node3D" parent="."]
+script = ExtResource("7_yvlqr")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_4h0dh")
+
+[node name="CharacterSkin" parent="." instance=ExtResource("9_lxqm3")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.997801, 0)
+
+[node name="DustEffects" type="Node3D" parent="."]
+
+[node name="DustParticles" type="GPUParticles3D" parent="DustEffects"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0025537, -0.99828, 0)
+amount = 4
+lifetime = 0.3
+process_material = SubResource("ParticleProcessMaterial_asvgt")
+draw_pass_1 = SubResource("BoxMesh_0h7bh")
+
+[node name="InventorySystem" type="Node" parent="."]
+script = ExtResource("9_7wrpq")

@@ -1,16 +1,6 @@
 # PlayerController.gd - AVEC NOUVEAU SYSTÈME D'INVENTAIRE INTÉGRÉ
 extends CharacterBody3D
 
-# Configuration depuis GameConfig
-@export var walk_speed: float = GameConfig.PLAYER.walk_speed
-@export var run_speed: float = GameConfig.PLAYER.run_speed
-@export var jump_velocity: float = GameConfig.PLAYER.jump_velocity
-@export var rotation_speed: float = GameConfig.PLAYER.rotation_speed
-
-@export var mouse_sensitivity: float = GameConfig.CAMERA.mouse_sensitivity
-@export var min_vertical_angle: float = GameConfig.CAMERA.min_vertical_angle
-@export var max_vertical_angle: float = GameConfig.CAMERA.max_vertical_angle
-
 # Composants existants avec validation
 @onready var spring_arm: SpringArm3D = ValidationUtils.get_node_safe(self, "SpringArm3D")
 @onready var camera: Camera3D = ValidationUtils.get_node_safe(spring_arm, "Camera3D") if spring_arm else null
@@ -94,11 +84,10 @@ func setup_spring_arm():
 	if not ValidationUtils.validate_node(spring_arm, "SpringArm3D", "setup_spring_arm"):
 		return
 		
-	var config = GameConfig.CAMERA
-	spring_arm.spring_length = config.spring_length
+	spring_arm.spring_length = Constants.CAMERA_MAX_SPRING_LENGTH
 	spring_arm.collision_mask = 1
-	spring_arm.margin = 0.5
-	spring_arm.rotation.x = -0.3
+	spring_arm.margin = Constants.CAMERA_COLLISION_MARGIN
+	spring_arm.rotation.x = Constants.CAMERA_DEFAULT_ROTATION
 	
 func _input(event):
 	# Ajoute ça dans ta fonction _input existante ou crée-la
@@ -135,27 +124,25 @@ func handle_camera_input(event: InputEvent):
 		return
 		
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-		spring_arm.rotation.y -= event.relative.x * mouse_sensitivity
-		spring_arm.rotation.x -= event.relative.y * mouse_sensitivity
-		spring_arm.rotation.x = clamp(spring_arm.rotation.x, min_vertical_angle, max_vertical_angle)
+		spring_arm.rotation.y -= event.relative.x * Constants.CAMERA_MOUSE_SENSIVITY
+		spring_arm.rotation.x -= event.relative.y * Constants.CAMERA_MOUSE_SENSIVITY
+		spring_arm.rotation.x = clamp(spring_arm.rotation.x, Constants.CAMERA_MIN_VERTICAL_ANGLE, Constants.CAMERA_MAX_VERTICAL_ANGLE)
 	
 	elif event is InputEventMouseButton and Input.is_key_pressed(KEY_CTRL):
 		_handle_zoom(event)
 
 func _handle_zoom(event: InputEventMouseButton):
-	var config = GameConfig.CAMERA
-	
 	if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 		spring_arm.spring_length = clamp(
-			spring_arm.spring_length - config.zoom_step, 
-			config.zoom_min, 
-			config.zoom_max
+			spring_arm.spring_length - Constants.CAMERA_MAX_ZOOM_STEP, 
+			Constants.CAMERA_MAX_ZOOM_MIN, 
+			Constants.CAMERA_MAX_ZOOM_MAX
 		)
 	elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 		spring_arm.spring_length = clamp(
-			spring_arm.spring_length + config.zoom_step, 
-			config.zoom_min, 
-			config.zoom_max
+			spring_arm.spring_length + Constants.CAMERA_MAX_ZOOM_STEP, 
+			Constants.CAMERA_MAX_ZOOM_MIN, 
+			Constants.CAMERA_MAX_ZOOM_MAX
 		)
 
 # === MÉTHODES DE MOUVEMENT (inchangées) ===
@@ -171,7 +158,7 @@ func apply_movement(direction: Vector3, speed: float, delta: float = 0.0):
 		
 		if delta > 0 and ValidationUtils.validate_node(model_root, "ModelRoot", "apply_movement"):
 			var target_rotation = atan2(-direction.x, -direction.z)
-			model_root.rotation.y = lerp_angle(model_root.rotation.y, target_rotation, rotation_speed * delta)
+			model_root.rotation.y = lerp_angle(model_root.rotation.y, target_rotation, ConstantsPlayer.ROTATION_SPEED * delta)
 	else:
 		velocity.x = move_toward(velocity.x, 0, speed)
 		velocity.z = move_toward(velocity.z, 0, speed)

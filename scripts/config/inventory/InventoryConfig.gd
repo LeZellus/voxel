@@ -55,21 +55,23 @@ static func is_visible_by_default(key: String) -> bool:
 # === VALIDATION ===
 
 static func validate_config():
-	"""Valide la configuration"""
+	print("✅ Configuration des inventaires:")
+	print("   - Inventaire principal: %d slots (%dx%d)" % [
+		Constants.MAIN_INVENTORY_SLOTS, 
+		Constants.GRID_COLUMNS, 
+		Constants.GRID_ROWS
+	])
+	print("   - Hotbar: %d slots" % Constants.HOTBAR_SIZE)
+	
 	for key in INVENTORIES.keys():
 		var config = INVENTORIES[key]
-		
-		assert(config.has("id"), "ID manquant pour l'inventaire: " + key)
-		assert(config.has("display_name"), "Nom d'affichage manquant pour: " + key)
+		assert(config.has("id"), "ID manquant pour: " + key)
 		assert(config.has("size"), "Taille manquante pour: " + key)
 		assert(config.get("size", 0) > 0, "Taille invalide pour: " + key)
-	
-	print("✅ Configuration des inventaires validée")
 
 # === DEBUG ===
 
 static func print_all_configs():
-	"""Affiche toute la configuration"""
 	print("\n📦 Configuration des inventaires:")
 	for key in INVENTORIES.keys():
 		var config = INVENTORIES[key]
