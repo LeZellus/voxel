@@ -42,4 +42,5 @@ layout_mode = 2
 
 [node name="SlotsGrid" type="GridContainer" parent="VBoxContainer"]
 layout_mode = 2
+size_flags_vertical = 3
 columns = 9

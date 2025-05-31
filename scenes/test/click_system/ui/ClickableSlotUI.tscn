@@ -9,9 +9,13 @@ bg_color = Color(0.6, 0.6, 0.6, 0)
 
 [node name="ClickableSlotUI" type="Control"]
 layout_mode = 3
-anchors_preset = 0
-offset_right = 64.0
-offset_bottom = 64.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -1088.0
+offset_bottom = -584.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("1_2x0mc")
 
 [node name="ColorRect" type="ColorRect" parent="."]
