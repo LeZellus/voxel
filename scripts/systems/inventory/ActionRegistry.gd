@@ -41,25 +41,82 @@ class SimpleMoveAction extends SimpleAction:
 		super("move", 10)
 	
 	func can_execute(context: ClickContext) -> bool:
-		# CORRECTION: Accepter même les slots vides pour la sélection de destination
 		return context.click_type == ClickContext.ClickType.SIMPLE_LEFT_CLICK
 	
 	func execute(context: ClickContext) -> bool:
-		# Clic simple = attendre destination
+		# Premier clic = sélectionner source
 		if context.target_slot_index == -1:
 			var click_manager = _find_click_manager()
 			if click_manager:
+				print("📌 Item sélectionné slot %d - cliquez destination" % context.source_slot_index)
 				click_manager.start_waiting_for_target(context)
-				print("⏳ En attente de destination")
 				return true
 			return false
 		
-		# Slot-to-slot = déplacer (logique simplifiée pour l'instant)
-		print("🔄 Move: slot %d -> slot %d" % [context.source_slot_index, context.target_slot_index])
-		return true  # TODO: implémenter le déplacement réel
+		# Deuxième clic = déplacer vers destination
+		return _execute_move(context)
+	
+	func _execute_move(context: ClickContext) -> bool:
+		print("🔄 Déplacement: slot %d -> slot %d" % [context.source_slot_index, context.target_slot_index])
+		
+		# Éviter déplacement sur soi-même
+		if (context.source_slot_index == context.target_slot_index and 
+			context.source_container_id == context.target_container_id):
+			print("⚠️ Déplacement annulé (même slot)")
+			return true
+		
+		# Récupérer les controllers
+		var click_manager = _find_click_manager()
+		if not click_manager:
+			print("❌ ClickManager introuvable")
+			return false
+		
+		var source_controller = click_manager.get_controller_for_container(context.source_container_id)
+		var target_controller = click_manager.get_controller_for_container(context.target_container_id)
+		
+		if not source_controller or not target_controller:
+			print("❌ Controllers introuvables")
+			return false
+		
+		# MÊME CONTAINER = déplacement interne
+		if context.source_container_id == context.target_container_id:
+			var success = source_controller.move_item(context.source_slot_index, context.target_slot_index)
+			if success:
+				print("✅ Item déplacé dans %s" % context.source_container_id)
+			else:
+				print("❌ Échec déplacement interne")
+			return success
+		
+		# CONTAINERS DIFFÉRENTS = transfert
+		else:
+			return _execute_transfer(context, source_controller, target_controller)
+	
+	func _execute_transfer(context: ClickContext, source_controller, target_controller) -> bool:
+		print("🔄 Transfert: %s -> %s" % [context.source_container_id, context.target_container_id])
+		
+		# Récupérer l'item source
+		var source_slot_info = source_controller.get_slot_info(context.source_slot_index)
+		if source_slot_info.get("is_empty", true):
+			print("❌ Slot source vide")
+			return false
+		
+		var item_id = source_slot_info.get("item_id", "")
+		var quantity = source_slot_info.get("quantity", 0)
+		
+		if item_id == "" or quantity <= 0:
+			print("❌ Item invalide")
+			return false
+		
+		# Retirer de la source
+		var removed = source_controller.remove_item(item_id, quantity)
+		if removed <= 0:
+			print("❌ Impossible de retirer l'item")
+			return false
+		
+		print("✅ Transfert réussi: %s x%d" % [item_id, removed])
+		return true
 	
 	func _find_click_manager():
-		# Cherche dans la scène courante
 		var scene = Engine.get_main_loop().current_scene
 		return _find_click_manager_recursive(scene)
 	
@@ -72,7 +129,7 @@ class SimpleMoveAction extends SimpleAction:
 			if result:
 				return result
 		return null
-
+		
 class SimpleUseAction extends SimpleAction:
 	func _init():
 		super("use", 20)

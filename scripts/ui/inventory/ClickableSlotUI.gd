@@ -22,6 +22,14 @@ func _ready():
 	_find_components()
 	setup_button()
 	clear_slot()
+	
+	print("🔍 [SLOT %d] Signaux connectés:" % slot_index)
+	if slot_clicked.get_connections().size() > 0:
+		print("   ✅ slot_clicked: %d connexions" % slot_clicked.get_connections().size())
+		for connection in slot_clicked.get_connections():
+			print("     -> %s.%s" % [connection.callable.get_object().name, connection.callable.get_method()])
+	else:
+		print("   ❌ slot_clicked: AUCUNE connexion")
 
 func _find_components():
 	"""Trouve les composants même s'ils sont créés dynamiquement"""
@@ -66,10 +74,18 @@ func _on_button_gui_input(event: InputEvent):
 	if event is InputEventMouseButton:
 		var mouse_event = event as InputEventMouseButton
 		
+		# DEBUG - Logs détaillés
+		print("🎯 [SLOT %d] Event détecté:" % slot_index)
+		print("   - Bouton: %d" % mouse_event.button_index)  
+		print("   - Pressed: %s" % mouse_event.pressed)
+		print("   - Position: %s" % mouse_event.position)
+		
 		# Ne traiter que les releases (pas les press)
 		if not mouse_event.pressed:
-			print("🎯 Clic détecté slot %d, bouton: %d" % [slot_index, mouse_event.button_index])
+			print("   ✅ Émission signal slot_clicked")
 			slot_clicked.emit(slot_index, mouse_event)
+		else:
+			print("   ⏸️ Press ignoré (on attend le release)")
 
 func _on_mouse_entered():
 	"""Émission du signal de hover"""
@@ -156,7 +172,7 @@ func _create_fallback_icon() -> ImageTexture:
 # === ÉTATS VISUELS ===
 
 func set_selected(selected: bool):
-	"""Marque le slot comme sélectionné"""
+	"""Marque le slot comme sélectionné avec effet visuel amélioré"""
 	is_selected = selected
 	
 	if not background:
@@ -164,9 +180,27 @@ func set_selected(selected: bool):
 	
 	if background:
 		if selected:
-			background.color = Color.YELLOW
+			# Effet de sélection voyant
+			background.color = Color.GOLD
+			print("✨ Slot %d sélectionné visuellement" % slot_index)
+			
+			# Animation optionnelle
+			if background.get("modulate"):
+				var tween = create_tween()
+				tween.set_loops()
+				tween.tween_property(background, "modulate:a", 0.7, 0.5)
+				tween.tween_property(background, "modulate:a", 1.0, 0.5)
 		else:
+			# Retour à la normale
 			background.color = Color(0.09, 0.125, 0.22, 0.8)
+			background.modulate.a = 1.0
+			print("🔹 Slot %d désélectionné" % slot_index)
+			
+			# Arrêter l'animation
+			var tweens = get_tree().get_nodes_in_group("tween")
+			for tween in tweens:
+				if tween.get_parent() == self:
+					tween.kill()
 
 func set_waiting_for_target(waiting: bool):
 	"""Marque visuellement que ce slot attend une cible"""

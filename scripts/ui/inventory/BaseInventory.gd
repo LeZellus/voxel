@@ -99,8 +99,7 @@ func _on_slot_clicked(slot_index: int, mouse_event: InputEventMouseButton):
 	var click_type = ClickContext.ClickType.SIMPLE_RIGHT_CLICK if mouse_event.button_index == MOUSE_BUTTON_RIGHT else ClickContext.ClickType.SIMPLE_LEFT_CLICK
 	var context = ClickContext.create_slot_interaction(click_type, slot_index, container.get_container_id(), slot_data)
 	
-	Events.instance.slot_clicked.emit(context)
-
-# Méthodes virtuelles pour affichage (à override)
-func show_ui(): visible = true
-func hide_ui(): visible = false
+	if Events.instance:
+		Events.instance.slot_clicked.emit(context)
+	else:
+		print("❌ Events.instance introuvable")

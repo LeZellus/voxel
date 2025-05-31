@@ -4,6 +4,7 @@ extends Node
 
 var click_system: ClickSystemManager
 var registered_uis: Dictionary = {}
+var selected_slot_info: Dictionary = {}
 
 func _ready():
 	_setup_click_system()
@@ -24,10 +25,11 @@ func _setup_click_system():
 func _handle_slot_click_via_events(context: ClickContext):
 	"""Nouveau gestionnaire via Events"""
 	print("🎯 Clic reçu via Events: slot %d, container %s" % [context.source_slot_index, context.source_container_id])
-
+	
+	_handle_visual_selection(context)
 	# Traiter le clic (utilise ton code existant)
 	var success = click_system.action_registry.execute(context)
-
+	
 	if success:
 	# Rafraîchir les UIs
 		call_deferred("_refresh_all_uis")
@@ -109,3 +111,68 @@ func debug_system():
 	
 	if click_system:
 		click_system.print_debug_info()
+
+func _handle_visual_selection(context: ClickContext):
+	"""Gère la sélection visuelle des slots"""
+	
+	# Si on a déjà un slot sélectionné
+	if not selected_slot_info.is_empty():
+		print("🔹 Slot déjà sélectionné: %s[%d]" % [selected_slot_info.container_id, selected_slot_info.slot_index])
+		
+		# Si on clique sur le même slot = désélectionner
+		if (context.source_slot_index == selected_slot_info.slot_index and 
+			context.source_container_id == selected_slot_info.container_id):
+			print("❌ Désélection du slot")
+			_clear_selection()
+			return
+		
+		# Sinon = nouveau clic = destination
+		print("➡️ Destination: slot %d" % context.source_slot_index)
+		_clear_selection()
+		return
+	
+	# Nouveau clic = sélection (seulement si le slot a un item)
+	if not context.source_slot_data.get("is_empty", true):
+		print("📌 Sélection: slot %d" % context.source_slot_index)
+		selected_slot_info = {
+			"slot_index": context.source_slot_index,
+			"container_id": context.source_container_id
+		}
+		_highlight_selected_slot()
+
+func _highlight_selected_slot():
+	"""Surligne visuellement le slot sélectionné"""
+	if selected_slot_info.is_empty():
+		return
+	
+	var ui = registered_uis.get(selected_slot_info.container_id)
+	if not ui:
+		return
+	
+	# Chercher le slot UI correspondant
+	var slot_ui = _find_slot_ui(ui, selected_slot_info.slot_index)
+	if slot_ui and slot_ui.has_method("set_selected"):
+		slot_ui.set_selected(true)
+		print("✨ Slot %d surligné" % selected_slot_info.slot_index)
+
+func _clear_selection():
+	"""Efface la sélection visuelle"""
+	if selected_slot_info.is_empty():
+		return
+	
+	var ui = registered_uis.get(selected_slot_info.container_id)
+	if ui:
+		var slot_ui = _find_slot_ui(ui, selected_slot_info.slot_index)
+		if slot_ui and slot_ui.has_method("set_selected"):
+			slot_ui.set_selected(false)
+			print("🔹 Surligement effacé slot %d" % selected_slot_info.slot_index)
+	
+	selected_slot_info.clear()
+
+func _find_slot_ui(ui: Control, slot_index: int) -> ClickableSlotUI:
+	"""Trouve le ClickableSlotUI avec l'index donné"""
+	var slots = _find_slots_in_ui(ui)
+	for slot in slots:
+		if slot.get_slot_index() == slot_index:
+			return slot
+	return null
