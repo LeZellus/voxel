@@ -110,6 +110,10 @@ func show_ui():
 	
 	is_ui_visible = true
 	
+	ui.show_ui()
+	
+	print("📦 UI affichée: %s" % container_id)
+	
 
 func hide_ui():
 	"""Cache l'UI du container"""
