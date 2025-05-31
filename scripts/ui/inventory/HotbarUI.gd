@@ -11,7 +11,7 @@ func get_max_slots() -> int:
 	return 9  # Hotbar fixe à 9 slots
 
 func should_show_title() -> bool:
-	return false  # Pas de titre pour la hotbar
+	return true  # Pas de titre pour la hotbar
 
 func get_slot_size() -> Vector2:
 	return Vector2(64, 64)

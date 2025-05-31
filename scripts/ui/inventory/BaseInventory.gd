@@ -1,4 +1,4 @@
-# scripts/ui/inventory/BaseInventoryUI.gd - CLASSE DE BASE
+# scripts/ui/inventory/BaseInventoryUI.gd - CORRIGÉ
 class_name BaseInventoryUI
 extends Control
 
@@ -33,6 +33,25 @@ func get_slot_size() -> Vector2:
 
 func _ready():
 	print("📦 %s ready" % get_script().get_global_name())
+	# CORRECTION: Rechercher slots_grid si @onready a échoué
+	_find_slots_grid()
+
+func _find_slots_grid():
+	"""Trouve le GridContainer même si @onready a échoué"""
+	if not slots_grid:
+		# Essayer différents chemins possibles
+		slots_grid = get_node_or_null("VBoxContainer/SlotsGrid")
+		if not slots_grid:
+			slots_grid = get_node_or_null("HotbarGrid/GridContainer")
+		if not slots_grid:
+			slots_grid = get_node_or_null("SlotsGrid")
+		if not slots_grid:
+			slots_grid = get_node_or_null("GridContainer")
+	
+	if not slots_grid:
+		print("❌ GridContainer introuvable dans %s" % get_script().get_global_name())
+	else:
+		print("✅ GridContainer trouvé: %s" % slots_grid.get_path())
 
 func setup_with_clickable_container(clickable_container):
 	"""Setup commun pour tous les types d'inventaire"""
@@ -70,23 +89,42 @@ func _validate_container(clickable_container) -> bool:
 
 func _setup_ui():
 	"""Configure l'interface - peut être overridée"""
+	# CORRECTION: Re-chercher slots_grid au cas où
+	_find_slots_grid()
+	
 	if not slots_grid:
 		print("❌ SlotsGrid introuvable")
 		return
 	
 	slots_grid.columns = get_grid_columns()
 	
+	# CORRECTION: Mettre à jour le titre avec le bon nom
+	_update_title()
+
+func _update_title():
+	"""Met à jour le titre avec le nom de l'inventaire"""
+	if not title_label:
+		title_label = get_node_or_null("VBoxContainer/TitleLabel")
+	
 	if title_label and inventory and should_show_title():
 		title_label.text = inventory.name.to_upper()
 		title_label.visible = true
+		print("📝 Titre mis à jour: '%s'" % inventory.name)
 	elif title_label:
 		title_label.visible = false
+
+# === NOUVELLE MÉTHODE POUR METTRE À JOUR LE NOM ===
+
+func update_inventory_name():
+	"""Met à jour le nom affiché - appelée par ClickableContainer"""
+	_update_title()
 
 # === GESTION DES SLOTS ===
 
 func _create_slots():
 	"""Crée tous les slots"""
 	if not inventory or not slots_grid:
+		print("❌ Impossible de créer les slots: inventory=%s, slots_grid=%s" % [inventory != null, slots_grid != null])
 		return
 	
 	_clear_slots()

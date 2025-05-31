@@ -48,16 +48,17 @@ func _create_container_from_config(config_key: String):
 func _on_container_ready(container_id: String, controller):
 	"""Callback quand un container est prêt"""
 	var container = _find_container_by_id(container_id)
+	
+	_apply_display_name(container, container_id)
+	
 	if not container:
 		return
-	
-	# Appliquer le nom d'affichage
-	_apply_display_name(container, container_id)
 	
 	# Enregistrer
 	containers[container_id] = container
 	click_integrator.register_container(container_id, controller, container.ui)
 	
+	_apply_default_visibility(container, container_id)
 	print("📦 Container prêt: %s" % container_id)
 
 func _apply_display_name(container: ClickableContainer, container_id: String):
@@ -67,7 +68,25 @@ func _apply_display_name(container: ClickableContainer, container_id: String):
 		if config.id == container_id:
 			container.update_inventory_name(config.display_name)
 			return
-
+			
+func _apply_default_visibility(container: ClickableContainer, container_id: String):
+	"""Applique la visibilité par défaut"""
+	for config_key in InventoryConfig.INVENTORIES.keys():
+		var config = InventoryConfig.get_inventory_config(config_key)
+		if config.id == container_id:
+			var should_be_visible = config.get("visible_by_default", false)
+			print("👁️ Visibilité par défaut pour %s: %s" % [container_id, should_be_visible])
+			
+			if should_be_visible:
+				# Délai pour s'assurer que l'UI est bien configurée
+				call_deferred("_show_container_ui", container)
+			return
+			
+func _show_container_ui(container: ClickableContainer):
+	"""Affiche l'UI d'un container avec délai"""
+	await get_tree().process_frame
+	container.show_ui()
+	
 func _find_container_by_id(container_id: String) -> ClickableContainer:
 	"""Trouve un container par ID"""
 	for child in get_children():
