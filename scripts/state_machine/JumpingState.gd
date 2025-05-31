@@ -1,7 +1,7 @@
-extends State
+extends MovementStateBase
 class_name JumpingState
 
-func enter():
+func on_enter():
 	player.velocity.y = player.jump_velocity
 
 func physics_update(delta):
@@ -23,6 +23,10 @@ func physics_update(delta):
 			state_machine.change_state("walking")
 		else:
 			state_machine.change_state("idle")
+			
+func configure_state():
+	"""Configuration spécifique à la marche"""
+	configure_for_jumping()
 
 func handle_input(_event):
 	# Caméra gérée par PlayerController

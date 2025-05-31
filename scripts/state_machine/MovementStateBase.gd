@@ -93,6 +93,7 @@ func _stop_animation():
 
 func _update_animation():
 	var anim_player = get_animation_player()
+	
 	if not anim_player:
 		return
 		
@@ -169,6 +170,10 @@ func configure_for_walking():
 	animation_name = "Run"
 	base_animation_speed = 4.0
 	running_animation_speed = 6.0
+	
+func configure_for_jumping():
+	audio_state_name = "jumping"
+	animation_name = "Jump"
 
 # === TEMPLATE METHODS ===
 func physics_update(delta):
@@ -187,6 +192,7 @@ func exit():
 # === HOOKS POUR LES CLASSES FILLES ===
 func configure_state():
 	configure_for_walking()
+	configure_for_jumping()
 
 func handle_specific_logic(_delta: float):
 	apply_common_movement(_delta)
