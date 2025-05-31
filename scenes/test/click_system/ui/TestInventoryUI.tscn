@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://c701oj2ci8js7"]
 
-[ext_resource type="Script" path="res://scripts/inventory/ui/InventoryUI.gd" id="1_h6jfn"]
-[ext_resource type="PackedScene" uid="uid://bv46b6l2la66h" path="res://scenes/ui/InventoryGridUI.tscn" id="2_fkanj"]
+[ext_resource type="Script" path="res://scripts/inventory/ui/InventoryUI.gd" id="1_xr5lr"]
+[ext_resource type="PackedScene" uid="uid://bv46b6l2la66h" path="res://scenes/ui/InventoryGridUI.tscn" id="2_k04o4"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_s6u58"]
 content_margin_left = 4.0
@@ -17,7 +17,7 @@ anchor_bottom = 1.0
 offset_top = 500.0
 grow_horizontal = 2
 grow_vertical = 0
-script = ExtResource("1_h6jfn")
+script = ExtResource("1_xr5lr")
 
 [node name="ColorRect" type="ColorRect" parent="."]
 layout_mode = 1
@@ -61,6 +61,6 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_s6u58")
 text = "INVENTAIRE"
 vertical_alignment = 1
 
-[node name="InventoryGrid" parent="MarginContainer/CenterContainer/VboxContainer" instance=ExtResource("2_fkanj")]
+[node name="InventoryGrid" parent="MarginContainer/CenterContainer/VboxContainer" instance=ExtResource("2_k04o4")]
 custom_minimum_size = Vector2(608, 336)
 layout_mode = 2

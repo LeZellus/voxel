@@ -65,7 +65,7 @@ func _execute_move(context: ClickContext) -> bool:
 	emit_action_signals(context, success)
 	return success
 
-func _execute_cross_container_move(context: ClickContext, source_ctrl: InventoryController, target_ctrl: InventoryController) -> bool:
+func _execute_cross_container_move(context: ClickContext, source_ctrl, target_ctrl) -> bool:
 	"""Gère le déplacement entre conteneurs différents"""
 	
 	# Récupérer les inventaires

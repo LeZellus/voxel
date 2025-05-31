@@ -1,4 +1,4 @@
-# scripts/click_system/test/TestClickSystemManager.gd
+# scripts/click_system/test/TestClickSystemManager.gd - AVEC CROSS-CONTAINER
 extends Node
 class_name TestClickSystemManager
 
@@ -37,33 +37,11 @@ func register_basic_actions():
 	var use_action = UseItemAction.new(click_system)
 	click_system.register_action(ClickContext.ClickType.SIMPLE_RIGHT_CLICK, use_action)
 	
-	print("✅ Actions de base enregistrées")
-
-func connect_existing_inventory(inventory: TestInventoryData):
-	"""Connecte l'inventaire existant au système de test"""
-	if not inventory:
-		print("❌ Inventaire null")
-		return
+	# NOUVEAU: Action cross-container (même type que move, mais priorité sur cross-container)
+	var cross_action = CrossContainerAction.new(click_system)
+	click_system.register_action(ClickContext.ClickType.SIMPLE_LEFT_CLICK, cross_action)
 	
-	test_inventory = inventory
-	
-	# Enregistrer l'inventaire dans le système de clic
-	click_system.register_container("player_inventory", inventory.controller)
-	
-	print("✅ Inventaire connecté au système de clic")
-
-func connect_existing_hotbar(hotbar: TestHotbarData):
-	"""Connecte la hotbar existante au système de test"""
-	if not hotbar:
-		print("❌ Hotbar null")
-		return
-	
-	test_hotbar = hotbar
-	
-	# Enregistrer la hotbar dans le système de clic
-	click_system.register_container("player_hotbar", hotbar.controller)
-	
-	print("✅ Hotbar connectée au système de clic")
+	print("✅ Actions de base + cross-container enregistrées")
 
 func simulate_click_on_inventory_slot(slot_index: int, click_type: ClickContext.ClickType = ClickContext.ClickType.SIMPLE_LEFT_CLICK):
 	if not test_inventory:
@@ -71,83 +49,121 @@ func simulate_click_on_inventory_slot(slot_index: int, click_type: ClickContext.
 		return
 	
 	var slot_data = test_inventory.controller.get_slot_info(slot_index)
-	
-	# Créer le bon événement selon le type
 	var fake_event = InputEventMouseButton.new()
-	fake_event.pressed = false  # Simule un release
+	fake_event.pressed = false
 	
-	# CORRECTION : Choisir le bon bouton selon le type de clic
 	match click_type:
 		ClickContext.ClickType.SIMPLE_RIGHT_CLICK:
 			fake_event.button_index = MOUSE_BUTTON_RIGHT
 		_:
 			fake_event.button_index = MOUSE_BUTTON_LEFT
 	
-	# Simuler le clic
 	click_system.handle_slot_click(slot_index, "test_inventory", slot_data, fake_event)
+
+# NOUVEAU: Simuler un clic sur la hotbar
+func simulate_click_on_hotbar_slot(slot_index: int, click_type: ClickContext.ClickType = ClickContext.ClickType.SIMPLE_LEFT_CLICK):
+	if not test_hotbar:
+		print("❌ Hotbar de test non connectée")
+		return
+	
+	var slot_data = test_hotbar.controller.get_slot_info(slot_index)
+	var fake_event = InputEventMouseButton.new()
+	fake_event.pressed = false
+	
+	match click_type:
+		ClickContext.ClickType.SIMPLE_RIGHT_CLICK:
+			fake_event.button_index = MOUSE_BUTTON_RIGHT
+		_:
+			fake_event.button_index = MOUSE_BUTTON_LEFT
+	
+	click_system.handle_slot_click(slot_index, "test_hotbar", slot_data, fake_event)
 
 func print_test_info():
 	"""Affiche les informations de test"""
-	print("\n🧪 === INFORMATIONS DE TEST ===")
+	print("\n🧪 === INFORMATIONS DE TEST CROSS-CONTAINER ===")
 	print("📋 Actions disponibles:")
-	print("   - Clic gauche: Déplacer un objet")
+	print("   - Clic gauche: Déplacer un objet (même conteneur ou cross-container)")
 	print("   - Clic droit: Utiliser un objet")
 	print("\n📋 Commandes de test:")
-	print("   - Appuyez sur [T] pour tester un clic sur le slot 0")
-	print("   - Appuyez sur [Y] pour tester un clic droit sur le slot 0")
-	print("   - Appuyez sur [U] pour afficher l'état du système")
+	print("   [T] - Clic inventaire slot 0")
+	print("   [Y] - Clic droit inventaire slot 0")
+	print("   [1,2,3] - Destination inventaire slots 1,2,3")
+	print("   [H] - Clic hotbar slot 0")
+	print("   [J] - Clic droit hotbar slot 0")
+	print("   [4,5,6] - Destination hotbar slots 1,2,3")
+	print("   [U] - État système")
+	print("\n🎯 Test cross-container:")
+	print("   1. [T] puis [4] = Inventaire slot 0 → Hotbar slot 1")
+	print("   2. [H] puis [1] = Hotbar slot 0 → Inventaire slot 1")
 
 func _input(event):
 	if not event is InputEventKey or not event.pressed:
 		return
 	
 	match event.keycode:
+		# === INVENTAIRE ===
 		KEY_T:
-			print("🧪 Test: Clic gauche sur slot 0")
+			print("🧪 Test: Clic inventaire slot 0")
 			simulate_click_on_inventory_slot(0, ClickContext.ClickType.SIMPLE_LEFT_CLICK)
 		
 		KEY_Y:
-			print("🧪 Test: Clic droit sur slot 0")
+			print("🧪 Test: Clic droit inventaire slot 0")
 			simulate_click_on_inventory_slot(0, ClickContext.ClickType.SIMPLE_RIGHT_CLICK)
 		
 		KEY_1:
-			print("🧪 Test: Clic destination slot 1")
+			print("🧪 Test: Destination inventaire slot 1")
 			simulate_click_on_inventory_slot(1, ClickContext.ClickType.SIMPLE_LEFT_CLICK)
 		
 		KEY_2:
-			print("🧪 Test: Clic destination slot 2")
+			print("🧪 Test: Destination inventaire slot 2")
 			simulate_click_on_inventory_slot(2, ClickContext.ClickType.SIMPLE_LEFT_CLICK)
+		
+		KEY_3:
+			print("🧪 Test: Destination inventaire slot 3")
+			simulate_click_on_inventory_slot(3, ClickContext.ClickType.SIMPLE_LEFT_CLICK)
+		
+		# === HOTBAR ===
+		KEY_H:
+			print("🧪 Test: Clic hotbar slot 0")
+			simulate_click_on_hotbar_slot(0, ClickContext.ClickType.SIMPLE_LEFT_CLICK)
+		
+		KEY_J:
+			print("🧪 Test: Clic droit hotbar slot 0")
+			simulate_click_on_hotbar_slot(0, ClickContext.ClickType.SIMPLE_RIGHT_CLICK)
+		
+		KEY_4:
+			print("🧪 Test: Destination hotbar slot 1")
+			simulate_click_on_hotbar_slot(1, ClickContext.ClickType.SIMPLE_LEFT_CLICK)
+		
+		KEY_5:
+			print("🧪 Test: Destination hotbar slot 2")
+			simulate_click_on_hotbar_slot(2, ClickContext.ClickType.SIMPLE_LEFT_CLICK)
+		
+		KEY_6:
+			print("🧪 Test: Destination hotbar slot 3")
+			simulate_click_on_hotbar_slot(3, ClickContext.ClickType.SIMPLE_LEFT_CLICK)
+		
+		# === SYSTÈME ===
+		KEY_U:
+			print("📊 État du click system:")
+			click_system.print_debug_info()
 			
 func connect_test_inventory(inventory_data: TestInventoryData):
 	"""Connecte l'inventaire de test au système de clic"""
-	if not inventory_data:
-		print("❌ inventory_data null")
+	if not inventory_data or not inventory_data.controller:
+		print("❌ inventory_data invalide")
 		return
 	
-	if not inventory_data.controller:
-		print("❌ controller null dans inventory_data")
-		return
-	
-	test_inventory = inventory_data  # Stocker la référence
-	
-	# Enregistrer dans le système de clic
+	test_inventory = inventory_data
 	click_system.register_container("test_inventory", inventory_data.controller)
-	
 	print("✅ Inventaire de test connecté au système de clic")
 			
 func connect_test_hotbar(hotbar_data: TestHotbarData):
 	"""Connecte la hotbar de test au système de clic"""
-	if not hotbar_data:
-		print("❌ hotbar_data null")
+	if not hotbar_data or not hotbar_data.controller:
+		print("❌ hotbar_data invalide")
 		return
 	
-	if not hotbar_data.controller:
-		print("❌ controller null dans hotbar_data")
-		return
-	
-	test_hotbar = hotbar_data  # Stocker la référence
-	
-	# Enregistrer dans le système de clic
+	test_hotbar = hotbar_data
 	click_system.register_container("test_hotbar", hotbar_data.controller)
-	
 	print("✅ Hotbar de test connectée au système de clic")

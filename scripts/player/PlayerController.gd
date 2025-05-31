@@ -1,4 +1,4 @@
-# PlayerController.gd - Version sans touche Échap
+# PlayerController.gd - AVEC NOUVEAU SYSTÈME D'INVENTAIRE INTÉGRÉ
 extends CharacterBody3D
 
 # Configuration depuis GameConfig
@@ -11,12 +11,15 @@ extends CharacterBody3D
 @export var min_vertical_angle: float = GameConfig.CAMERA.min_vertical_angle
 @export var max_vertical_angle: float = GameConfig.CAMERA.max_vertical_angle
 
-# Composants avec validation
+# Composants existants avec validation
 @onready var spring_arm: SpringArm3D = ValidationUtils.get_node_safe(self, "SpringArm3D")
 @onready var camera: Camera3D = ValidationUtils.get_node_safe(spring_arm, "Camera3D") if spring_arm else null
 @onready var state_machine: StateMachine = ValidationUtils.get_node_safe(self, "StateMachine")
 @onready var model_root: Node3D = ValidationUtils.get_node_safe(self, "CharacterSkin")
 @onready var animation_player: AnimationPlayer = $CharacterSkin/AnimationPlayer 
+
+# === NOUVEAU SYSTÈME D'INVENTAIRE ===
+@onready var inventory_system: InventorySystem = $InventorySystem
 
 var current_speed: float
 var gravity = ProjectSettings.get_setting("physics/3d/default_gravity")
@@ -26,6 +29,86 @@ func _ready():
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	setup_spring_arm()
 	add_to_group(GameConfig.GROUPS.player)
+	
+	# === SETUP INVENTAIRE ===
+	setup_inventory_system()
+
+func setup_inventory_system():
+	"""Configure le nouveau système d'inventaire"""
+	if not inventory_system:
+		print("❌ InventorySystem non trouvé dans Player")
+		return
+	
+	# Attendre que l'inventory system soit prêt
+	inventory_system.system_ready.connect(_on_inventory_system_ready)
+	print("🎮 Inventory system en cours d'initialisation...")
+
+func _on_inventory_system_ready():
+	"""Callback quand l'inventory system est prêt"""
+	print("✅ Inventory system intégré au joueur")
+	
+	# Ajouter des items de test
+	call_deferred("_add_test_items")
+	
+	# Setup input pour l'inventaire
+	_setup_inventory_input()
+
+func _add_test_items():
+	"""Ajoute des items de test"""
+	print("🧪 Ajout d'items de test...")
+	
+	# Créer quelques items de test
+	var apple = Item.new()
+	apple.id = "apple"
+	apple.name = "Pomme"
+	apple.item_type = Item.ItemType.CONSUMABLE
+	apple.max_stack_size = 64
+	apple.is_stackable = true
+	apple.icon = _create_test_icon(Color.RED)
+	
+	var sword = Item.new()
+	sword.id = "sword"
+	sword.name = "Épée"
+	sword.item_type = Item.ItemType.TOOL
+	sword.max_stack_size = 1
+	sword.is_stackable = false
+	sword.icon = _create_test_icon(Color.SILVER)
+	
+	var wood = Item.new()
+	wood.id = "wood"
+	wood.name = "Bois"
+	wood.item_type = Item.ItemType.RESOURCE
+	wood.max_stack_size = 99
+	wood.is_stackable = true
+	wood.icon = _create_test_icon(Color(0.6, 0.3, 0.1))
+	
+	# Ajouter à l'inventaire
+	inventory_system.add_item_to_inventory(apple, 15)
+	inventory_system.add_item_to_inventory(sword, 1)
+	inventory_system.add_item_to_inventory(wood, 32)
+	
+	# Ajouter quelques items à la hotbar
+	inventory_system.add_item_to_hotbar(apple, 5)
+	inventory_system.add_item_to_hotbar(sword, 1)
+	
+	print("✅ Items de test ajoutés")
+
+func _create_test_icon(color: Color) -> ImageTexture:
+	"""Crée une icône de test colorée"""
+	var image = Image.create(32, 32, false, Image.FORMAT_RGB8)
+	image.fill(color)
+	
+	var texture = ImageTexture.new()
+	texture.set_image(image)
+	return texture
+
+func _setup_inventory_input():
+	"""Configure les raccourcis spécifiques au joueur"""
+	
+	# Déjà géré par InventorySystem pour le toggle inventaire (E)
+	# Ici on peut ajouter d'autres raccourcis si nécessaire
+	
+	print("⌨️ Raccourcis inventaire configurés")
 
 func setup_spring_arm():
 	if not ValidationUtils.validate_node(spring_arm, "SpringArm3D", "setup_spring_arm"):
@@ -36,6 +119,27 @@ func setup_spring_arm():
 	spring_arm.collision_mask = 1
 	spring_arm.margin = 0.5
 	spring_arm.rotation.x = -0.3
+	
+func _input(event):
+	# Ajoute ça dans ta fonction _input existante ou crée-la
+	if event is InputEventKey and event.pressed:
+		match event.keycode:
+			KEY_F1:
+				print("🧪 Debug inventaire:")
+				inventory_system.debug_all_containers()
+			
+			KEY_F2:
+				print("🧪 Test ajout item:")
+				var test_item = Item.new()
+				test_item.id = "debug_item"
+				test_item.name = "Item Debug"
+				test_item.item_type = Item.ItemType.CONSUMABLE
+				pickup_item(test_item, 3)
+			
+			KEY_F3:
+				print("🧪 État click system:")
+				if inventory_system.click_integrator:
+					inventory_system.click_integrator.click_system.print_debug_info()
 
 func _unhandled_input(event: InputEvent):
 	handle_camera_input(event)
@@ -54,8 +158,6 @@ func handle_camera_input(event: InputEvent):
 	
 	elif event is InputEventMouseButton and Input.is_key_pressed(KEY_CTRL):
 		_handle_zoom(event)
-	
-	# SUPPRIMÉ : La gestion de ui_cancel (Échap)
 
 func _handle_zoom(event: InputEventMouseButton):
 	var config = GameConfig.CAMERA
@@ -73,9 +175,8 @@ func _handle_zoom(event: InputEventMouseButton):
 			config.zoom_max
 		)
 
-# SUPPRIMÉ : La fonction _toggle_mouse_mode() entière
+# === MÉTHODES DE MOUVEMENT (inchangées) ===
 
-# Méthodes de mouvement simplifiées
 func apply_gravity(delta):
 	if not is_on_floor():
 		velocity.y -= gravity * delta
@@ -108,3 +209,42 @@ func get_movement_direction_from_camera() -> Vector3:
 	direction.y = 0
 	
 	return direction
+
+# === API PUBLIQUE POUR INVENTAIRE ===
+
+func pickup_item(item: Item, quantity: int = 1) -> int:
+	"""Ramasse un item - retourne le surplus"""
+	if not inventory_system:
+		return quantity
+	
+	var surplus = inventory_system.add_item_to_inventory(item, quantity)
+	var picked_up = quantity - surplus
+	
+	if picked_up > 0:
+		print("📦 Ramassé: %s x%d" % [item.name, picked_up])
+		# Ici tu peux ajouter un son ou effet
+	
+	if surplus > 0:
+		print("⚠️ Inventaire plein! %d %s laissés" % [surplus, item.name])
+	
+	return surplus
+
+func has_item(item_id: String, quantity: int = 1) -> bool:
+	"""Vérifie si le joueur a un item"""
+	if not inventory_system:
+		return false
+	
+	return inventory_system.has_item(item_id, quantity)
+
+func get_inventory_system() -> InventorySystem:
+	"""Accès au système d'inventaire"""
+	return inventory_system
+
+# === DEBUG ===
+
+func debug_inventory():
+	"""Affiche les infos de l'inventaire pour debug"""
+	if inventory_system:
+		inventory_system.debug_all_containers()
+	else:
+		print("❌ Pas d'inventory system")
