@@ -11,7 +11,7 @@ func _ready():
 	
 	if Events.instance:
 		Events.instance.slot_clicked.connect(_handle_slot_click_via_events)
-		print("🔗 ClickSystemIntegrator connecté aux Events")
+		Events.instance.inventory_closed.connect(_on_inventory_closed)
 	else:
 		print("❌ Events non disponible")
 
@@ -19,11 +19,9 @@ func _setup_click_system():
 	"""Configure le gestionnaire de clic"""
 	click_system = ClickSystemManager.new()
 	add_child(click_system)
-	print("✅ ClickSystemIntegrator configuré")
 
 func _handle_slot_click_via_events(context: ClickContext):
 	"""Gestionnaire principal unifié"""
-	print("🎯 Clic reçu: slot %d, container %s" % [context.source_slot_index, context.source_container_id])
 	
 	# Si on a déjà un slot sélectionné = créer un contexte slot-to-slot
 	if not selected_slot_info.is_empty():
@@ -34,7 +32,6 @@ func _handle_slot_click_via_events(context: ClickContext):
 		var success = click_system.action_registry.execute(target_context)
 		if success:
 			# Rafraîchissement immédiat et forcé
-			print("🔄 [INTEGRATOR] Forçage rafraîchissement après succès")
 			_refresh_all_uis()
 		return
 	
@@ -48,7 +45,6 @@ func _handle_slot_click_via_events(context: ClickContext):
 func _handle_left_click(context: ClickContext):
 	"""Gère les clics gauches (sélection/déplacement)"""
 	if context.source_slot_data.get("is_empty", true):
-		print("⚠️ Clic sur slot vide - ignoré")
 		return
 	
 	# Sélectionner le slot
@@ -58,8 +54,7 @@ func _handle_left_click(context: ClickContext):
 		"slot_data": context.source_slot_data
 	}
 	
-	_highlight_selected_slot()
-	print("📌 Slot %d sélectionné - cliquez sur la destination" % context.source_slot_index)
+	# _highlight_selected_slot()
 
 func _handle_right_click(context: ClickContext):
 	"""Gère les clics droits (utilisation directe)"""
@@ -93,7 +88,6 @@ func _highlight_selected_slot():
 	var slot_ui = _find_slot_ui(ui, selected_slot_info.slot_index)
 	if slot_ui and slot_ui.has_method("set_selected"):
 		slot_ui.set_selected(true)
-		print("✨ Slot %d surligné" % selected_slot_info.slot_index)
 
 func _clear_selection():
 	"""Efface la sélection visuelle"""
@@ -118,13 +112,10 @@ func register_container(container_id: String, controller, ui: Control):
 	if ui:
 		registered_uis[container_id] = ui
 	
-	print("🔗 Container connecté: %s" % container_id)
-
 # === UTILITAIRES ===
 
 func _refresh_all_uis():
 	"""Rafraîchit toutes les UIs enregistrées"""
-	print("🔄 [INTEGRATOR] Rafraîchissement de toutes les UIs...")
 	
 	for container_id in registered_uis.keys():
 		var ui = registered_uis[container_id]
@@ -155,6 +146,16 @@ func _find_slots_recursive(node: Node, slots: Array):
 	
 	for child in node.get_children():
 		_find_slots_recursive(child, slots)
+		
+func _on_inventory_closed(container_id: String):
+	"""Callback quand un inventaire se ferme - reset de la sélection"""
+	force_clear_selection()
+
+func force_clear_selection():
+	"""Force le nettoyage de toute sélection active"""
+	if not selected_slot_info.is_empty():
+		print("🧹 Nettoyage forcé de la sélection")
+		_clear_selection()
 
 # === DEBUG ===
 

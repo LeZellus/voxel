@@ -29,8 +29,6 @@ func _create_slots():
 		var slot = InventorySlot.new(i)
 		slot.slot_changed.connect(_on_slot_changed.bind(i))
 		slots[i] = slot
-	
-	print("✅ Inventaire '%s' créé: %d slots" % [name, size])
 
 func _on_slot_changed(slot_index: int):
 	"""Callback quand un slot change"""

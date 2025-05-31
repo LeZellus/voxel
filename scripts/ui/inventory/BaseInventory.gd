@@ -109,11 +109,8 @@ func _on_slot_clicked(slot_index: int, mouse_event: InputEventMouseButton):
 		slot_data
 	)
 	
-	print("📡 [BaseInventoryUI] Émission via Events: slot %d" % slot_index)
-	
 	# ÉMISSION DIRECTE VIA EVENTS
 	if Events.instance:
 		Events.instance.slot_clicked.emit(context)
-		print("✅ Signal émis via Events")
 	else:
 		print("❌ Events.instance introuvable")

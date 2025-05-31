@@ -8,10 +8,8 @@ var containers: Dictionary = {}
 var click_integrator: ClickSystemIntegrator
 
 func _ready():
-	print("🎮 InventorySystem avec gestion souris corrigée")
 	await _setup_system()
 	system_ready.emit()
-	print("✅ InventorySystem prêt")
 
 func _setup_system():
 	click_integrator = ClickSystemIntegrator.new()
@@ -94,11 +92,9 @@ func _update_mouse_mode(inventory_is_open: bool):
 	if inventory_is_open:
 		# Inventaire ouvert : souris visible pour les interactions UI
 		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
-		print("🖱️ Souris visible - inventaire ouvert")
 	else:
 		# Inventaire fermé : souris capturée pour le jeu
 		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
-		print("🖱️ Souris capturée - inventaire fermé")
 
 func add_item_to_inventory(item: Item, quantity: int = 1) -> int:
 	var main_inv = get_main_inventory()

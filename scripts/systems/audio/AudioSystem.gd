@@ -37,7 +37,6 @@ func _ready():
 		queue_free()
 		return
 	
-	print("🎵 AudioSystem simplifié")
 	_setup_channels()
 	_load_all_sounds()
 
@@ -49,8 +48,6 @@ func _setup_channels():
 		player.volume_db = linear_to_db(AUDIO_CONFIG[category].volume)
 		add_child(player)
 		channels[category] = player
-	
-	print("✅ %d canaux créés" % channels.size())
 
 func _load_all_sounds():
 	"""Charge tous les sons"""
@@ -62,7 +59,9 @@ func _load_all_sounds():
 	
 	for category in paths:
 		sounds_cache[category] = AudioUtils.load_sounds_from_directory(paths[category])
-		print("📁 Sons %s: %d" % [category, sounds_cache[category].size()])
+		
+		if !category:
+			print("📁 Problèmes Sons : ",category)
 
 # === API PUBLIQUE STATIC (pour compatibilité) ===
 
@@ -84,14 +83,12 @@ static func start_footsteps(anim_player: AnimationPlayer, surface: String = "gra
 	instance.footstep_state.animation_player = anim_player
 	instance.footstep_state.current_surface = surface
 	instance.footstep_state.last_positions.clear()
-	print("🦶 Footsteps: %s" % surface)
 
 static func stop_footsteps():
 	if not instance: return
 	
 	instance.footstep_state.is_active = false
 	instance.footstep_state.animation_player = null
-	print("🛑 Footsteps stop")
 
 static func update_footsteps():
 	if not instance: return

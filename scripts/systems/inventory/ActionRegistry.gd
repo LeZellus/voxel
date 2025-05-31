@@ -33,10 +33,10 @@ class SimpleAction:
 		name = action_name
 		priority = action_priority
 	
-	func can_execute(context: ClickContext) -> bool:
+	func can_execute(_context: ClickContext) -> bool:
 		return false
 	
-	func execute(context: ClickContext) -> bool:
+	func execute(_context: ClickContext) -> bool:
 		return false
 
 class SimpleMoveAction extends SimpleAction:

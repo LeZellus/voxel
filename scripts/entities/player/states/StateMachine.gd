@@ -20,12 +20,10 @@ func _ready():
 	if initial_state:
 		call_deferred("_start_initial_state")
 		
-	print("🔍 États disponibles:", states.keys())
-	print("🔍 État initial défini:", initial_state.name if initial_state else "AUCUN")
+	
 	
 	if initial_state:
 		change_state(initial_state.name.to_lower())
-		print("✅ État initial démarré:", current_state.name if current_state else "ÉCHEC")
 	else:
 		print("❌ Aucun état initial défini!")
 		
@@ -54,11 +52,6 @@ func _physics_process(delta):
 func change_state(new_state_name: String):
 	var new_state = states.get(new_state_name.to_lower())
 	
-	print("🔄 Transition: %s -> %s" % [
-		current_state.name if current_state else "aucun",
-		new_state_name
-	])
-	
 	if not new_state:
 		print("❌ État introuvable: ", new_state_name)
 		print("📋 États disponibles: ", states.keys())
@@ -66,8 +59,10 @@ func change_state(new_state_name: String):
 	
 	if current_state:
 		current_state.exit()
-		print("🚪 Sortie de:", current_state.name)
 	
 	current_state = new_state
 	current_state.enter()
-	print("🚪 Entrée dans:", current_state.name)
+	
+func debug():
+	print("🔍 États disponibles:", states.keys())
+	print("🔍 État initial défini:", initial_state.name if initial_state else "AUCUN")

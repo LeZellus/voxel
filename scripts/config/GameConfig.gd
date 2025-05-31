@@ -68,13 +68,6 @@ const GROUPS = {
 	}
 }
 
-# Validation des configs
-static func validate_config():
-	assert(PLAYER.walk_speed > 0, "Vitesse de marche invalide")
-	assert(CAMERA.spring_length > 0, "Longueur de spring arm invalide")
-	
-	print("Configuration validée avec succès")
-
 # Getters simplifiés
 static func get_player_config() -> Dictionary:
 	return PLAYER

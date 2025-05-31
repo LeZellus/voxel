@@ -3,8 +3,6 @@ extends State
 class_name WalkingState
 
 func enter():
-	print("Mode marche activé")
-	
 	# Démarrer l'animation
 	if player.animation_player:
 		player.animation_player.play("Run")
@@ -19,8 +17,6 @@ func enter():
 		particles.emitting = true
 
 func exit():
-	print("Fin du mode marche")
-	
 	# Arrêter l'audio
 	player.stop_footsteps()
 	

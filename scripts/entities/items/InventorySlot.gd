@@ -116,4 +116,5 @@ func _to_string() -> String:
 
 func debug_info():
 	"""Affiche les infos de debug du slot"""
-	print("   Slot %d: %s" % [index, _to_string()])
+	# print("   Slot %d: %s" % [index, _to_string()])
+	pass

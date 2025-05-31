@@ -34,27 +34,21 @@ func get_slot_info(slot_index: int) -> Dictionary:
 
 func move_item(from_slot: int, to_slot: int) -> bool:
 	"""Déplace un item entre deux slots - VERSION CORRIGÉE"""
-	print("🔧 [CONTROLLER] move_item(%d -> %d)" % [from_slot, to_slot])
 	
 	var from_slot_obj = inventory.get_slot(from_slot)
 	var to_slot_obj = inventory.get_slot(to_slot)
 	
 	if not from_slot_obj or not to_slot_obj:
-		print("❌ Slots introuvables: from=%s, to=%s" % [str(from_slot_obj), str(to_slot_obj)])
 		return false
 	
 	if from_slot_obj.is_empty():
-		print("❌ Slot source vide")
 		return false
 	
 	if from_slot == to_slot:
-		print("⚠️ Même slot, pas de déplacement")
 		return false
 	
 	var item = from_slot_obj.get_item()
 	var quantity = from_slot_obj.get_quantity()
-	
-	print("📦 Déplacement: %s x%d (slot %d -> %d)" % [item.name, quantity, from_slot, to_slot])
 	
 	# Slot de destination vide : déplacer tout
 	if to_slot_obj.is_empty():
@@ -65,11 +59,9 @@ func move_item(from_slot: int, to_slot: int) -> bool:
 		
 		# Retirer de la source
 		var removed_stack = from_slot_obj.remove_item(quantity)
-		print("📤 Retiré de source: %s x%d" % [removed_stack.item.name if removed_stack.item else "null", removed_stack.quantity])
 		
 		# Ajouter à la destination (avec les données sauvegardées)
 		var surplus = to_slot_obj.add_item(new_stack.item, new_stack.quantity)
-		print("📥 Ajouté à destination: surplus=%d" % surplus)
 		
 		if surplus > 0:
 			# Remettre le surplus dans la source
@@ -97,8 +89,6 @@ func move_item(from_slot: int, to_slot: int) -> bool:
 	
 	# Items différents : swap
 	else:
-		print("🔄 Swap d'items différents...")
-		
 		var temp_item = to_slot_obj.get_item()
 		var temp_qty = to_slot_obj.get_quantity()
 		
@@ -110,7 +100,6 @@ func move_item(from_slot: int, to_slot: int) -> bool:
 		to_slot_obj.add_item(item, quantity)
 		from_slot_obj.add_item(temp_item, temp_qty)
 		
-		print("✅ Swap réussi")
 		return true
 
 func remove_item(item_id: String, quantity: int = 1) -> int:

@@ -24,8 +24,6 @@ func _init(id: String, size: int, ui_path: String = ""):
 	controller = ClickableInventoryController.new(inventory)
 
 func _ready():
-	print("🔧 ClickableContainer '%s' initialisé" % container_id)
-	
 	# Charger l'UI si spécifiée
 	if not ui_scene_path.is_empty():
 		await _load_ui()
@@ -63,8 +61,6 @@ func _load_ui():
 	# Cacher par défaut
 	ui.visible = false
 	is_ui_visible = false
-	
-	print("✅ UI chargée pour container '%s'" % container_id)
 
 func _find_or_create_ui_parent() -> Node:
 	"""Trouve ou crée un parent pour l'UI"""
@@ -82,7 +78,6 @@ func _find_or_create_ui_parent() -> Node:
 	new_canvas.layer = 10
 	current_scene.add_child(new_canvas)
 	
-	print("✅ CanvasLayer créé pour les UI")
 	return new_canvas
 
 func _find_canvas_layer_recursive(node: Node) -> CanvasLayer:
@@ -109,9 +104,6 @@ func show_ui():
 	is_ui_visible = true
 	
 	ui.show_ui()
-	
-	print("📦 UI affichée: %s" % container_id)
-	
 
 func hide_ui():
 	"""Cache l'UI du container"""
@@ -122,8 +114,6 @@ func hide_ui():
 	
 	# Utiliser la méthode de la classe fille
 	ui.hide_ui()
-	
-	print("📦 UI cachée: %s" % container_id)
 
 func toggle_ui():
 	"""Bascule l'affichage de l'UI"""
@@ -136,18 +126,14 @@ func _apply_default_visibility():
 	"""Applique la visibilité par défaut selon la config"""
 	var should_be_visible = _get_visibility_from_config()
 	
-	print("🔍 Container '%s' - visible par défaut: %s" % [container_id, should_be_visible])
-	
 	if should_be_visible:
 		# Utiliser la méthode show_ui() de la classe fille
 		ui.show_ui()
 		is_ui_visible = true
-		print("👁️ UI visible par défaut: %s" % container_id)
 	else:
 		# Utiliser la méthode hide_ui() de la classe fille  
 		ui.hide_ui()
 		is_ui_visible = false
-		print("👁️ UI cachée par défaut: %s" % container_id)
 		
 func _get_visibility_from_config() -> bool:
 	"""Récupère la visibilité par défaut depuis InventoryConfig"""
@@ -166,7 +152,6 @@ func update_inventory_name(new_name: String):
 	"""Met à jour le nom de l'inventaire et l'UI"""
 	if inventory:
 		inventory.name = new_name
-		print("📝 Nom d'inventaire mis à jour: '%s'" % new_name)
 		
 		# Mettre à jour l'UI si elle existe
 		if ui and ui.has_method("update_inventory_name"):

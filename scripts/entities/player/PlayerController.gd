@@ -25,7 +25,6 @@ var current_speed: float
 var gravity = ProjectSettings.get_setting("physics/3d/default_gravity")
 
 func _ready():
-	GameConfig.validate_config()
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	setup_spring_arm()
 	add_to_group(GameConfig.GROUPS.player)
@@ -41,23 +40,15 @@ func setup_inventory_system():
 	
 	# Attendre que l'inventory system soit prêt
 	inventory_system.system_ready.connect(_on_inventory_system_ready)
-	print("🎮 Inventory system en cours d'initialisation...")
 
 func _on_inventory_system_ready():
 	"""Callback quand l'inventory system est prêt"""
-	print("✅ Inventory system intégré au joueur")
-	
 	ServiceLocator.register("inventory", inventory_system)
 	
 	# Ajouter des items de test
 	call_deferred("_add_test_items")
-	
-	# Setup input pour l'inventaire
-	_setup_inventory_input()
 
 func _add_test_items():
-	print("🧪 Ajout d'items de test...")
-	
 	# Attendre que tout soit bien initialisé
 	await get_tree().process_frame
 	
@@ -80,16 +71,11 @@ func _add_test_items():
 	var sword_surplus = main_inv.inventory.add_item(sword, 1)
 	var wood_surplus = main_inv.inventory.add_item(wood, 12)
 	
-	print("📦 Pommes: %d ajoutées (surplus: %d)" % [5-apple_surplus, apple_surplus])
-	print("⚔️ Épée: %d ajoutée (surplus: %d)" % [1-sword_surplus, sword_surplus])
-	print("🪵 Bois: %d ajouté (surplus: %d)" % [12-wood_surplus, wood_surplus])
-	
 	# CRUCIAL - Forcer le refresh de l'UI
 	await get_tree().process_frame
 	if main_inv.ui:
 		if main_inv.ui.has_method("refresh_ui"):
 			main_inv.ui.refresh_ui()
-			print("🔄 UI forcée à se rafraîchir")
 		else:
 			print("❌ Méthode refresh_ui introuvable")
 	else:
@@ -103,14 +89,6 @@ func _create_test_icon(color: Color) -> ImageTexture:
 	var texture = ImageTexture.new()
 	texture.set_image(image)
 	return texture
-
-func _setup_inventory_input():
-	"""Configure les raccourcis spécifiques au joueur"""
-	
-	# Déjà géré par InventorySystem pour le toggle inventaire (E)
-	# Ici on peut ajouter d'autres raccourcis si nécessaire
-	
-	print("⌨️ Raccourcis inventaire configurés")
 
 func setup_spring_arm():
 	if not ValidationUtils.validate_node(spring_arm, "SpringArm3D", "setup_spring_arm"):
@@ -267,7 +245,6 @@ func _force_add_test_item():
 	var main_inv = inventory_system.get_main_inventory()
 	if main_inv:
 		var surplus = main_inv.add_item(test_item, 5)
-		print("📦 Item ajouté: %s x%d (surplus: %d)" % [test_item.name, 5-surplus, surplus])
 		
 		# Forcer le rafraîchissement de l'UI
 		if main_inv.ui and main_inv.ui.has_method("refresh_ui"):

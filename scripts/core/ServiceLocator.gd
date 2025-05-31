@@ -7,13 +7,15 @@ var _services: Dictionary = {}
 func _init():
 	if instance == null:
 		instance = self
-		print("🔧 ServiceLocator initialisé")
-
+	else:
+		print("🔧 ServiceLocator problème initialisation")
+		
 # === ENREGISTREMENT ===
 static func register(service_name: String, service: Node):
 	if instance:
 		instance._services[service_name] = service
-		print("✅ Service: %s" % service_name)
+	else :
+		print("🔧 Problème avec Service: %s" % service_name)
 
 static func get_service(service_name: String):
 	if instance:

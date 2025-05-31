@@ -21,7 +21,6 @@ func _ready():
 	
 	if tex2 == null:
 		print("ERREUR: Fichier iso_mouse2_click.png introuvable!")
-		print("Créer le fichier ou changer le nom dans le code")
 		return
 	
 	normal_cursor = create_cursor(tex1)
@@ -30,7 +29,6 @@ func _ready():
 	var audio_system = get_node_or_null("../AudioSystem")  # Ou le chemin correct
 	if audio_system:
 		ServiceLocator.register("audio", audio_system)
-		print("✅ AudioSystem enregistré")
 	else:
 		print("❌ AudioSystem introuvable dans la scène")
 	
@@ -56,8 +54,6 @@ func _input(event):
 		if event.pressed:
 			if click_cursor:
 				Input.set_custom_mouse_cursor(click_cursor, Input.CURSOR_ARROW, Vector2(16, 0))
-				print("🧪 Test ServiceLocator: %s" % ServiceLocator.instance)
-				print("🧪 Test Events: %s" % Events.instance)
 			else:
 				print("ERREUR: click_cursor est null!")
 		else:

@@ -8,7 +8,6 @@ var action_registry: ActionRegistry
 var pending_context: ClickContext
 
 func _ready():
-	print("🎮 ClickSystemManager refactorisé")
 	action_registry = ActionRegistry.new()
 	action_registry.setup_defaults()
 
@@ -17,7 +16,6 @@ func register_container(container_id: String, controller):
 	# Créer un wrapper simple pour garder compatibilité
 	var container = SimpleContainer.new(container_id, controller)
 	containers[container_id] = container
-	print("📦 Container enregistré: %s" % container_id)
 
 # === GESTION CLICS (API identique) ===
 func handle_slot_click(slot_index: int, container_id: String, slot_data: Dictionary, mouse_event: InputEventMouseButton) -> bool:
@@ -51,11 +49,6 @@ func _create_target_context(target: ClickContext) -> ClickContext:
 		pending_context.source_slot_index, pending_context.source_container_id, pending_context.source_slot_data,
 		target.source_slot_index, target.source_container_id, target.source_slot_data
 	)
-
-func print_debug_info():
-	print("🎮 ClickSystemManager (refactorisé):")
-	print("   - Containers: %s" % containers.keys())
-	print("   - En attente: %s" % (pending_context != null))
 
 # === WRAPPER POUR COMPATIBILITÉ ===
 class SimpleContainer:

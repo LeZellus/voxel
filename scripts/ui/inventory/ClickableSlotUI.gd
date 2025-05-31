@@ -22,14 +22,6 @@ func _ready():
 	_find_components()
 	setup_button()
 	clear_slot()
-	
-	print("🔍 [SLOT %d] Signaux connectés:" % slot_index)
-	if slot_clicked.get_connections().size() > 0:
-		print("   ✅ slot_clicked: %d connexions" % slot_clicked.get_connections().size())
-		for connection in slot_clicked.get_connections():
-			print("     -> %s.%s" % [connection.callable.get_object().name, connection.callable.get_method()])
-	else:
-		print("   ❌ slot_clicked: AUCUNE connexion")
 
 func _find_components():
 	"""Trouve les composants même s'ils sont créés dynamiquement"""
@@ -38,14 +30,6 @@ func _find_components():
 	item_icon = get_node_or_null("ItemIcon")
 	quantity_label = get_node_or_null("QuantityLabel") 
 	button = get_node_or_null("Button")
-	
-	print("🔍 Slot %d - Composants trouvés: bg=%s, icon=%s, label=%s, btn=%s" % [
-		slot_index,
-		str(background != null),
-		str(item_icon != null), 
-		str(quantity_label != null),
-		str(button != null)
-	])
 
 func setup_button():
 	"""Configure le bouton pour capturer tous les clics"""
@@ -66,26 +50,15 @@ func setup_button():
 		button.gui_input.connect(_on_button_gui_input)
 	if not button.mouse_entered.is_connected(_on_mouse_entered):
 		button.mouse_entered.connect(_on_mouse_entered)
-	
-	print("✅ Button configuré pour slot %d" % slot_index)
 
 func _on_button_gui_input(event: InputEvent):
 	"""Capture tous les événements de souris sur le slot"""
 	if event is InputEventMouseButton:
 		var mouse_event = event as InputEventMouseButton
 		
-		# DEBUG - Logs détaillés
-		print("🎯 [SLOT %d] Event détecté:" % slot_index)
-		print("   - Bouton: %d" % mouse_event.button_index)  
-		print("   - Pressed: %s" % mouse_event.pressed)
-		print("   - Position: %s" % mouse_event.position)
-		
 		# Ne traiter que les releases (pas les press)
 		if not mouse_event.pressed:
-			print("   ✅ Émission signal slot_clicked")
 			slot_clicked.emit(slot_index, mouse_event)
-		else:
-			print("   ⏸️ Press ignoré (on attend le release)")
 
 func _on_mouse_entered():
 	"""Émission du signal de hover"""
@@ -103,7 +76,7 @@ func update_slot(slot_info: Dictionary):
 	"""Met à jour l'affichage du slot"""
 	slot_data = slot_info
 	
-	print("🔄 Update slot %d avec: %s" % [slot_index, slot_info])
+	 # print("🔄 Update slot %d avec: %s" % [slot_index, slot_info])
 	
 	if slot_info.get("is_empty", true):
 		clear_slot()
@@ -125,12 +98,10 @@ func _display_item(slot_info: Dictionary):
 	if icon_texture and icon_texture is Texture2D:
 		item_icon.texture = icon_texture
 		item_icon.visible = true
-		print("✅ Icône appliquée à slot %d" % slot_index)
 	else:
 		# Fallback coloré pour debug
 		item_icon.texture = _create_fallback_icon()
 		item_icon.visible = true
-		print("⚠️ Fallback icon pour slot %d" % slot_index)
 	
 	# Quantité
 	if not quantity_label:
@@ -140,7 +111,6 @@ func _display_item(slot_info: Dictionary):
 		var qty = slot_info.get("quantity", 1)
 		quantity_label.text = str(qty)
 		quantity_label.visible = qty > 1
-		print("📊 Quantité %d affichée pour slot %d" % [qty, slot_index])
 
 func clear_slot():
 	"""Vide l'affichage du slot"""
@@ -182,7 +152,6 @@ func set_selected(selected: bool):
 		if selected:
 			# Effet de sélection voyant
 			background.color = Color.GOLD
-			print("✨ Slot %d sélectionné visuellement" % slot_index)
 			
 			# Animation optionnelle
 			if background.get("modulate"):
@@ -194,7 +163,6 @@ func set_selected(selected: bool):
 			# Retour à la normale
 			background.color = Color(0.09, 0.125, 0.22, 0.8)
 			background.modulate.a = 1.0
-			print("🔹 Slot %d désélectionné" % slot_index)
 			
 			# Arrêter l'animation
 			var tweens = get_tree().get_nodes_in_group("tween")
@@ -228,11 +196,3 @@ func get_slot_data() -> Dictionary:
 
 func _to_string() -> String:
 	return "ClickableSlotUI[%d]: %s" % [slot_index, "empty" if is_empty() else get_item_name()]
-
-func debug_components():
-	"""Debug des composants"""
-	print("🔍 Slot %d composants:" % slot_index)
-	print("   - background: %s" % str(background))
-	print("   - item_icon: %s" % str(item_icon))
-	print("   - quantity_label: %s" % str(quantity_label))
-	print("   - button: %s" % str(button))

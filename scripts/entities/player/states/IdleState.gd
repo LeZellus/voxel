@@ -3,8 +3,6 @@ extends State
 class_name IdleState
 
 func enter():
-	print("Mode idle activé")
-	
 	# Arrêter l'audio immédiatement
 	player.stop_footsteps()
 	
@@ -32,10 +30,9 @@ func _start_idle_animation():
 	if player.animation_player:
 		player.animation_player.play("Idle")
 		player.animation_player.speed_scale = 1.0
-		print("✅ Animation Idle lancée")
 
 func exit():
-	print("🛑 Sortie de Idle")
+	pass
 
 func physics_update(delta):
 	# Gravité
