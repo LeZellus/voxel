@@ -1,12 +1,12 @@
 [gd_scene load_steps=3 format=3 uid="uid://cvcnlewtk3y1o"]
 
-[ext_resource type="Script" path="res://scripts/ui/inventory/InventoryUI.gd" id="1_p673n"]
+[ext_resource type="Script" path="res://scripts/ui/inventory/MainInventory.gd" id="1_8bvaq"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_awj4p"]
 content_margin_left = 4.0
 bg_color = Color(0.09, 0.125, 0.22, 0.9)
 
-[node name="InventoryUI" type="Control"]
+[node name="MainInventoryUI" type="Control"]
 custom_minimum_size = Vector2(608, 336)
 layout_mode = 3
 anchors_preset = 15
@@ -14,7 +14,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_p673n")
+script = ExtResource("1_8bvaq")
 
 [node name="BackgroundStyle" type="ColorRect" parent="."]
 layout_mode = 1

@@ -8,15 +8,16 @@ const INVENTORIES = {
 		"id": "player_inventory",
 		"display_name": "INVENTAIRE PRINCIPAL", 
 		"size": Constants.INVENTORY_SIZE,
-		"ui_scene": "res://scenes/click_system/ui/InventoryUI.tscn",
+		"ui_scene": "res://scenes/click_system/ui/MainInventoryUI.tscn",
 		"visible_by_default": false
 	},
 	"hotbar": {
 		"id": "player_hotbar",
 		"display_name": "BARRE D'ACTIONS",
 		"size": 9,
-		"ui_scene": "res://scenes/click_system/ui/TestHotbarUI.tscn",
-		"visible_by_default": true
+		"ui_scene": "res://scenes/click_system/ui/HotbarUI.tscn",
+		"visible_by_default": true,
+		"is_hotbar": true
 	}
 }
 

@@ -110,12 +110,6 @@ func show_ui():
 	
 	is_ui_visible = true
 	
-	if ui.has_method("show_animated"):
-		ui.show_animated()
-	else:
-		ui.visible = true
-	
-	print("📦 UI affichée: %s" % container_id)
 
 func hide_ui():
 	"""Cache l'UI du container"""
@@ -124,10 +118,8 @@ func hide_ui():
 	
 	is_ui_visible = false
 	
-	if ui.has_method("hide_animated"):
-		ui.hide_animated()
-	else:
-		ui.visible = false
+	# Utiliser la méthode de la classe fille
+	ui.hide_ui()
 	
 	print("📦 UI cachée: %s" % container_id)
 
@@ -137,6 +129,34 @@ func toggle_ui():
 		hide_ui()
 	else:
 		show_ui()
+		
+func _apply_default_visibility():
+	"""Applique la visibilité par défaut selon la config"""
+	var should_be_visible = _get_visibility_from_config()
+	
+	print("🔍 Container '%s' - visible par défaut: %s" % [container_id, should_be_visible])
+	
+	if should_be_visible:
+		# Utiliser la méthode show_ui() de la classe fille
+		ui.show_ui()
+		is_ui_visible = true
+		print("👁️ UI visible par défaut: %s" % container_id)
+	else:
+		# Utiliser la méthode hide_ui() de la classe fille  
+		ui.hide_ui()
+		is_ui_visible = false
+		print("👁️ UI cachée par défaut: %s" % container_id)
+		
+func _get_visibility_from_config() -> bool:
+	"""Récupère la visibilité par défaut depuis InventoryConfig"""
+	# Chercher dans toutes les configs
+	for config_key in InventoryConfig.INVENTORIES.keys():
+		var config = InventoryConfig.get_inventory_config(config_key)
+		if config.get("id") == container_id:
+			return config.get("visible_by_default", false)
+	
+	print("⚠️ Config non trouvée pour container: %s" % container_id)
+	return false
 
 # === NOUVELLE MÉTHODE POUR METTRE À JOUR LE NOM ===
 
