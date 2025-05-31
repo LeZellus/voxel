@@ -31,11 +31,14 @@ func setup_with_clickable_container(clickable_container: ClickableContainer):
 	inventory = container.get_inventory()
 	controller = container.get_controller()
 	
+	print("🔧 Setup UI avec inventory size: %d" % inventory.size)
+	
 	# Configurer le titre
 	if title_label:
 		title_label.text = inventory.name.to_upper()
 	
-	# Créer les slots
+	# ATTENDRE que tout soit prêt puis créer les slots
+	await get_tree().process_frame
 	_create_slots()
 	
 	# Connecter les signaux de l'inventaire
@@ -43,15 +46,19 @@ func setup_with_clickable_container(clickable_container: ClickableContainer):
 		inventory.inventory_changed.connect(_on_inventory_changed)
 	
 	# Premier refresh
+	await get_tree().process_frame
 	refresh_ui()
 	
-	print("✅ NewInventoryUI configurée avec %d slots" % inventory.size)
+	print("✅ NewInventoryUI configurée avec %d slots créés" % slots.size())
 
 func _create_slots():
-	"""Crée tous les slots clickables"""
+	print("🔧 _create_slots() appelée, inventory.size = %d" % inventory.size)
+	
 	if not slots_grid:
 		print("❌ SlotsGrid introuvable")
 		return
+	else:
+		print("✅ SlotsGrid trouvé: %s" % str(slots_grid))
 	
 	# Nettoyer les slots existants
 	for slot in slots:
@@ -59,64 +66,36 @@ func _create_slots():
 			slot.queue_free()
 	slots.clear()
 	
-	# Créer les nouveaux slots
+	# Nettoyer aussi le grid
+	for child in slots_grid.get_children():
+		child.queue_free()
+	
+	# ATTENDRE que le nettoyage soit fait
+	await get_tree().process_frame
+	
+	print("🔧 Création de %d slots..." % inventory.size)
+	
+	# CHARGER LA SCÈNE au lieu de créer en code
+	var slot_scene = load("res://scenes/click_system/ui/ClickableSlotUI.tscn")
+	if not slot_scene:
+		print("❌ Impossible de charger ClickableSlotUI.tscn")
+		return
+	
+	# Créer les slots depuis la scène
 	for i in inventory.size:
-		var slot = ClickableSlotUI.new()
+		var slot = slot_scene.instantiate()
 		slot.set_slot_index(i)
-		slot.custom_minimum_size = Vector2(64, 64)
-		slot.size = Vector2(64, 64)
+		slot.name = "Slot_%d" % i
 		
-		# Créer les composants du slot
-		_setup_slot_components(slot)
+		print("🔧 Instanciation slot %d depuis la scène" % i)
 		
 		# Ajouter au grid
 		slots_grid.add_child(slot)
 		slots.append(slot)
 		
-		print("✅ Slot %d créé" % i)
-
-func _setup_slot_components(slot: ClickableSlotUI):
-	"""Configure les composants visuels d'un slot"""
-	# Background
-	var bg = ColorRect.new()
-	bg.name = "Background"
-	bg.color = Color(0.2, 0.2, 0.3, 0.8)
-	bg.anchors_preset = Control.PRESET_FULL_RECT
-	slot.add_child(bg)
+		print("✅ Slot %d ajouté au grid depuis la scène" % i)
 	
-	# ItemIcon
-	var icon = TextureRect.new()
-	icon.name = "ItemIcon"
-	icon.anchors_preset = Control.PRESET_FULL_RECT
-	icon.offset_left = 4
-	icon.offset_top = 4
-	icon.offset_right = -4
-	icon.offset_bottom = -4
-	icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
-	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	icon.visible = false
-	slot.add_child(icon)
-	
-	# QuantityLabel
-	var qty_label = Label.new()
-	qty_label.name = "QuantityLabel"
-	qty_label.anchors_preset = Control.PRESET_BOTTOM_RIGHT
-	qty_label.offset_left = -24
-	qty_label.offset_top = -18
-	qty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	qty_label.add_theme_font_size_override("font_size", 12)
-	qty_label.visible = false
-	slot.add_child(qty_label)
-	
-	# Button (invisible pour capturer les clics)
-	var button = Button.new()
-	button.name = "Button"
-	button.anchors_preset = Control.PRESET_FULL_RECT
-	button.flat = true
-	button.mouse_filter = Control.MOUSE_FILTER_STOP
-	slot.add_child(button)
-
-# === REFRESH ET MISE À JOUR ===
+	print("✅ Total slots créés: %d dans le grid" % slots_grid.get_child_count())
 
 func refresh_ui():
 	"""Met à jour l'affichage de tous les slots"""

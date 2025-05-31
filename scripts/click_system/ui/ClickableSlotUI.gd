@@ -7,7 +7,7 @@ signal slot_clicked(slot_index: int, mouse_event: InputEventMouseButton)
 signal slot_hovered(slot_index: int)
 
 # === COMPOSANTS UI ===
-@onready var background: ColorRect = $Background
+@onready var background: ColorRect = $ColorRect
 @onready var item_icon: TextureRect = $ItemIcon  
 @onready var quantity_label: Label = $QuantityLabel
 @onready var button: Button = $Button
@@ -23,6 +23,9 @@ func _ready():
 
 func setup_button():
 	"""Configure le bouton pour capturer tous les clics"""
+	# Chercher le bouton (il pourrait être créé plus tard)
+	button = get_node_or_null("Button")
+	
 	if not button:
 		print("❌ Button manquant dans ClickableSlotUI")
 		return
@@ -32,8 +35,12 @@ func setup_button():
 	button.flat = true
 	
 	# Connecter le signal GUI input pour capturer les différents types de clics
-	button.gui_input.connect(_on_button_gui_input)
-	button.mouse_entered.connect(_on_mouse_entered)
+	if not button.gui_input.is_connected(_on_button_gui_input):
+		button.gui_input.connect(_on_button_gui_input)
+	if not button.mouse_entered.is_connected(_on_mouse_entered):
+		button.mouse_entered.connect(_on_mouse_entered)
+	
+	print("✅ Button configuré pour slot %d" % slot_index)
 
 func _on_button_gui_input(event: InputEvent):
 	"""Capture tous les événements de souris sur le slot"""

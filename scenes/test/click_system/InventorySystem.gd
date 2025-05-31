@@ -80,8 +80,8 @@ func _on_container_ready(container_id: String, controller):
 	if container:
 		containers[container_id] = container
 		
-		# Enregistrer dans le click system (SANS UI pour l'instant)
-		click_integrator.click_system.register_container(container_id, controller)
+		# Enregistrer dans le click system AVEC l'UI
+		click_integrator.register_container(container_id, controller, container.ui)
 		
 		container_registered.emit(container_id)
 		print("📦 Container enregistré: %s" % container_id)
