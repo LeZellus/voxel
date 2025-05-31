@@ -96,9 +96,7 @@ func _find_canvas_layer_recursive(node: Node) -> CanvasLayer:
 			return result
 	
 	return null
-
-# === CONTRÔLE UI ===
-
+	
 func show_ui():
 	"""Affiche l'UI du container"""
 	if not ui:

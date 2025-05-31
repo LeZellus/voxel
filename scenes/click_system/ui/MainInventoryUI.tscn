@@ -42,6 +42,7 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 12
 theme_override_styles/normal = SubResource("StyleBoxFlat_awj4p")
 text = "INVENTAIRE"
+vertical_alignment = 1
 
 [node name="SlotsGrid" type="GridContainer" parent="VBoxContainer"]
 layout_mode = 2

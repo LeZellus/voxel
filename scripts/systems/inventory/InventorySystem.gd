@@ -125,6 +125,13 @@ func toggle_main_inventory():
 	var main_inv = get_main_inventory()
 	if main_inv:
 		main_inv.toggle_ui()
+		
+	if main_inv.is_ui_visible:
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		print("🖱️ Souris visible")
+	else:
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		print("🖱️ Souris capturée")
 
 func add_item_to_inventory(item: Item, quantity: int = 1) -> int:
 	var main_inv = get_main_inventory()
