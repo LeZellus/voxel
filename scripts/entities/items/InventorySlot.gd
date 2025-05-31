@@ -113,8 +113,3 @@ func _to_string() -> String:
 		return "Slot[%d]: vide" % index
 	else:
 		return "Slot[%d]: %s x%d" % [index, item_stack.item.name, item_stack.quantity]
-
-func debug_info():
-	"""Affiche les infos de debug du slot"""
-	# print("   Slot %d: %s" % [index, _to_string()])
-	pass

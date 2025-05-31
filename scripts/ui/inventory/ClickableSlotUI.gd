@@ -98,10 +98,6 @@ func _display_item(slot_info: Dictionary):
 	if icon_texture and icon_texture is Texture2D:
 		item_icon.texture = icon_texture
 		item_icon.visible = true
-	else:
-		# Fallback coloré pour debug
-		item_icon.texture = _create_fallback_icon()
-		item_icon.visible = true
 	
 	# Quantité
 	if not quantity_label:
@@ -129,15 +125,6 @@ func clear_slot():
 		quantity_label.visible = false
 		
 	slot_data = {"is_empty": true}
-
-func _create_fallback_icon() -> ImageTexture:
-	"""Crée une icône de fallback pour debug"""
-	var image = Image.create(32, 32, false, Image.FORMAT_RGB8)
-	image.fill(Color.ORANGE)  # Orange pour identifier les fallback
-	
-	var texture = ImageTexture.new()
-	texture.set_image(image)
-	return texture
 
 # === ÉTATS VISUELS ===
 
@@ -191,8 +178,3 @@ func get_item_name() -> String:
 
 func get_slot_data() -> Dictionary:
 	return slot_data.duplicate()
-
-# === DEBUG ===
-
-func _to_string() -> String:
-	return "ClickableSlotUI[%d]: %s" % [slot_index, "empty" if is_empty() else get_item_name()]

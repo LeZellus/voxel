@@ -19,6 +19,8 @@ func _setup_click_system():
 	"""Configure le gestionnaire de clic"""
 	click_system = ClickSystemManager.new()
 	add_child(click_system)
+	
+	ServiceLocator.register("click_system", click_system)
 
 func _handle_slot_click_via_events(context: ClickContext):
 	"""Gestionnaire principal unifié"""
@@ -156,13 +158,3 @@ func force_clear_selection():
 	if not selected_slot_info.is_empty():
 		print("🧹 Nettoyage forcé de la sélection")
 		_clear_selection()
-
-# === DEBUG ===
-
-func debug_system():
-	print("\n🔗 ClickSystemIntegrator:")
-	print("   - UIs enregistrées: %s" % registered_uis.keys())
-	print("   - Slot sélectionné: %s" % (not selected_slot_info.is_empty()))
-	
-	if click_system:
-		click_system.print_debug_info()

@@ -19,11 +19,6 @@ func _ready():
 	# Démarrer avec l'état initial
 	if initial_state:
 		call_deferred("_start_initial_state")
-		
-	
-	
-	if initial_state:
-		change_state(initial_state.name.to_lower())
 	else:
 		print("❌ Aucun état initial défini!")
 		
@@ -40,10 +35,7 @@ func _process(delta):
 	if current_state:
 		current_state.update(delta)
 
-func _physics_process(delta):
-	if current_state:
-		current_state.physics_update(delta)
-		
+func _physics_process(delta):		
 	if current_state:
 		current_state.physics_update(delta)
 	else:
@@ -62,7 +54,3 @@ func change_state(new_state_name: String):
 	
 	current_state = new_state
 	current_state.enter()
-	
-func debug():
-	print("🔍 États disponibles:", states.keys())
-	print("🔍 État initial défini:", initial_state.name if initial_state else "AUCUN")

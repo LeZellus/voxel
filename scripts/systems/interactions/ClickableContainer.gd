@@ -195,13 +195,3 @@ func get_controller():
 
 func get_inventory():
 	return inventory
-
-# === DEBUG ===
-
-func debug_info():
-	print("\n📊 ClickableContainer '%s':" % container_id)
-	if inventory and inventory.has_method("get_used_slots_count"):
-		print("   - Slots utilisés: %d/%d" % [inventory.get_used_slots_count(), inventory.size])
-		print("   - Nom inventaire: '%s'" % inventory.name)
-	print("   - UI visible: %s" % is_ui_visible)
-	print("   - Controller: %s" % str(controller))

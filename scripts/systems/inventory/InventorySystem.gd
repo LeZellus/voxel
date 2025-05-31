@@ -120,14 +120,3 @@ func has_item(item_id: String, quantity: int = 1) -> bool:
 
 func get_click_integrator() -> ClickSystemIntegrator:
 	return click_integrator
-
-# === DEBUG ===
-func debug_all_containers():
-	print("\n🎮 InventorySystem Debug:")
-	print("   - Containers: %d" % containers.size())
-	for container_id in containers.keys():
-		var container = containers[container_id]
-		print("   - %s: %s" % [container_id, "OK" if container else "ERROR"])
-	
-	if click_integrator:
-		click_integrator.debug_system()

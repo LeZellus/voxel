@@ -5,7 +5,6 @@ extends BaseInventoryUI
 # === ANIMATION ===
 var animation_tween: Tween
 var original_position: Vector2
-var is_animating: bool = false
 
 const SLIDE_DURATION: float = 0.8
 const SLIDE_EASE: Tween.EaseType = Tween.EASE_OUT
@@ -39,15 +38,10 @@ func _setup_animations():
 # === AFFICHAGE AVEC ANIMATIONS ===
 
 func show_ui():
-	"""Affiche avec animation de slide"""
-	if is_animating:
-		return
-	
-	is_animating = true
-	visible = true
-	
 	if animation_tween:
 		animation_tween.kill()
+	
+	visible = true
 	
 	animation_tween = create_tween()
 	animation_tween.set_parallel(true)
@@ -61,16 +55,8 @@ func show_ui():
 	# Animations
 	animation_tween.tween_property(self, "position", original_position, SLIDE_DURATION).set_ease(SLIDE_EASE).set_trans(SLIDE_TRANS)
 	animation_tween.tween_property(self, "modulate:a", 1.0, FADE_DURATION).set_ease(Tween.EASE_OUT)
-	
-	animation_tween.tween_callback(_on_show_animation_finished)
 
 func hide_ui():
-	"""Cache avec animation de slide"""
-	if is_animating:
-		return
-	
-	is_animating = true
-	
 	if animation_tween:
 		animation_tween.kill()
 	
@@ -82,17 +68,3 @@ func hide_ui():
 	var end_position = Vector2(original_position.x, viewport_size.y)
 	
 	animation_tween.tween_property(self, "position", end_position, SLIDE_DURATION).set_ease(Tween.EASE_IN).set_trans(SLIDE_TRANS)
-	animation_tween.tween_property(self, "modulate:a", 1.0, FADE_DURATION).set_ease(Tween.EASE_IN)
-	
-	animation_tween.tween_callback(_on_hide_animation_finished)
-
-# === CALLBACKS ANIMATIONS ===
-
-func _on_show_animation_finished():
-	"""Callback fin d'animation d'ouverture"""
-	is_animating = false
-
-func _on_hide_animation_finished():
-	"""Callback fin d'animation de fermeture"""
-	visible = false
-	is_animating = false

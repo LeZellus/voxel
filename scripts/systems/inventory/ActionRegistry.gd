@@ -177,21 +177,10 @@ class SimpleMoveAction extends SimpleAction:
 			
 			print("✅ Swap réussi: %s <-> %s" % [source_item.name, target_item.name])
 			return true
-	
+			
 	func _find_click_manager():
-		var scene = Engine.get_main_loop().current_scene
-		return _find_click_manager_recursive(scene)
-	
-	func _find_click_manager_recursive(node: Node):
-		if node.get_script() and node.get_script().get_global_name() == "ClickSystemManager":
-			return node
+		return ServiceLocator.get_service("click_system")
 		
-		for child in node.get_children():
-			var result = _find_click_manager_recursive(child)
-			if result:
-				return result
-		return null
-
 class SimpleUseAction extends SimpleAction:
 	func _init():
 		super("use", 20)
