@@ -93,6 +93,12 @@ func _input(event):
 	# Ajoute ça dans ta fonction _input existante ou crée-la
 	if event is InputEventKey and event.pressed:
 		match event.keycode:
+			KEY_F5:
+				var integrator = inventory_system.click_integrator
+				if integrator and not integrator.selected_slot_info.is_empty():
+					print("✅ Slot sélectionné: %d" % integrator.selected_slot_info.slot_index)
+				else:
+					print("❌ Aucun slot sélectionné")
 			KEY_F4:
 				print("🧪 Test sélection:")
 				var integrator = inventory_system.click_integrator
@@ -281,3 +287,4 @@ func stop_footsteps():
 func update_footsteps():
 	"""Met à jour les footsteps"""
 	AudioSystem.update_footsteps()
+	

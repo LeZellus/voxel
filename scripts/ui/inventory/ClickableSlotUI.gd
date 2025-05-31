@@ -126,48 +126,6 @@ func clear_slot():
 		
 	slot_data = {"is_empty": true}
 
-# === ÉTATS VISUELS ===
-
-func set_selected(selected: bool):
-	"""Marque le slot comme sélectionné avec effet visuel amélioré"""
-	is_selected = selected
-	
-	if not background:
-		background = get_node_or_null("ColorRect")
-	
-	if background:
-		if selected:
-			# Effet de sélection voyant
-			background.color = Color.GOLD
-			
-			# Animation optionnelle
-			if background.get("modulate"):
-				var tween = create_tween()
-				tween.set_loops()
-				tween.tween_property(background, "modulate:a", 0.7, 0.5)
-				tween.tween_property(background, "modulate:a", 1.0, 0.5)
-		else:
-			# Retour à la normale
-			background.color = Color(0.09, 0.125, 0.22, 0.8)
-			background.modulate.a = 1.0
-			
-			# Arrêter l'animation
-			var tweens = get_tree().get_nodes_in_group("tween")
-			for tween in tweens:
-				if tween.get_parent() == self:
-					tween.kill()
-
-func set_waiting_for_target(waiting: bool):
-	"""Marque visuellement que ce slot attend une cible"""
-	if not background:
-		background = get_node_or_null("ColorRect")
-	
-	if background:
-		if waiting:
-			background.color = Color.CYAN
-		else:
-			background.color = Color(0.09, 0.125, 0.22, 0.8)
-
 # === UTILITAIRES ===
 
 func is_empty() -> bool:
