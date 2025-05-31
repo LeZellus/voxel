@@ -1,9 +1,16 @@
 extends Node
+class_name GameManager
 
 var normal_cursor: ImageTexture
 var click_cursor: ImageTexture
 
 func _ready():
+	
+	var service_locator = ServiceLocator.new()
+	var events = Events.new()
+	add_child(service_locator)
+	add_child(events)
+	
 	# Charger les deux textures
 	var tex1 = load("res://assets/icons/iso_mouse2.png")
 	var tex2 = load("res://assets/icons/iso_mouse.png")
@@ -42,6 +49,8 @@ func _input(event):
 		if event.pressed:
 			if click_cursor:
 				Input.set_custom_mouse_cursor(click_cursor, Input.CURSOR_ARROW, Vector2(16, 0))
+				print("🧪 Test ServiceLocator: %s" % ServiceLocator.instance)
+				print("🧪 Test Events: %s" % Events.instance)
 			else:
 				print("ERREUR: click_cursor est null!")
 		else:

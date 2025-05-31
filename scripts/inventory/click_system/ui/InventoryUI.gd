@@ -346,37 +346,28 @@ func _on_hide_animation_finished():
 # === GESTION DES CLICS ===
 
 func _on_slot_clicked(slot_index: int, mouse_event: InputEventMouseButton):
-	"""Gestionnaire de clic unifié"""
+	"""Gestionnaire de clic simplifié avec Events"""
 	if not controller:
 		print("❌ Pas de controller pour gérer le clic")
-		return
-	
-	print("🎯 Clic UI: slot %d, bouton %d" % [slot_index, mouse_event.button_index])
-	
-	var slot_data = controller.get_slot_info(slot_index)
-	
-	var integrator = _find_click_integrator()
-	if integrator:
-		var container_id = container.get_container_id() if container else "unknown"
-		integrator._on_slot_clicked(slot_index, mouse_event, container_id)
-	else:
-		print("❌ Click integrator introuvable")
+	return
 
-func _find_click_integrator() -> ClickSystemIntegrator:
-	"""Trouve l'intégrateur de clic dans la hiérarchie"""
-	var current = get_parent()
-	
-	while current:
-		for child in current.get_children():
-			if child is ClickSystemIntegrator:
-				return child
-		
-		if current.has_method("get_click_integrator"):
-			return current.get_click_integrator()
-		
-		current = current.get_parent()
-	
-	return null
+	print("🎯 Clic UI: slot %d, bouton %d" % [slot_index, mouse_event.button_index])
+
+	var slot_data = controller.get_slot_info(slot_index)
+	var container_id = container.get_container_id() if container else "unknown"
+
+	# Créer le contexte de clic
+	var click_type = _get_click_type(mouse_event)
+	var context = ClickContext.create_slot_interaction(click_type, slot_index, container_id, slot_data)
+
+	# NOUVEAU - Émettre via Events au lieu de chercher dans la hiérarchie
+	Events.instance.slot_clicked.emit(context)
+
+func _get_click_type(event: InputEventMouseButton) -> ClickContext.ClickType:
+	"""Convertit l'événement souris en type de clic"""
+	if event.button_index == MOUSE_BUTTON_RIGHT:
+		return ClickContext.ClickType.SIMPLE_RIGHT_CLICK
+	return ClickContext.ClickType.SIMPLE_LEFT_CLICK
 
 # === RAFRAÎCHISSEMENT ===
 

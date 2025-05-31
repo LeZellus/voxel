@@ -47,6 +47,8 @@ func _on_inventory_system_ready():
 	"""Callback quand l'inventory system est prêt"""
 	print("✅ Inventory system intégré au joueur")
 	
+	ServiceLocator.register("inventory", inventory_system)
+	
 	# Ajouter des items de test
 	call_deferred("_add_test_items")
 	
@@ -54,44 +56,44 @@ func _on_inventory_system_ready():
 	_setup_inventory_input()
 
 func _add_test_items():
-	"""Ajoute des items de test"""
 	print("🧪 Ajout d'items de test...")
 	
-	# Créer quelques items de test
-	var apple = Item.new()
-	apple.id = "apple"
-	apple.name = "Pomme"
-	apple.item_type = Item.ItemType.CONSUMABLE
-	apple.max_stack_size = 64
-	apple.is_stackable = true
-	apple.icon = _create_test_icon(Color.RED)
+	# Attendre que tout soit bien initialisé
+	await get_tree().process_frame
 	
-	var sword = Item.new()
-	sword.id = "sword"
-	sword.name = "Épée"
-	sword.item_type = Item.ItemType.TOOL
-	sword.max_stack_size = 1
-	sword.is_stackable = false
-	sword.icon = _create_test_icon(Color.SILVER)
+	var main_inv = inventory_system.get_main_inventory()
+	if not main_inv:
+		print("❌ Inventaire principal introuvable")
+		return
 	
-	var wood = Item.new()
-	wood.id = "wood"
-	wood.name = "Bois"
-	wood.item_type = Item.ItemType.RESOURCE
-	wood.max_stack_size = 99
-	wood.is_stackable = true
-	wood.icon = _create_test_icon(Color(0.6, 0.3, 0.1))
+	if not main_inv.inventory:
+		print("❌ Inventory data introuvable")
+		return
 	
-	# Ajouter à l'inventaire
-	inventory_system.add_item_to_inventory(apple, 15)
-	inventory_system.add_item_to_inventory(sword, 1)
-	inventory_system.add_item_to_inventory(wood, 32)
+	# Créer les items
+	var apple = _create_test_apple()
+	var sword = _create_test_sword()
+	var wood = _create_test_wood()
 	
-	# Ajouter quelques items à la hotbar
-	inventory_system.add_item_to_hotbar(apple, 5)
-	inventory_system.add_item_to_hotbar(sword, 1)
+	# Ajouter directement à l'inventaire data
+	var apple_surplus = main_inv.inventory.add_item(apple, 5)
+	var sword_surplus = main_inv.inventory.add_item(sword, 1)
+	var wood_surplus = main_inv.inventory.add_item(wood, 12)
 	
-	print("✅ Items de test ajoutés")
+	print("📦 Pommes: %d ajoutées (surplus: %d)" % [5-apple_surplus, apple_surplus])
+	print("⚔️ Épée: %d ajoutée (surplus: %d)" % [1-sword_surplus, sword_surplus])
+	print("🪵 Bois: %d ajouté (surplus: %d)" % [12-wood_surplus, wood_surplus])
+	
+	# CRUCIAL - Forcer le refresh de l'UI
+	await get_tree().process_frame
+	if main_inv.ui:
+		if main_inv.ui.has_method("refresh_ui"):
+			main_inv.ui.refresh_ui()
+			print("🔄 UI forcée à se rafraîchir")
+		else:
+			print("❌ Méthode refresh_ui introuvable")
+	else:
+		print("❌ UI introuvable")
 
 func _create_test_icon(color: Color) -> ImageTexture:
 	"""Crée une icône de test colorée"""
@@ -126,7 +128,12 @@ func _input(event):
 		match event.keycode:
 			KEY_F1:
 				print("🧪 Debug inventaire:")
-				inventory_system.debug_all_containers()
+				var inv = ServiceLocator.get_service("inventory")
+				if inv:
+					print("✅ Inventaire accessible via ServiceLocator")
+					inv.debug_all_containers()
+				else:
+					print("❌ Inventaire non trouvé dans ServiceLocator")
 			
 			KEY_F2:
 				print("🧪 Test ajout item:")
@@ -266,3 +273,27 @@ func _force_add_test_item():
 			print("🔄 UI rafraîchie")
 	else:
 		print("❌ Inventaire principal introuvable")
+
+func _create_test_apple() -> Item:
+	var apple = Item.new("apple", "Pomme")
+	apple.item_type = Item.ItemType.CONSUMABLE
+	apple.max_stack_size = 64
+	apple.is_stackable = true
+	apple.icon = _create_test_icon(Color.RED)
+	return apple
+
+func _create_test_sword() -> Item:
+	var sword = Item.new("sword", "Épée")
+	sword.item_type = Item.ItemType.TOOL
+	sword.max_stack_size = 1
+	sword.is_stackable = false
+	sword.icon = _create_test_icon(Color.SILVER)
+	return sword
+
+func _create_test_wood() -> Item:
+	var wood = Item.new("wood", "Bois")
+	wood.item_type = Item.ItemType.RESOURCE
+	wood.max_stack_size = 99
+	wood.is_stackable = true
+	wood.icon = _create_test_icon(Color(0.6, 0.3, 0.1))
+	return wood

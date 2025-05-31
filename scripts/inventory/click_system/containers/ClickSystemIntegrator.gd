@@ -7,6 +7,12 @@ var registered_uis: Dictionary = {}
 
 func _ready():
 	_setup_click_system()
+	
+	if Events.instance:
+		Events.instance.slot_clicked.connect(_handle_slot_click_via_events)
+		print("🔗 ClickSystemIntegrator connecté aux Events")
+	else:
+		print("❌ Events non disponible")
 
 func _setup_click_system():
 	"""Configure le gestionnaire de clic"""
@@ -14,6 +20,24 @@ func _setup_click_system():
 	add_child(click_system)
 	
 	print("✅ ClickSystemIntegrator configuré (refactorisé)")
+	
+func _handle_slot_click_via_events(context: ClickContext):
+	"""Nouveau gestionnaire via Events"""
+	print("🎯 Clic reçu via Events: slot %d, container %s" % [context.source_slot_index, context.source_container_id])
+
+	# Traiter le clic (utilise ton code existant)
+	var success = click_system.action_registry.execute(context)
+
+	if success:
+	# Rafraîchir les UIs
+		call_deferred("_refresh_all_uis")
+
+func _refresh_all_uis():
+	"""Rafraîchit toutes les UIs enregistrées"""
+	for container_id in registered_uis.keys():
+		var ui = registered_uis[container_id]
+		if ui and ui.has_method("refresh_ui"):
+			ui.refresh_ui()
 
 # === ENREGISTREMENT (API IDENTIQUE) ===
 func register_container(container_id: String, controller, ui: Control):

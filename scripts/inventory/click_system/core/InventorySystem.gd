@@ -1,4 +1,3 @@
-# scripts/inventory/click_system/core/InventorySystem.gd - VERSION SIMPLIFIÉE
 class_name InventorySystem
 extends Node
 

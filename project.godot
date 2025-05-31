@@ -16,8 +16,8 @@ config/features=PackedStringArray("4.3", "Forward Plus")
 
 [autoload]
 
-AudioConfigManager="*res://scripts/manager/audio/AudioConfigManager.gd"
-AudioManager="*res://scripts/manager/audio/AudioManager.gd"
+AudioConfigManager="*res://scripts/systems/audio/AudioConfigManager.gd"
+AudioManager="*res://scripts/systems/audio/AudioManager.gd"
 
 [file_customization]
 
