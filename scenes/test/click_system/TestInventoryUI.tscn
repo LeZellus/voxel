@@ -1,0 +1,66 @@
+[gd_scene load_steps=4 format=3 uid="uid://c701oj2ci8js7"]
+
+[ext_resource type="Script" path="res://scripts/inventory/ui/InventoryUI.gd" id="1_h6jfn"]
+[ext_resource type="PackedScene" uid="uid://bv46b6l2la66h" path="res://scenes/ui/InventoryGridUI.tscn" id="2_fkanj"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_s6u58"]
+content_margin_left = 4.0
+bg_color = Color(0.09, 0.125, 0.22, 0.8)
+
+[node name="TestInventoryUI" type="Control"]
+layout_mode = 3
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_top = 500.0
+grow_horizontal = 2
+grow_vertical = 0
+script = ExtResource("1_h6jfn")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.670439, 0.530719, 3.85046e-07, 1)
+
+[node name="Background" type="NinePatchRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -360.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="CenterContainer" type="CenterContainer" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="VboxContainer" type="VBoxContainer" parent="MarginContainer/CenterContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="TitleLabel" type="Label" parent="MarginContainer/CenterContainer/VboxContainer"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_s6u58")
+text = "INVENTAIRE"
+vertical_alignment = 1
+
+[node name="InventoryGrid" parent="MarginContainer/CenterContainer/VboxContainer" instance=ExtResource("2_fkanj")]
+custom_minimum_size = Vector2(608, 336)
+layout_mode = 2
