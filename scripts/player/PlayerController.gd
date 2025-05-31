@@ -136,11 +136,6 @@ func _input(event):
 				print("🧪 État click system:")
 				if inventory_system.click_integrator:
 					inventory_system.click_integrator.click_system.print_debug_info()
-			
-			KEY_F4:
-				print("🧪 ActionManager debug:")
-				if inventory_system.click_integrator and inventory_system.click_integrator.click_system.action_manager:
-					inventory_system.click_integrator.click_system.action_manager.debug_handlers()
 
 func _unhandled_input(event: InputEvent):
 	handle_camera_input(event)

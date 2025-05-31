@@ -1,4 +1,4 @@
-# scripts/click_system/ClickSystemIntegrator.gd - VERSION SIMPLIFIÉE
+# scripts/inventory/click_system/containers/ClickSystemIntegrator.gd - VERSION REFACTORISÉE
 class_name ClickSystemIntegrator
 extends Node
 
@@ -13,30 +13,9 @@ func _setup_click_system():
 	click_system = ClickSystemManager.new()
 	add_child(click_system)
 	
-	# Enregistrer les actions
-	_register_actions()
-	
-	print("✅ ClickSystemIntegrator configuré")
+	print("✅ ClickSystemIntegrator configuré (refactorisé)")
 
-func _register_actions():
-	"""Enregistre les actions du click system"""
-	
-	# Action de déplacement
-	var move_action = MoveItemAction.new(click_system)
-	click_system.register_action(ClickContext.ClickType.SIMPLE_LEFT_CLICK, move_action)
-	
-	# Action d'utilisation
-	var use_action = UseItemAction.new(click_system)
-	click_system.register_action(ClickContext.ClickType.SIMPLE_RIGHT_CLICK, use_action)
-	
-	# Action cross-container
-	var cross_action = CrossContainerAction.new(click_system)
-	click_system.register_action(ClickContext.ClickType.SIMPLE_LEFT_CLICK, cross_action)
-	
-	print("✅ Actions enregistrées dans le click system")
-
-# === ENREGISTREMENT ===
-
+# === ENREGISTREMENT (API IDENTIQUE) ===
 func register_container(container_id: String, controller, ui: Control):
 	"""Enregistre un container et son UI"""
 	
@@ -59,7 +38,6 @@ func _connect_ui_signals(ui: Control, container_id: String):
 	for slot in slots:
 		if slot.has_signal("slot_clicked"):
 			slot.slot_clicked.connect(_on_slot_clicked.bind(container_id))
-			print("✅ Slot connecté pour %s" % container_id)
 
 func _find_slots_in_ui(ui: Control) -> Array:
 	"""Trouve tous les ClickableSlotUI dans une UI"""
@@ -75,8 +53,7 @@ func _find_slots_recursive(node: Node, slots: Array):
 	for child in node.get_children():
 		_find_slots_recursive(child, slots)
 
-# === GESTION DES CLICS ===
-
+# === GESTION DES CLICS (API IDENTIQUE) ===
 func _on_slot_clicked(slot_index: int, mouse_event: InputEventMouseButton, container_id: String):
 	"""Gestionnaire de clic unifié"""
 	print("🎯 Clic détecté: slot %d, container %s, bouton %d" % [slot_index, container_id, mouse_event.button_index])
@@ -102,9 +79,8 @@ func _refresh_ui(container_id: String):
 		ui.refresh_ui()
 
 # === DEBUG ===
-
 func debug_system():
-	print("\n🔗 ClickSystemIntegrator:")
+	print("\n🔗 ClickSystemIntegrator (refactorisé):")
 	print("   - UIs enregistrées: %s" % registered_uis.keys())
 	
 	if click_system:
