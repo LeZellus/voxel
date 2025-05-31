@@ -126,14 +126,16 @@ func _input(event):
 	# Ajoute ça dans ta fonction _input existante ou crée-la
 	if event is InputEventKey and event.pressed:
 		match event.keycode:
-			KEY_F1:
-				print("🧪 Debug inventaire:")
-				var inv = ServiceLocator.get_service("inventory")
-				if inv:
-					print("✅ Inventaire accessible via ServiceLocator")
-					inv.debug_all_containers()
-				else:
-					print("❌ Inventaire non trouvé dans ServiceLocator")
+			KEY_F4:
+				print("🧪 Test sélection:")
+				var integrator = inventory_system.click_integrator
+				if integrator:
+					print("   - Slot sélectionné: %s" % (not integrator.selected_slot_info.is_empty()))
+					if not integrator.selected_slot_info.is_empty():
+						print("   - Slot: %d, Container: %s" % [
+							integrator.selected_slot_info.slot_index,
+							integrator.selected_slot_info.container_id
+						])
 			
 			KEY_F2:
 				print("🧪 Test ajout item:")

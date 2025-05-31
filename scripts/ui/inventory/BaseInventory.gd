@@ -1,3 +1,4 @@
+# scripts/ui/inventory/BaseInventoryUI.gd - VERSION SIMPLIFIÉE
 class_name BaseInventoryUI
 extends Control
 
@@ -11,7 +12,7 @@ var slots: Array[ClickableSlotUI] = []
 
 const SLOT_SCENE = preload("res://scenes/click_system/ui/ClickableSlotUI.tscn")
 
-# Méthodes virtuelles (plus simple que les getters actuels)
+# Méthodes virtuelles
 func get_columns() -> int: return 9
 func get_slot_count() -> int: return inventory.size if inventory else 45
 func has_title() -> bool: return true
@@ -21,7 +22,7 @@ func _ready():
 	_find_ui_components()
 
 func _find_ui_components():
-	"""Trouve les composants UI de manière centralisée"""
+	"""Trouve les composants UI"""
 	slots_grid = UIHelper.find_slots_grid(self)
 	
 	var title_paths: Array[String] = ["VBoxContainer/TitleLabel", "TitleLabel"]
@@ -31,7 +32,7 @@ func _find_ui_components():
 		return
 
 func setup_with_clickable_container(clickable_container):
-	"""Setup principal - plus simple"""
+	"""Setup principal"""
 	var required_methods = ["get_inventory", "get_controller", "get_container_id"]
 	if not ValidationUtils.validate_container_interface(clickable_container, required_methods, name):
 		return
@@ -45,7 +46,7 @@ func setup_with_clickable_container(clickable_container):
 	_connect_inventory_signals()
 
 func _configure_ui():
-	"""Configuration UI centralisée"""
+	"""Configuration UI"""
 	if slots_grid:
 		slots_grid.columns = get_columns()
 	
@@ -54,7 +55,7 @@ func _configure_ui():
 		title_label.visible = true
 
 func _create_all_slots():
-	"""Création des slots simplifiée"""
+	"""Création des slots"""
 	if not slots_grid or not SLOT_SCENE:
 		return
 		
@@ -69,13 +70,15 @@ func _create_all_slots():
 		var slot = SLOT_SCENE.instantiate() as ClickableSlotUI
 		slot.set_slot_index(i)
 		slot.custom_minimum_size = get_slot_size()
+		
+		# CONNEXION DIRECTE AU SYSTÈME D'ÉVÉNEMENTS
 		slot.slot_clicked.connect(_on_slot_clicked)
 		
 		slots_grid.add_child(slot)
 		slots.append(slot)
 
 func _connect_inventory_signals():
-	"""Connexion des signaux simplifiée"""
+	"""Connexion des signaux"""
 	if inventory and not inventory.inventory_changed.is_connected(refresh_ui):
 		inventory.inventory_changed.connect(refresh_ui)
 
@@ -91,15 +94,26 @@ func refresh_ui():
 			slot.update_slot(slot_data)
 
 func _on_slot_clicked(slot_index: int, mouse_event: InputEventMouseButton):
-	"""Gestionnaire de clic standard"""
+	"""Gestionnaire de clic - ÉMISSION DIRECTE VIA EVENTS"""
 	if not controller or not container:
+		print("❌ Controller ou container manquant")
 		return
 
 	var slot_data = controller.get_slot_info(slot_index)
 	var click_type = ClickContext.ClickType.SIMPLE_RIGHT_CLICK if mouse_event.button_index == MOUSE_BUTTON_RIGHT else ClickContext.ClickType.SIMPLE_LEFT_CLICK
-	var context = ClickContext.create_slot_interaction(click_type, slot_index, container.get_container_id(), slot_data)
 	
+	var context = ClickContext.create_slot_interaction(
+		click_type, 
+		slot_index, 
+		container.get_container_id(), 
+		slot_data
+	)
+	
+	print("📡 [BaseInventoryUI] Émission via Events: slot %d" % slot_index)
+	
+	# ÉMISSION DIRECTE VIA EVENTS
 	if Events.instance:
 		Events.instance.slot_clicked.emit(context)
+		print("✅ Signal émis via Events")
 	else:
 		print("❌ Events.instance introuvable")
