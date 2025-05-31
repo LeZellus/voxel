@@ -1,4 +1,4 @@
-# SimpleAudioHelper.gd
+# SimpleAudioHelper.gd - VERSION CORRIGÉE POUR AUDIOSYSTEM
 class_name SimpleAudioHelper
 
 # Configuration simple par état
@@ -22,36 +22,55 @@ static var ACTION_SOUNDS = {
 	"pickup": "pickup"
 }
 
-# Démarre les sons de pas pour un état
+# Démarre les sons de pas pour un état - VERSION SIMPLIFIÉE
 static func start_footsteps_for_state(state_name: String, player: CharacterBody3D, speed: float):
 	var config = STATE_SOUNDS.get(state_name.to_lower())
 	if not config:
 		DebugHelper.log_warning("SimpleAudioHelper", "Config audio introuvable pour: " + state_name)
 		return
 	
-	AudioManager.set_footstep_positions(config.positions)
-	AudioManager.set_footstep_tolerance(config.tolerance)
-	AudioManager.set_footstep_volume(config.volume)
+	# SIMPLIFIÉ : Plus besoin de configurer les positions/tolerance
+	# AudioSystem les gère en interne
 	
 	var surface = SurfaceDetector.detect_surface_under_player(player)
-	AudioManager.start_footsteps(speed, surface, player.animation_player)
+	
+	# NOUVELLE SIGNATURE : start_footsteps(animation_player, surface)
+	if player.animation_player:
+		AudioSystem.start_footsteps(player.animation_player, surface)
+	else:
+		DebugHelper.log_warning("SimpleAudioHelper", "AnimationPlayer manquant")
 
-# Joue un son d'action
+# Joue un son d'action - VERSION CORRIGÉE
 static func play_action_sound(action: String, volume: float = 1.0):
 	var sound_name = ACTION_SOUNDS.get(action)
 	if not sound_name:
 		DebugHelper.log_warning("SimpleAudioHelper", "Son d'action introuvable: " + action)
 		return
 	
-	AudioManager.play_player_sound(sound_name, "actions", volume)
+	# NOUVELLE SIGNATURE : play_player_sound(sound_name, volume)
+	AudioSystem.play_player_sound(sound_name, volume)
 
-# Met à jour l'audio si surface ou vitesse change
+# Met à jour l'audio si surface ou vitesse change - VERSION SIMPLIFIÉE
 static func update_footsteps_if_needed(player: CharacterBody3D, last_surface: String, last_speed: float, current_speed: float) -> String:
 	var current_surface = SurfaceDetector.detect_surface_under_player(player)
 	
 	if current_surface != last_surface or abs(current_speed - last_speed) > 0.5:
-		AudioManager.stop_footsteps()
+		# SIMPLIFIÉ : Juste stop et restart
+		AudioSystem.stop_footsteps()
 		var state_name = "running" if InputHelper.should_run() else "walking"
 		start_footsteps_for_state(state_name, player, current_speed)
 	
 	return current_surface
+
+# === ALIAS POUR COMPATIBILITÉ ===
+static func start_footsteps(anim_player: AnimationPlayer, surface: String = "grass"):
+	"""Alias direct pour AudioSystem"""
+	AudioSystem.start_footsteps(anim_player, surface)
+
+static func stop_footsteps():
+	"""Alias direct pour AudioSystem"""
+	AudioSystem.stop_footsteps()
+
+static func update_footsteps():
+	"""Alias direct pour AudioSystem"""
+	AudioSystem.update_footsteps()

@@ -27,8 +27,12 @@ func _ready():
 	normal_cursor = create_cursor(tex1)
 	click_cursor = create_cursor(tex2)
 	
-	var audio_system = get_node("../AudioSystem")  # Ou le chemin correct
-	ServiceLocator.register("audio", audio_system)
+	var audio_system = get_node_or_null("../AudioSystem")  # Ou le chemin correct
+	if audio_system:
+		ServiceLocator.register("audio", audio_system)
+		print("✅ AudioSystem enregistré")
+	else:
+		print("❌ AudioSystem introuvable dans la scène")
 	
 	# Définir le curseur normal au démarrage
 	Input.set_custom_mouse_cursor(normal_cursor, Input.CURSOR_ARROW, Vector2(16, 0))
