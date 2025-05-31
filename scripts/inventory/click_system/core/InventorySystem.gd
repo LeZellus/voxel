@@ -1,4 +1,4 @@
-# scripts/click_system/InventorySystem.gd
+# scripts/inventory/InventorySystem.gd
 class_name InventorySystem
 extends Node
 
@@ -32,21 +32,21 @@ func _setup_click_system():
 func _create_containers():
 	"""Crée les containers par défaut"""
 	
-	# Inventaire principal - SANS UI pour l'instant
+	# Inventaire principal
 	var main_inventory = ClickableContainer.new(
 		"player_inventory", 
 		Constants.INVENTORY_SIZE, 
-		"res://scenes/test/click_system/ui/NewInventoryUI.tscn"
+		"res://scenes/click_system/ui/InventoryUI.tscn"
 	)
 	
 	add_child(main_inventory)
 	main_inventory.container_ready.connect(_on_container_ready)
 	
-	# Hotbar - SANS UI pour l'instant
+	# Hotbar
 	var hotbar = ClickableContainer.new(
 		"player_hotbar", 
 		9, 
-		"res://scenes/test/click_system/ui/TestHotbarUI.tscn"
+		"res://scenes/click_system/ui/TestHotbarUI.tscn"
 	)
 	add_child(hotbar)
 	hotbar.container_ready.connect(_on_container_ready)
@@ -61,7 +61,8 @@ func _setup_input():
 		key_event.keycode = KEY_E
 		InputMap.action_add_event("toggle_inventory", key_event)
 	
-	# Hotbar toujours visible (pas de toggle)
+	# Hotbar toujours visible
+	await get_tree().process_frame
 	var hotbar = get_container("player_hotbar")
 	if hotbar:
 		hotbar.show_ui()
@@ -77,14 +78,23 @@ func _on_container_ready(container_id: String, controller):
 	"""Callback quand un container est prêt"""
 	var container = _find_container_by_id(container_id)
 	
-	if container:
-		containers[container_id] = container
-		
-		# Enregistrer dans le click system AVEC l'UI
-		click_integrator.register_container(container_id, controller, container.ui)
-		
-		container_registered.emit(container_id)
-		print("📦 Container enregistré: %s" % container_id)
+	if not container:
+		print("❌ Container introuvable: %s" % container_id)
+		return
+	
+	# CORRECTION: Vérifier que l'inventaire existe
+	var inventory = container.get_inventory()
+	if not inventory:
+		print("❌ Inventaire manquant pour %s" % container_id)
+		return
+	
+	containers[container_id] = container
+	
+	# Enregistrer dans le click system AVEC l'UI
+	click_integrator.register_container(container_id, controller, container.ui)
+	
+	container_registered.emit(container_id)
+	print("📦 Container enregistré: %s (inventaire: %s)" % [container_id, inventory.name])
 
 func _find_container_by_id(container_id: String) -> ClickableContainer:
 	"""Trouve un container par son ID"""
@@ -107,11 +117,16 @@ func get_hotbar() -> ClickableContainer:
 	"""Raccourci pour la hotbar"""
 	return get_container("player_hotbar")
 
+func get_click_integrator() -> ClickSystemIntegrator:
+	"""Accès public au click integrator"""
+	return click_integrator
+
 func toggle_main_inventory():
 	"""Bascule l'affichage de l'inventaire principal"""
 	var main_inv = get_main_inventory()
 	if main_inv:
 		main_inv.toggle_ui()
+		print("📦 Toggle inventaire")
 
 # === API ITEMS ===
 
@@ -131,8 +146,16 @@ func add_item_to_hotbar(item: Item, quantity: int = 1) -> int:
 
 func has_item(item_id: String, quantity: int = 1) -> bool:
 	"""Vérifie si le joueur a un item (inventaire + hotbar)"""
-	var main_count = get_main_inventory().get_item_count(item_id) if get_main_inventory() else 0
-	var hotbar_count = get_hotbar().get_item_count(item_id) if get_hotbar() else 0
+	var main_count = 0
+	var hotbar_count = 0
+	
+	var main_inv = get_main_inventory()
+	if main_inv:
+		main_count = main_inv.get_item_count(item_id)
+	
+	var hotbar = get_hotbar()
+	if hotbar:
+		hotbar_count = hotbar.get_item_count(item_id)
 	
 	return (main_count + hotbar_count) >= quantity
 
@@ -141,9 +164,19 @@ func has_item(item_id: String, quantity: int = 1) -> bool:
 func debug_all_containers():
 	"""Affiche les infos de tous les containers"""
 	print("\n🎮 === DEBUG INVENTORY SYSTEM ===")
+	print("Containers enregistrés: %d" % containers.size())
+	
 	for container_id in containers.keys():
 		var container = containers[container_id]
-		container.debug_info()
+		if container:
+			container.debug_info()
+			
+			# Vérifier l'inventaire
+			var inventory = container.get_inventory()
+			if inventory:
+				print("   - Inventaire: %s (%d/%d slots)" % [inventory.name, inventory.get_used_slots_count(), inventory.size])
+			else:
+				print("   - ❌ Inventaire manquant!")
 	
 	if click_integrator and click_integrator.click_system:
 		click_integrator.click_system.print_debug_info()

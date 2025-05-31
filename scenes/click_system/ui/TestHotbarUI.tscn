@@ -1,14 +1,11 @@
-[gd_scene load_steps=2 format=3 uid="uid://dulcr174473o4"]
+[gd_scene format=3 uid="uid://dulcr174473o4"]
 
-[ext_resource type="Script" path="res://scripts/inventory/ui/HotbarUI.gd" id="1_5lvot"]
-
-[node name="TestHotbarUI" type="Control"]
+[node name="HotbarUI" type="Control"]
 custom_minimum_size = Vector2(0, 64)
 layout_mode = 3
 anchors_preset = 10
 anchor_right = 1.0
 grow_horizontal = 2
-script = ExtResource("1_5lvot")
 
 [node name="HotbarGrid" type="Control" parent="."]
 layout_mode = 1

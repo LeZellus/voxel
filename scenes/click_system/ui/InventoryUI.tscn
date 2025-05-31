@@ -1,8 +1,9 @@
 [gd_scene load_steps=2 format=3 uid="uid://cvcnlewtk3y1o"]
 
-[ext_resource type="Script" path="res://scripts/inventory/click_system/ui/InventoryUI.gd" id="1_gkkow"]
+[ext_resource type="Script" path="res://scripts/inventory/click_system/ui/InventoryUI.gd" id="1_p673n"]
 
-[node name="NewInventoryUI" type="Control"]
+[node name="InventoryUI" type="Control"]
+custom_minimum_size = Vector2(608, 336)
 layout_mode = 3
 anchors_preset = 7
 anchor_left = 0.5
@@ -10,11 +11,10 @@ anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
 offset_left = -304.0
-offset_top = -336.0
 offset_right = 304.0
 grow_horizontal = 2
 grow_vertical = 0
-script = ExtResource("1_gkkow")
+script = ExtResource("1_p673n")
 
 [node name="BackgroundStyle" type="ColorRect" parent="."]
 layout_mode = 1
@@ -26,6 +26,7 @@ grow_vertical = 2
 color = Color(0.798, 0.339, 0.48, 0)
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
+custom_minimum_size = Vector2(608, 0)
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -37,10 +38,6 @@ grow_vertical = 2
 layout_mode = 2
 text = "INVENTAIRE"
 
-[node name="HSeparator" type="HSeparator" parent="VBoxContainer"]
-layout_mode = 2
-
 [node name="SlotsGrid" type="GridContainer" parent="VBoxContainer"]
 layout_mode = 2
-size_flags_vertical = 3
 columns = 9
