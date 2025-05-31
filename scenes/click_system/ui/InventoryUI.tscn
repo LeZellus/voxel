@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://cvcnlewtk3y1o"]
 
-[ext_resource type="Script" path="res://scripts/inventory/click_system/ui/InventoryUI.gd" id="1_p673n"]
+[ext_resource type="Script" path="res://scripts/ui/inventory/InventoryUI.gd" id="1_p673n"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_awj4p"]
 content_margin_left = 4.0

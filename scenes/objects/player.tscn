@@ -7,7 +7,7 @@
 [ext_resource type="Script" path="res://scripts/entities/player/states/FarmingState.gd" id="5_vxp0e"]
 [ext_resource type="Script" path="res://scripts/entities/player/states/JumpingState.gd" id="6_6gvi2"]
 [ext_resource type="Script" path="res://scripts/manager/ToolSystem.gd" id="7_yvlqr"]
-[ext_resource type="Script" path="res://scripts/inventory/click_system/core/InventorySystem.gd" id="9_7wrpq"]
+[ext_resource type="Script" path="res://scripts/systems/inventory/InventorySystem.gd" id="9_7wrpq"]
 [ext_resource type="PackedScene" uid="uid://2oiup8qitv4y" path="res://assets/models/blender_exports/player.glb" id="9_lxqm3"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_4h0dh"]
