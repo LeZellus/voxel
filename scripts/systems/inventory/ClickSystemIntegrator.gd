@@ -1,73 +1,87 @@
-# scripts/systems/inventory/ClickSystemIntegrator.gd - VERSION CORRIGÉE
+# scripts/systems/inventory/ClickSystemIntegrator.gd - VERSION NETTOYÉE
 class_name ClickSystemIntegrator
 extends Node
 
+# === COMPOSANTS ===
 var click_system: ClickSystemManager
 var registered_uis: Dictionary = {}
 var selected_slot_info: Dictionary = {}
-
 var currently_selected_slot_ui: ClickableSlotUI
 
 func _ready():
-	_setup_click_system()
-	
-	if Events.instance:
-		Events.instance.slot_clicked.connect(_handle_slot_click_via_events)
-	else:
-		print("❌ Events non disponible")
+	_initialize_system()
 
-func _setup_click_system():
-	"""Configure le gestionnaire de clic"""
+func _initialize_system():
+	"""Initialise le système de clic"""
 	click_system = ClickSystemManager.new()
 	add_child(click_system)
 	
 	ServiceLocator.register("click_system", click_system)
+	
+	if Events.instance:
+		Events.instance.slot_clicked.connect(_handle_slot_click_via_events)
+
+# === GESTION DES CLICS ===
 
 func _handle_slot_click_via_events(context: ClickContext):
-	"""Gestionnaire principal unifié"""
-	print("🎮 Clic détecté - Slot sélectionné: %s" % (not selected_slot_info.is_empty()))
-	
-	# Si on a déjà un slot sélectionné = créer un contexte slot-to-slot
+	"""Point d'entrée principal pour les clics"""
 	if not selected_slot_info.is_empty():
-		print("🔄 Tentative de transfert...")
-		var target_context = _create_slot_to_slot_context(context)
-		
-		# Exécuter l'action avec le contexte complet
-		var success = click_system.action_registry.execute(target_context)
-		
-		# CORRECTION CRUCIALE : Nettoyer la sélection après transfert
-		_clear_selection()
-		
-		if success:
-			# Rafraîchissement immédiat et forcé
-			_refresh_all_uis()
-		return
+		_handle_transfer_attempt(context)
+	else:
+		_handle_initial_click(context)
+
+func _handle_transfer_attempt(context: ClickContext):
+	"""Gère une tentative de transfert"""
+	print("🔄 Tentative de transfert...")
 	
-	# Premier clic = gérer selon le type
+	var target_context = _create_slot_to_slot_context(context)
+	var success = click_system.action_registry.execute(target_context)
+	
+	_clear_selection()
+	
+	if success:
+		_refresh_all_uis()
+
+func _handle_initial_click(context: ClickContext):
+	"""Gère le premier clic sur un slot"""
 	match context.click_type:
 		ClickContext.ClickType.SIMPLE_LEFT_CLICK:
-			_handle_left_click(context)
+			_handle_selection(context)
 		ClickContext.ClickType.SIMPLE_RIGHT_CLICK:
-			_handle_right_click(context)
+			_handle_usage(context)
 
-func _handle_left_click(context: ClickContext):
-	"""Gère les clics gauches avec feedback visuel"""
+func _handle_selection(context: ClickContext):
+	"""Gère la sélection d'un slot"""
 	if context.source_slot_data.get("is_empty", true):
-		print("🔹 Slot vide cliqué - pas de sélection")
 		return
 	
-	# Nettoyer l'ancienne sélection visuelle
+	_clear_visual_selection()
+	_apply_visual_selection(context)
+	_save_selection_data(context)
+
+func _handle_usage(context: ClickContext):
+	"""Gère l'utilisation directe d'un item"""
+	var success = click_system.action_registry.execute(context)
+	if success:
+		call_deferred("_refresh_all_uis")
+
+# === GESTION VISUELLE ===
+
+func _clear_visual_selection():
+	"""Nettoie la sélection visuelle précédente"""
 	if currently_selected_slot_ui and is_instance_valid(currently_selected_slot_ui):
 		currently_selected_slot_ui.remove_selection_highlight()
-	
-	# Trouver le nouveau slot UI et l'activer
-	var slot_ui = _find_slot_ui_for_context(context)
+
+func _apply_visual_selection(context: ClickContext):
+	"""Applique la sélection visuelle"""
+	var slot_ui = SlotFinder.find_slot_ui_for_context(context, registered_uis)
 	if slot_ui:
 		slot_ui.highlight_as_selected()
 		currently_selected_slot_ui = slot_ui
 		print("✨ Sélection visuelle activée sur slot %d" % context.source_slot_index)
-	
-	# Sélectionner le slot (logique)
+
+func _save_selection_data(context: ClickContext):
+	"""Sauvegarde les données de sélection"""
 	selected_slot_info = {
 		"slot_index": context.source_slot_index,
 		"container_id": context.source_container_id,
@@ -75,16 +89,21 @@ func _handle_left_click(context: ClickContext):
 	}
 	print("✅ Slot %d sélectionné (%s)" % [context.source_slot_index, context.source_slot_data.get("item_name", "Inconnu")])
 
-func _handle_right_click(context: ClickContext):
-	"""Gère les clics droits (utilisation directe)"""
-	print("🖱️ Clic droit - utilisation directe")
-	var success = click_system.action_registry.execute(context)
-	if success:
-		call_deferred("_refresh_all_uis")
+func _clear_selection():
+	"""Efface complètement la sélection"""
+	if selected_slot_info.is_empty():
+		return
+	
+	print("🔹 Sélection effacée slot %d" % selected_slot_info.slot_index)
+	
+	_clear_visual_selection()
+	currently_selected_slot_ui = null
+	selected_slot_info.clear()
+
+# === UTILITAIRES ===
 
 func _create_slot_to_slot_context(target_context: ClickContext) -> ClickContext:
-	"""Crée un contexte slot-to-slot pour le déplacement"""
-	print("📦 Création contexte transfert: %d -> %d" % [selected_slot_info.slot_index, target_context.source_slot_index])
+	"""Crée un contexte de transfert slot-to-slot"""
 	return ClickContext.create_slot_to_slot_interaction(
 		ClickContext.ClickType.SIMPLE_LEFT_CLICK,
 		selected_slot_info.slot_index,
@@ -95,22 +114,14 @@ func _create_slot_to_slot_context(target_context: ClickContext) -> ClickContext:
 		target_context.source_slot_data
 	)
 
-func _clear_selection():
-	"""Efface la sélection (logique + visuel)"""
-	if selected_slot_info.is_empty():
-		return
-	
-	print("🔹 Sélection effacée slot %d" % selected_slot_info.slot_index)
-	
-	# Nettoyer le visuel
-	if currently_selected_slot_ui and is_instance_valid(currently_selected_slot_ui):
-		currently_selected_slot_ui.remove_selection_highlight()
-	currently_selected_slot_ui = null
-	
-	# Nettoyer la logique
-	selected_slot_info.clear()
+func _refresh_all_uis():
+	"""Rafraîchit toutes les UIs enregistrées"""
+	for container_id in registered_uis.keys():
+		var ui = registered_uis[container_id]
+		if ui and ui.has_method("refresh_ui"):
+			ui.refresh_ui()
 
-# === ENREGISTREMENT (API identique) ===
+# === API PUBLIQUE ===
 
 func register_container(container_id: String, controller, ui: Control):
 	"""Enregistre un container et son UI"""
@@ -119,57 +130,10 @@ func register_container(container_id: String, controller, ui: Control):
 	if ui:
 		registered_uis[container_id] = ui
 
-# === UTILITAIRES ===
-
-func _refresh_all_uis():
-	"""Rafraîchit toutes les UIs enregistrées"""
-	print("🔄 Rafraîchissement de toutes les UIs...")
-	
-	for container_id in registered_uis.keys():
-		var ui = registered_uis[container_id]
-		if ui and ui.has_method("refresh_ui"):
-			ui.refresh_ui()
-			print("   ✅ UI rafraîchie: %s" % container_id)
-		else:
-			print("   ❌ UI non rafraîchie: %s" % container_id)
-
-# === NOUVELLE MÉTHODE DEBUG ===
 func print_debug_info():
-	"""Affiche l'état du système de clic"""
+	"""Affiche l'état du système pour debug"""
 	print("\n🔍 ÉTAT CLICK SYSTEM:")
 	print("   - Sélection active: %s" % (not selected_slot_info.is_empty()))
 	if not selected_slot_info.is_empty():
 		print("   - Slot sélectionné: %d dans %s" % [selected_slot_info.slot_index, selected_slot_info.container_id])
 	print("   - UIs enregistrées: %d" % registered_uis.size())
-	for container_id in registered_uis.keys():
-		print("     * %s" % container_id)
-		
-func _find_slot_ui_for_context(context: ClickContext) -> ClickableSlotUI:
-	"""Trouve le ClickableSlotUI correspondant au contexte"""
-	var ui = registered_uis.get(context.source_container_id)
-	if not ui:
-		return null
-	
-	return _find_slot_ui_in_container(ui, context.source_slot_index)
-
-func _find_slot_ui_in_container(ui: Control, slot_index: int) -> ClickableSlotUI:
-	"""Trouve un slot spécifique dans une UI container"""
-	var slots = _find_all_slots_in_ui(ui)
-	for slot in slots:
-		if slot.get_slot_index() == slot_index:
-			return slot
-	return null
-
-func _find_all_slots_in_ui(ui: Control) -> Array[ClickableSlotUI]:
-	"""Trouve tous les ClickableSlotUI dans une UI"""
-	var slots: Array[ClickableSlotUI] = []
-	_find_slots_recursive(ui, slots)
-	return slots
-
-func _find_slots_recursive(node: Node, slots: Array[ClickableSlotUI]):
-	"""Recherche récursive de ClickableSlotUI"""
-	if node is ClickableSlotUI:
-		slots.append(node as ClickableSlotUI)
-	
-	for child in node.get_children():
-		_find_slots_recursive(child, slots)
