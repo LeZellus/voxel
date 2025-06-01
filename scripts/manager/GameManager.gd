@@ -1,3 +1,4 @@
+# scripts/manager/GameManager.gd - AVEC PREVIEWMANAGER INTÉGRÉ
 extends Node
 class_name GameManager
 
@@ -5,34 +6,41 @@ var normal_cursor: ImageTexture
 var click_cursor: ImageTexture
 
 func _ready():
-	
+	_setup_core_systems()
+	_setup_cursors()
+
+func _setup_core_systems():
+	"""Initialise les systèmes centraux"""
+	# ServiceLocator et Events
 	var service_locator = ServiceLocator.new()
 	var events = Events.new()
 	add_child(service_locator)
 	add_child(events)
 	
-	# Charger les deux textures
+	# PreviewManager (nouveau)
+	var preview_manager = PreviewManager.new()
+	add_child(preview_manager)
+	ServiceLocator.register("preview", preview_manager)
+	
+	# AudioSystem
+	var audio_system = get_node_or_null("../AudioSystem")
+	if audio_system:
+		ServiceLocator.register("audio", audio_system)
+	else:
+		print("❌ AudioSystem introuvable dans la scène")
+
+func _setup_cursors():
+	"""Configure les curseurs"""
 	var tex1 = load("res://assets/icons/iso_mouse2.png")
 	var tex2 = load("res://assets/icons/iso_mouse.png")
 	
-	if tex1 == null:
-		print("ERREUR: Fichier iso_mouse2.png introuvable!")
-		return
-	
-	if tex2 == null:
-		print("ERREUR: Fichier iso_mouse2_click.png introuvable!")
+	if tex1 == null or tex2 == null:
+		print("❌ Fichiers de curseur introuvables!")
 		return
 	
 	normal_cursor = create_cursor(tex1)
 	click_cursor = create_cursor(tex2)
 	
-	var audio_system = get_node_or_null("../AudioSystem")  # Ou le chemin correct
-	if audio_system:
-		ServiceLocator.register("audio", audio_system)
-	else:
-		print("❌ AudioSystem introuvable dans la scène")
-	
-	# Définir le curseur normal au démarrage
 	Input.set_custom_mouse_cursor(normal_cursor, Input.CURSOR_ARROW, Vector2(16, 0))
 
 func create_cursor(texture):
@@ -54,10 +62,6 @@ func _input(event):
 		if event.pressed:
 			if click_cursor:
 				Input.set_custom_mouse_cursor(click_cursor, Input.CURSOR_ARROW, Vector2(16, 0))
-			else:
-				print("ERREUR: click_cursor est null!")
 		else:
 			if normal_cursor:
 				Input.set_custom_mouse_cursor(normal_cursor, Input.CURSOR_ARROW, Vector2(16, 0))
-			else:
-				print("ERREUR: normal_cursor est null!")

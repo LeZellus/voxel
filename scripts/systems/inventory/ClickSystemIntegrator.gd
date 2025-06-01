@@ -1,24 +1,18 @@
-# scripts/systems/inventory/ClickSystemIntegrator.gd - CORRECTION Z-INDEX
+# scripts/systems/inventory/ClickSystemIntegrator.gd - VERSION SIMPLIFIÉE
 class_name ClickSystemIntegrator
 extends Node
 
-# === COMPOSANTS ===
+# === COMPOSANTS PRINCIPAUX ===
 var click_system: ClickSystemManager
 var registered_uis: Dictionary = {}
 var selected_slot_info: Dictionary = {}
 var currently_selected_slot_ui: ClickableSlotUI
 
-# === ITEM PREVIEW ===
-var item_preview: ItemPreview
-
 func _ready():
-	print("🔧 ClickSystemIntegrator _ready() appelé")
 	_initialize_system()
-	call_deferred("_create_item_preview")
 
 func _initialize_system():
 	"""Initialise le système de clic"""
-	print("🔧 Initialisation du système de clic...")
 	click_system = ClickSystemManager.new()
 	add_child(click_system)
 	
@@ -26,51 +20,13 @@ func _initialize_system():
 	
 	if Events.instance:
 		Events.instance.slot_clicked.connect(_handle_slot_click_via_events)
-		print("✅ Connecté aux événements de slots")
-	else:
-		print("❌ Events.instance introuvable")
 
 func _create_item_preview():
-	"""Crée la preview avec le bon z-index"""
-	print("🔧 Création de l'ItemPreview...")
-	
-	var preview_scene_path = "res://scenes/click_system/ui/ItemPreview.tscn"
-	
-	if not ResourceLoader.exists(preview_scene_path):
-		print("❌ ItemPreview.tscn introuvable")
-		return
-	
-	var preview_scene = load(preview_scene_path)
-	if not preview_scene:
-		print("❌ Impossible de charger ItemPreview.tscn")
-		return
-	
-	item_preview = preview_scene.instantiate() as ItemPreview
-	if not item_preview:
-		print("❌ Impossible d'instancier ItemPreview")
-		return
-	
-	print("✅ ItemPreview instancié")
-	
-	# CORRECTION MAJEURE: Créer un CanvasLayer dédié avec layer très élevé
-	var preview_layer = CanvasLayer.new()
-	preview_layer.name = "ItemPreviewLayer"
-	preview_layer.layer = 100  # Au-dessus de tout
-	
-	# Ajouter le layer à la scène principale
-	get_tree().current_scene.add_child(preview_layer)
-	
-	# Ajouter la preview au layer
-	preview_layer.add_child(item_preview)
-	
-	# Configuration finale
-	item_preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	
-	print("✅ ItemPreview configuré avec CanvasLayer 100")
-	print("   - Parent: %s" % item_preview.get_parent().name)
-	print("   - Layer: %d" % preview_layer.layer)
+	"""SUPPRIMÉ - Utilise maintenant PreviewManager"""
+	# Plus besoin de créer la preview ici
+	pass
 
-# === GESTION DES CLICS (inchangée) ===
+# === GESTION DES CLICS ===
 
 func _handle_slot_click_via_events(context: ClickContext):
 	"""Point d'entrée principal pour les clics"""
@@ -81,8 +37,6 @@ func _handle_slot_click_via_events(context: ClickContext):
 
 func _handle_transfer_attempt(context: ClickContext):
 	"""Gère une tentative de transfert"""
-	print("🔄 Tentative de transfert...")
-	
 	var target_context = _create_slot_to_slot_context(context)
 	var success = click_system.action_registry.execute(target_context)
 	
@@ -108,16 +62,7 @@ func _handle_selection(context: ClickContext):
 	_clear_visual_selection()
 	_apply_visual_selection(context)
 	_save_selection_data(context)
-	
-	# Afficher la preview
 	_show_item_preview(context.source_slot_data)
-
-func _show_error_feedback(context: ClickContext):
-	"""Affiche le feedback d'erreur sur un slot vide"""
-	var slot_ui = SlotFinder.find_slot_ui_for_context(context, registered_uis)
-	if slot_ui and slot_ui.has_method("show_error_feedback"):
-		slot_ui.show_error_feedback()
-		print("❌ Clic sur slot vide - feedback d'erreur affiché")
 
 func _handle_usage(context: ClickContext):
 	"""Gère l'utilisation directe d'un item"""
@@ -138,7 +83,6 @@ func _apply_visual_selection(context: ClickContext):
 	if slot_ui:
 		slot_ui.highlight_as_selected()
 		currently_selected_slot_ui = slot_ui
-		print("✨ Sélection visuelle activée sur slot %d" % context.source_slot_index)
 
 func _save_selection_data(context: ClickContext):
 	"""Sauvegarde les données de sélection"""
@@ -147,42 +91,32 @@ func _save_selection_data(context: ClickContext):
 		"container_id": context.source_container_id,
 		"slot_data": context.source_slot_data
 	}
-	print("✅ Slot %d sélectionné (%s)" % [context.source_slot_index, context.source_slot_data.get("item_name", "Inconnu")])
 
 func _clear_selection():
 	"""Efface complètement la sélection"""
 	if selected_slot_info.is_empty():
 		return
 	
-	print("🔹 Sélection effacée slot %d" % selected_slot_info.slot_index)
-	
 	_clear_visual_selection()
 	currently_selected_slot_ui = null
 	selected_slot_info.clear()
-	
-	# Cacher la preview
 	_hide_item_preview()
+
+func _show_error_feedback(context: ClickContext):
+	"""Affiche le feedback d'erreur sur un slot vide"""
+	var slot_ui = SlotFinder.find_slot_ui_for_context(context, registered_uis)
+	if slot_ui and slot_ui.has_method("show_error_feedback"):
+		slot_ui.show_error_feedback()
 
 # === MÉTHODES PREVIEW ===
 
 func _show_item_preview(item_data: Dictionary):
-	"""Affiche la preview de l'item sélectionné"""
-	print("🖼️ Tentative d'affichage preview...")
-	
-	if not item_preview or not is_instance_valid(item_preview):
-		print("❌ ItemPreview invalide")
-		return
-	
-	print("✅ Affichage item: %s" % item_data.get("item_name", "Inconnu"))
-	item_preview.show_item(item_data)
+	"""Affiche la preview via PreviewManager"""
+	PreviewManager.show_item_preview(item_data)
 
 func _hide_item_preview():
-	"""Cache la preview"""
-	if not item_preview or not is_instance_valid(item_preview):
-		return
-	
-	item_preview.hide_item()
-	print("✅ Preview cachée")
+	"""Cache la preview via PreviewManager"""
+	PreviewManager.hide_item_preview()
 
 # === UTILITAIRES ===
 
