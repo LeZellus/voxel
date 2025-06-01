@@ -46,18 +46,17 @@ signal action_detected(action_type: ActionType, event: InputEvent, context: Dict
 
 # === TRAITEMENT PRINCIPAL ===
 func process_input(event: InputEvent) -> ActionType:
-	"""Point d'entrée principal - retourne le type d'action détecté"""
+	print("🐛 INPUT DEBUG: %s" % event.get_class())
 	
-	# Mettre à jour les modificateurs
-	_update_modifiers(event)
-	
-	# Traiter selon le type d'événement
+	# Ne traiter que les VRAIS événements de clic
 	if event is InputEventMouseButton:
+		print("🐛 MOUSE BUTTON: button=%d, pressed=%s" % [event.button_index, event.pressed])
 		return _process_mouse_button(event)
 	elif event is InputEventMouseMotion:
+		print("🐛 MOUSE MOTION - NE DEVRAIT PAS CRÉER DE CLICS")
 		return _process_mouse_motion(event)
 	
-	return ActionType.SIMPLE_LEFT_CLICK  # Fallback
+	return ActionType.SIMPLE_LEFT_CLICK if event is InputEventMouseButton else ActionType.SIMPLE_LEFT_CLICK  # ❌ PROBLÈME ICI !
 
 # === TRAITEMENT BOUTONS SOURIS ===
 func _process_mouse_button(event: InputEventMouseButton) -> ActionType:

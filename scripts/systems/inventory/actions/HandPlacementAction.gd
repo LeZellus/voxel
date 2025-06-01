@@ -39,6 +39,18 @@ func execute(context: ClickContext) -> bool:
 	print("\n🚀 === HANDPLACEMENTACTION.EXECUTE ===")
 	
 	var hand_data = get_hand_data()
+	
+	var integrator = get_integrator()
+	if integrator and not integrator.selected_slot_info.is_empty():
+		var hand_slot = integrator.selected_slot_info.get("slot_index", -1)
+		var hand_container = integrator.selected_slot_info.get("container_id", "")
+		
+		if (hand_slot == context.source_slot_index and 
+			hand_container == context.source_container_id):
+			print("🚫 Même slot - déposer sans stack")
+			clear_hand_selection()
+			return true
+	
 	var hand_item_id = hand_data.get("item_id", "")
 	var hand_quantity = hand_data.get("quantity", 0)
 	var hand_item_type = hand_data.get("item_type", -1)

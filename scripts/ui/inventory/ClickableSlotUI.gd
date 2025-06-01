@@ -69,30 +69,23 @@ func _connect_button_signals():
 # === NOUVEAUX ÉVÉNEMENTS AVANCÉS ===
 
 func _on_advanced_gui_input(event: InputEvent):
-	"""NOUVEAU : Traitement d'input avancé via InputStateManager"""
-	if not input_manager:
-		return
-	
-	# Laisser l'InputStateManager analyser l'événement
-	var action_type = input_manager.process_input(event)
-	
-	# Créer le contexte étendu pour cette action
-	var context = {
-		"slot_index": slot_index,
-		"slot_data": slot_data.duplicate(),
-		"mouse_position": event.global_position if event is InputEventMouse else Vector2.ZERO,
-		"modifiers": input_manager.get_current_modifiers(),
-		"is_dragging": input_manager.is_in_drag_state(),
-		"is_holding": input_manager.is_in_hold_state()
-	}
-	
-	# Émettre le signal avec le type d'action détecté
-	slot_action_detected.emit(slot_index, action_type, context)
-	
-	# DEBUG
-	if action_type != InputStateManager.ActionType.SIMPLE_LEFT_CLICK:  # Éviter le spam
-		print("🎮 Slot[%d]: %s détecté" % [slot_index, InputStateManager.ActionType.keys()[action_type]])
-
+	"""VERSION SIMPLIFIÉE pour debug"""
+	if event is InputEventMouseButton and event.pressed:
+		var action_type = InputStateManager.ActionType.SIMPLE_LEFT_CLICK
+		if event.button_index == MOUSE_BUTTON_RIGHT:
+			action_type = InputStateManager.ActionType.SIMPLE_RIGHT_CLICK
+		
+		var context = {
+			"slot_index": slot_index,
+			"slot_data": slot_data.duplicate(),
+			"mouse_position": event.global_position,
+			"modifiers": {},
+			"is_dragging": false,
+			"is_holding": false
+		}
+		
+		slot_action_detected.emit(slot_index, action_type, context)
+		
 func _on_advanced_action_detected(action_type: InputStateManager.ActionType, event: InputEvent, context: Dictionary):
 	"""Callback quand l'InputStateManager détecte une action"""
 	# Cette méthode peut être utilisée pour des traitements spécifiques au slot
