@@ -1,4 +1,4 @@
-# scripts/systems/inventory/ClickSystemIntegrator.gd - VERSION SIMPLIFIÉE
+# scripts/systems/inventory/ClickSystemIntegrator.gd - VERSION AVEC DEBUG COMPLET
 class_name ClickSystemIntegrator
 extends Node
 
@@ -20,25 +20,58 @@ func _initialize_system():
 	
 	if Events.instance:
 		Events.instance.slot_clicked.connect(_handle_slot_click_via_events)
-
-func _create_item_preview():
-	"""SUPPRIMÉ - Utilise maintenant PreviewManager"""
-	# Plus besoin de créer la preview ici
-	pass
+		print("✅ Events.slot_clicked connecté à ClickSystemIntegrator")
 
 # === GESTION DES CLICS ===
 
 func _handle_slot_click_via_events(context: ClickContext):
-	"""Point d'entrée principal pour les clics"""
+	"""Point d'entrée principal pour les clics - AVEC DEBUG COMPLET"""
+	print("\n🎮 === CLIC DÉTECTÉ ===")
+	print("   - Type: %s" % ClickContext.ClickType.keys()[context.click_type])
+	print("   - Slot: %d" % context.source_slot_index)
+	print("   - Container: %s" % context.source_container_id)
+	print("   - Item: %s" % context.source_slot_data.get("item_name", "vide"))
+	print("   - Quantité: %d" % context.source_slot_data.get("quantity", 0))
+	print("   - Sélection active: %s" % (not selected_slot_info.is_empty()))
+	
 	if not selected_slot_info.is_empty():
+		print("   - Item en main: %s x%d" % [
+			selected_slot_info.slot_data.get("item_name", "?"),
+			selected_slot_info.slot_data.get("quantity", 0)
+		])
 		_handle_transfer_attempt(context)
 	else:
 		_handle_initial_click(context)
 
 func _handle_transfer_attempt(context: ClickContext):
-	"""Gère une tentative de transfert"""
+	"""Gère une tentative de transfert - AVEC DEBUG"""
+	print("🔄 === TENTATIVE DE TRANSFERT ===")
+	
 	var target_context = _create_slot_to_slot_context(context)
+	
+	print("   - Source: %s[%d] - %s x%d" % [
+		target_context.source_container_id,
+		target_context.source_slot_index,
+		target_context.source_slot_data.get("item_name", "?"),
+		target_context.source_slot_data.get("quantity", 0)
+	])
+	print("   - Target: %s[%d] - %s x%d" % [
+		target_context.target_container_id,
+		target_context.target_slot_index,
+		target_context.target_slot_data.get("item_name", "vide"),
+		target_context.target_slot_data.get("quantity", 0)
+	])
+	
+	# VÉRIFICATION CRITIQUE: Le ActionRegistry existe-t-il ?
+	if not click_system or not click_system.action_registry:
+		print("❌ ActionRegistry introuvable!")
+		_clear_selection()
+		return
+	
+	print("🎯 Envoi vers ActionRegistry...")
 	var success = click_system.action_registry.execute(target_context)
+	
+	print("📊 Résultat action: %s" % ("✅ Succès" if success else "❌ Échec"))
 	
 	_clear_selection()
 	
@@ -46,27 +79,42 @@ func _handle_transfer_attempt(context: ClickContext):
 		_refresh_all_uis()
 
 func _handle_initial_click(context: ClickContext):
-	"""Gère le premier clic sur un slot"""
+	"""Gère le premier clic sur un slot - AVEC DEBUG"""
+	print("🎯 === CLIC INITIAL ===")
+	
 	match context.click_type:
 		ClickContext.ClickType.SIMPLE_LEFT_CLICK:
+			print("   - Type: Clic gauche - Sélection")
 			_handle_selection(context)
 		ClickContext.ClickType.SIMPLE_RIGHT_CLICK:
+			print("   - Type: Clic droit - Utilisation")
 			_handle_usage(context)
 
 func _handle_selection(context: ClickContext):
-	"""Gère la sélection d'un slot"""
+	"""Gère la sélection d'un slot - AVEC DEBUG"""
 	if context.source_slot_data.get("is_empty", true):
+		print("⚠️ Slot vide - Affichage erreur")
 		_show_error_feedback(context)
 		return
 	
+	print("✅ Sélection du slot")
 	_clear_visual_selection()
 	_apply_visual_selection(context)
 	_save_selection_data(context)
 	_show_item_preview(context.source_slot_data)
 
 func _handle_usage(context: ClickContext):
-	"""Gère l'utilisation directe d'un item"""
+	"""Gère l'utilisation directe d'un item - AVEC DEBUG"""
+	print("🔨 Tentative d'utilisation...")
+	
+	# VÉRIFICATION CRITIQUE
+	if not click_system or not click_system.action_registry:
+		print("❌ ActionRegistry introuvable pour usage!")
+		return
+	
 	var success = click_system.action_registry.execute(context)
+	print("📊 Résultat usage: %s" % ("✅ Succès" if success else "❌ Échec"))
+	
 	if success:
 		call_deferred("_refresh_all_uis")
 
@@ -91,12 +139,18 @@ func _save_selection_data(context: ClickContext):
 		"container_id": context.source_container_id,
 		"slot_data": context.source_slot_data
 	}
+	
+	print("💾 Sélection sauvegardée: %s x%d" % [
+		context.source_slot_data.get("item_name", "?"),
+		context.source_slot_data.get("quantity", 0)
+	])
 
 func _clear_selection():
 	"""Efface complètement la sélection"""
 	if selected_slot_info.is_empty():
 		return
 	
+	print("🧹 Nettoyage sélection")
 	_clear_visual_selection()
 	currently_selected_slot_ui = null
 	selected_slot_info.clear()
@@ -134,10 +188,12 @@ func _create_slot_to_slot_context(target_context: ClickContext) -> ClickContext:
 
 func _refresh_all_uis():
 	"""Rafraîchit toutes les UIs enregistrées"""
+	print("🔄 Rafraîchissement de toutes les UIs...")
 	for container_id in registered_uis.keys():
 		var ui = registered_uis[container_id]
 		if ui and ui.has_method("refresh_ui"):
 			ui.refresh_ui()
+			print("  ✅ UI %s rafraîchie" % container_id)
 
 # === API PUBLIQUE ===
 
@@ -147,3 +203,19 @@ func register_container(container_id: String, controller, ui: Control):
 	
 	if ui:
 		registered_uis[container_id] = ui
+		print("✅ Container %s enregistré avec UI" % container_id)
+
+# === DEBUG ===
+
+func debug_system_state():
+	"""Debug complet du système"""
+	print("\n🔍 === DEBUG CLICK SYSTEM ===")
+	print("   - ClickSystemManager: %s" % ("✅" if click_system else "❌"))
+	print("   - ActionRegistry: %s" % ("✅" if click_system and click_system.action_registry else "❌"))
+	print("   - UIs enregistrées: %d" % registered_uis.size())
+	print("   - Sélection active: %s" % (not selected_slot_info.is_empty()))
+	
+	if click_system and click_system.action_registry:
+		print("   - Actions disponibles: %d" % click_system.action_registry.actions.size())
+		for action in click_system.action_registry.actions:
+			print("     * %s (priorité: %d)" % [action.name, action.priority])

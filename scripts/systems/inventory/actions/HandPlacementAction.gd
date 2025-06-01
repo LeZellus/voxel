@@ -3,7 +3,7 @@ class_name HandPlacementAction
 extends BaseInventoryAction
 
 func _init():
-	super("hand_placement", 9)  # Entre RestackAction (8) et SimpleMoveAction (10)
+	super("hand_placement", 3)
 
 func can_execute(context: ClickContext) -> bool:
 	"""

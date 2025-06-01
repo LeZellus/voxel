@@ -1,4 +1,4 @@
-# scripts/systems/inventory/ActionRegistry.gd - VERSION REFACTORISÉE
+# scripts/systems/inventory/ActionRegistry.gd - VERSION AVEC PRIORITÉS CORRIGÉES
 class_name ActionRegistry
 extends RefCounted
 
@@ -6,39 +6,87 @@ var actions: Array[BaseInventoryAction] = []
 
 func register(action: BaseInventoryAction):
 	actions.append(action)
-	actions.sort_custom(func(a, b): return a.priority > b.priority)
+	# CORRECTION: Tri par priorité DÉCROISSANTE (plus haute priorité = plus petite valeur)
+	actions.sort_custom(func(a, b): return a.priority < b.priority)
+	print("✅ Action enregistrée: %s (priorité: %d)" % [action.name, action.priority])
 
 func execute(context: ClickContext) -> bool:
-	print("🎮 Exécution pour: %s" % ClickContext.ClickType.keys()[context.click_type])
+	print("\n🎮 === ACTIONREGISTRY.EXECUTE ===")
+	print("   - Type de clic: %s" % ClickContext.ClickType.keys()[context.click_type])
+	print("   - Actions disponibles: %d" % actions.size())
 	
+	# DEBUG: Lister toutes les actions DANS L'ORDRE DE PRIORITÉ
+	for i in range(actions.size()):
+		var action = actions[i]
+		var can_exec = action.can_execute(context)
+		print("   %d. %s (priorité: %d) - Peut exécuter: %s" % [
+			i + 1, action.name, action.priority, "✅" if can_exec else "❌"
+		])
+	
+	# Exécuter la première action compatible (ordre de priorité)
 	for action in actions:
 		if action.can_execute(context):
-			print("✅ Action trouvée: %s" % action.name)
-			return action.execute(context)
+			print("🚀 EXÉCUTION: %s (priorité: %d)" % [action.name, action.priority])
+			var result = action.execute(context)
+			print("📊 RÉSULTAT: %s" % ("✅ Succès" if result else "❌ Échec"))
+			return result
 	
-	print("⚠️ Aucune action pour ce contexte")
+	print("⚠️ Aucune action compatible trouvée")
 	return false
 
 func setup_defaults():
 	"""Configure les actions par défaut dans l'ordre de priorité"""
-	register(RestackAction.new())           # Priorité 8 - Regroup stacks
-	register(HandPlacementAction.new())     # Priorité 9 - Placement depuis main
-	register(SimpleMoveAction.new())        # Priorité 10 - Déplacements normaux
-	register(HalfStackAction.new())         # Priorité 15 - Division stacks
-	register(SimpleUseAction.new())         # Priorité 20 - Utilisation items
+	print("\n🔧 === SETUP ACTIONS PAR DÉFAUT ===")
+	# NOUVELLES PRIORITÉS LOGIQUES (plus petit = plus prioritaire)
+	register(RestackAction.new())           # Priorité 1 - PLUS HAUTE PRIORITÉ
+	register(HalfStackAction.new())         # Priorité 2 - Avant les autres actions
+	register(HandPlacementAction.new())     # Priorité 3 - Placement depuis main
+	register(SimpleMoveAction.new())        # Priorité 4 - Déplacements normaux
+	register(SimpleUseAction.new())         # Priorité 5 - PLUS BASSE PRIORITÉ
+	
+	print("✅ %d actions configurées" % actions.size())
+	print("📋 Ordre final:")
+	for i in range(actions.size()):
+		print("   %d. %s (priorité: %d)" % [i + 1, actions[i].name, actions[i].priority])
 
-# === ACTIONS SIMPLIFIÉES (héritent maintenant de BaseInventoryAction) ===
+# === ACTIONS SIMPLIFIÉES AVEC NOUVELLES PRIORITÉS ===
 
 class SimpleMoveAction extends BaseInventoryAction:
 	func _init():
-		super("move", 10)
+		super("move", 4)  # NOUVELLE PRIORITÉ
 	
 	func can_execute(context: ClickContext) -> bool:
-		# Ne gère que les déplacements slot-à-slot normaux (pas depuis la main)
-		return (context.click_type == ClickContext.ClickType.SIMPLE_LEFT_CLICK 
-				and context.target_slot_index != -1
-				and context.source_slot_index != -1  # Pas depuis la main
-				and not context.source_slot_data.get("is_empty", true))
+		# VALIDATION PLUS STRICTE pour éviter les conflits avec RestackAction
+		var is_slot_to_slot = (context.target_slot_index != -1 and context.source_slot_index != -1)
+		var is_left_click = (context.click_type == ClickContext.ClickType.SIMPLE_LEFT_CLICK)
+		var source_not_empty = not context.source_slot_data.get("is_empty", true)
+		
+		# NOUVELLE CONDITION: Ne pas prendre si c'est un restack potentiel
+		var is_restack_scenario = false
+		if is_slot_to_slot and is_left_click and source_not_empty:
+			# Vérifier si c'est un restack (même item)
+			var target_not_empty = not context.target_slot_data.get("is_empty", true)
+			if target_not_empty:
+				var source_item_id = context.source_slot_data.get("item_id", "")
+				var target_item_id = context.target_slot_data.get("item_id", "")
+				var source_item_type = context.source_slot_data.get("item_type", -1)
+				
+				if (source_item_id == target_item_id and source_item_id != "" and source_item_type != Item.ItemType.TOOL):
+					is_restack_scenario = true
+					print("🔍 SimpleMoveAction: Détection scénario restack - délégué à RestackAction")
+		
+		var result = is_left_click and is_slot_to_slot and source_not_empty and not is_restack_scenario
+		
+		if result:
+			print("🔍 SimpleMoveAction: ✅ Peut exécuter")
+		else:
+			print("🔍 SimpleMoveAction: ❌ Ne peut pas exécuter")
+			print("     - Click type OK: %s" % is_left_click)
+			print("     - Slot to slot: %s" % is_slot_to_slot)
+			print("     - Source pas vide: %s" % source_not_empty)
+			print("     - Pas un restack: %s" % (not is_restack_scenario))
+		
+		return result
 	
 	func execute(context: ClickContext) -> bool:
 		print("🔄 [ACTION] Déplacement: slot %d -> slot %d" % [context.source_slot_index, context.target_slot_index])
@@ -69,14 +117,12 @@ class SimpleMoveAction extends BaseInventoryAction:
 			success = source_controller.move_item(context.source_slot_index, context.target_slot_index)
 			if success:
 				Events.emit_item_moved(context.source_slot_index, context.target_slot_index, context.source_container_id)
-				# NOUVEAU: Rafraîchir l'UI après le déplacement interne
 				call_deferred("_refresh_ui_after_move", context.source_container_id)
 		
 		# CONTAINERS DIFFÉRENTS = transfert direct
 		else:
 			success = _execute_direct_transfer(context, source_controller, target_controller)
 			if success:
-				# NOUVEAU: Rafraîchir les deux UIs
 				call_deferred("_refresh_ui_after_move", context.source_container_id)
 				call_deferred("_refresh_ui_after_move", context.target_container_id)
 		
@@ -129,43 +175,10 @@ class SimpleMoveAction extends BaseInventoryAction:
 			
 			return true
 		
-		# CAS 2: Même item - tentative de stack
+		# CAS 2: Même item - DÉLÉGUER À RESTACKACTION
 		elif target_slot.get_item().id == item.id and item.is_stackable:
-			print("📚 Tentative de stack...")
-			
-			var available_space = target_slot.get_max_stack_size() - target_slot.get_quantity()
-			var can_transfer = min(quantity, available_space)
-			
-			if can_transfer > 0:
-				var remaining_in_source = quantity - can_transfer
-				
-				# LOGS DÉTAILLÉS POUR DEBUG
-				print("🔍 AVANT stack:")
-				print("   - Source: %d items" % source_slot.get_quantity())
-				print("   - Target: %d items" % target_slot.get_quantity())
-				print("   - À transférer: %d" % can_transfer)
-				print("   - Restera en source: %d" % remaining_in_source)
-				
-				if remaining_in_source > 0:
-					source_slot.item_stack.quantity = remaining_in_source
-				else:
-					source_slot.clear()
-				
-				target_slot.item_stack.quantity += can_transfer
-				
-				# NOUVEAU: S'assurer que les signaux sont émis
-				source_slot.slot_changed.emit()
-				target_slot.slot_changed.emit()
-				
-				print("🔍 APRÈS stack:")
-				print("   - Source: %d items" % (source_slot.get_quantity() if not source_slot.is_empty() else 0))
-				print("   - Target: %d items" % target_slot.get_quantity())
-				
-				print("✅ Stack réussi: %d items transférés" % can_transfer)
-				return true
-			else:
-				print("❌ Stack impossible - destination pleine")
-				return false
+			print("📚 Détection restack - ne devrait pas arriver ici!")
+			return false
 		
 		# CAS 3: Items différents - swap complet
 		else:
@@ -186,7 +199,7 @@ class SimpleMoveAction extends BaseInventoryAction:
 			return true
 	
 	func _refresh_ui_after_move(container_id: String):
-		"""NOUVEAU: Force le rafraîchissement de l'UI après un mouvement"""
+		"""Force le rafraîchissement de l'UI après un mouvement"""
 		print("🔄 Rafraîchissement UI forcé pour: %s" % container_id)
 		
 		var inventory_system = ServiceLocator.get_service("inventory")
@@ -208,16 +221,36 @@ class SimpleMoveAction extends BaseInventoryAction:
 			print("✅ UI rafraîchie pour: %s" % container_id)
 		else:
 			print("❌ Méthode refresh_ui introuvable sur UI de: %s" % container_id)
+
 class SimpleUseAction extends BaseInventoryAction:
 	func _init():
-		super("use", 20)
+		super("use", 5)  # NOUVELLE PRIORITÉ - PLUS BASSE
 	
 	func can_execute(context: ClickContext) -> bool:
-		# Clic droit sur un slot avec item, sans sélection active
-		return (context.click_type == ClickContext.ClickType.SIMPLE_RIGHT_CLICK 
-				and not context.source_slot_data.get("is_empty", true)
-				and context.target_slot_index == -1
-				and player_has_selection())  # Seulement si déjà quelque chose en main
+		# CONDITION PLUS STRICTE: Seulement si pas de sélection active ET pas de half-stack potentiel
+		var is_right_click = (context.click_type == ClickContext.ClickType.SIMPLE_RIGHT_CLICK)
+		var source_not_empty = not context.source_slot_data.get("is_empty", true)
+		var no_target = (context.target_slot_index == -1)
+		var no_selection = not player_has_selection()
+		
+		# NOUVELLE CONDITION: Éviter si c'est un half-stack potentiel (quantité > 1)
+		var quantity = context.source_slot_data.get("quantity", 1)
+		var item_type = context.source_slot_data.get("item_type", -1)
+		var is_half_stack_scenario = (quantity > 1 and item_type != Item.ItemType.TOOL)
+		
+		var result = is_right_click and source_not_empty and no_target and no_selection and not is_half_stack_scenario
+		
+		if result:
+			print("🔍 SimpleUseAction: ✅ Peut exécuter")
+		else:
+			print("🔍 SimpleUseAction: ❌ Ne peut pas exécuter")
+			print("     - Clic droit: %s" % is_right_click)
+			print("     - Source pas vide: %s" % source_not_empty)
+			print("     - Pas de target: %s" % no_target)
+			print("     - Pas de sélection: %s" % no_selection)
+			print("     - Pas half-stack scenario: %s" % (not is_half_stack_scenario))
+		
+		return result
 	
 	func execute(context: ClickContext) -> bool:
 		var item_type = context.source_slot_data.get("item_type", -1)

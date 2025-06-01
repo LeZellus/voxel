@@ -313,3 +313,67 @@ func _debug_visual_system_state():
 			print("   - Slot visuel sélectionné: %d" % visual_slot.get_slot_index())
 	else:
 		print("   - ⚠️ Propriété currently_selected_slot_ui manquante dans integrator")
+		
+func _input(event):
+	# DEBUG du système de clic
+	if event.is_action_pressed("ui_cancel"):  # Touche Échap
+		_debug_click_system_complete()
+	
+	# Test de restack forcé
+	if event.is_action_pressed("ui_accept") and Input.is_action_pressed("ui_right"):  # Entrée + Flèche droite
+		_test_forced_restack()
+
+func _debug_click_system_complete():
+	"""Debug complet du système de clic"""
+	print("🔍 DEBUG SYSTÈME DE CLIC COMPLET")
+	
+	# 1. Vérifier InventorySystem
+	if not inventory_system:
+		print("❌ InventorySystem manquant!")
+		return
+	
+	print("✅ InventorySystem trouvé")
+	
+	# 2. Vérifier ClickIntegrator
+	var integrator = inventory_system.get_click_integrator()
+	if not integrator:
+		print("❌ ClickIntegrator manquant!")
+		return
+	
+	print("✅ ClickIntegrator trouvé")
+	integrator.debug_system_state()
+	
+	# 3. Vérifier les UIs
+	var main_inv = inventory_system.get_main_inventory()
+	if main_inv and main_inv.ui:
+		main_inv.ui.debug_ui_state()
+	
+	# 4. Tester les slots
+	print("\n🔍 TEST DES PREMIERS SLOTS:")
+	for i in range(3):
+		if main_inv.ui.slots.size() > i:
+			main_inv.ui.slots[i].debug_slot_content()
+
+func _test_forced_restack():
+	"""Test forcé de restack entre les slots 0 et 2"""
+	print("\n🧪 === TEST FORCÉ DE RESTACK ===")
+	
+	var main_inv = inventory_system.get_main_inventory()
+	if not main_inv:
+		print("❌ Inventaire principal introuvable")
+		return
+	
+	# Simuler un restack Slot 0 -> Slot 2
+	var context = ClickContext.create_slot_to_slot_interaction(
+		ClickContext.ClickType.SIMPLE_LEFT_CLICK,
+		0, "player_inventory", {"is_empty": false, "item_id": "apple", "item_name": "Pomme", "quantity": 64, "item_type": Item.ItemType.CONSUMABLE},
+		2, "player_inventory", {"is_empty": false, "item_id": "wood", "item_name": "Bois", "quantity": 63, "item_type": Item.ItemType.RESOURCE}
+	)
+	
+	var integrator = inventory_system.get_click_integrator()
+	if integrator and integrator.click_system and integrator.click_system.action_registry:
+		print("🚀 Exécution forcée du ActionRegistry...")
+		var result = integrator.click_system.action_registry.execute(context)
+		print("📊 Résultat: %s" % ("✅" if result else "❌"))
+	else:
+		print("❌ ActionRegistry introuvable")

@@ -1,4 +1,4 @@
-# scripts/ui/inventory/ClickableSlotUI.gd - VERSION ROBUSTE
+# scripts/ui/inventory/ClickableSlotUI.gd - VERSION AVEC MISE À JOUR FORCÉE
 class_name ClickableSlotUI
 extends Control
 
@@ -101,13 +101,30 @@ func get_slot_index() -> int:
 	return slot_index
 
 func update_slot(slot_info: Dictionary):
-	"""Met à jour l'affichage du slot"""
+	"""Met à jour l'affichage du slot - VERSION AVEC DEBUG"""
+	var old_data = slot_data.duplicate()
 	slot_data = slot_info
+	
+	# DEBUG: Vérifier les changements significatifs
+	var old_empty = old_data.get("is_empty", true)
+	var new_empty = slot_info.get("is_empty", true)
+	var old_qty = old_data.get("quantity", 0)
+	var new_qty = slot_info.get("quantity", 0)
+	
+	if not new_empty and (old_empty or old_qty != new_qty):
+		print("🔄 Slot[%d] update: %s x%d (était: %s x%d)" % [
+			slot_index, 
+			slot_info.get("item_name", "?"), new_qty,
+			old_data.get("item_name", "?"), old_qty
+		])
 	
 	if slot_info.get("is_empty", true):
 		clear_slot()
 	else:
 		_display_item(slot_info)
+	
+	# NOUVEAU: Forcer une mise à jour visuelle immédiate
+	_force_visual_refresh()
 
 func _display_item(slot_info: Dictionary):
 	"""Affiche un item dans le slot"""
@@ -128,13 +145,20 @@ func _update_item_icon(slot_info: Dictionary):
 		item_icon.visible = false
 
 func _update_quantity_label(slot_info: Dictionary):
-	"""Met à jour le label de quantité"""
+	"""Met à jour le label de quantité - VERSION CORRIGÉE"""
 	if not quantity_label:
 		return
 	
 	var qty = slot_info.get("quantity", 1)
-	quantity_label.text = str(qty)
-	quantity_label.visible = qty > 1
+	
+	# CORRECTION CRUCIALE: Toujours afficher la quantité si > 1
+	if qty > 1:
+		quantity_label.text = str(qty)
+		quantity_label.visible = true
+		print("  📊 Quantité mise à jour: %d" % qty)
+	else:
+		quantity_label.text = ""
+		quantity_label.visible = false
 
 func clear_slot():
 	"""Vide complètement le slot"""
@@ -147,6 +171,19 @@ func clear_slot():
 		quantity_label.visible = false
 		
 	slot_data = {"is_empty": true}
+
+func _force_visual_refresh():
+	"""NOUVEAU: Force un redraw immédiat de tous les composants"""
+	await get_tree().process_frame
+	
+	if item_icon:
+		item_icon.queue_redraw()
+	if quantity_label:
+		quantity_label.queue_redraw()
+	
+	# Forcer un recalcul de layout si nécessaire
+	if get_parent():
+		get_parent().queue_sort()
 
 # === UTILITAIRES ===
 
@@ -174,3 +211,13 @@ func debug_visual_state():
 		visual_manager.debug_state()
 	else:
 		print("❌ Pas de visual_manager")
+
+func debug_slot_content():
+	"""NOUVEAU: Debug du contenu du slot"""
+	print("🔍 Slot[%d] Debug:" % slot_index)
+	print("   - Vide: %s" % slot_data.get("is_empty", true))
+	print("   - Item: %s" % slot_data.get("item_name", "aucun"))
+	print("   - Quantité: %d" % slot_data.get("quantity", 0))
+	print("   - UI Icon visible: %s" % (item_icon.visible if item_icon else "N/A"))
+	print("   - UI Label visible: %s" % (quantity_label.visible if quantity_label else "N/A"))
+	print("   - UI Label text: '%s'" % (quantity_label.text if quantity_label else "N/A"))
