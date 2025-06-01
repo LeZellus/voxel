@@ -1,4 +1,4 @@
-# scripts/systems/inventory/ClickSystemIntegrator.gd - VERSION NETTOYÉE
+# scripts/systems/inventory/ClickSystemIntegrator.gd - AVEC FEEDBACK D'ERREUR
 class_name ClickSystemIntegrator
 extends Node
 
@@ -51,13 +51,22 @@ func _handle_initial_click(context: ClickContext):
 			_handle_usage(context)
 
 func _handle_selection(context: ClickContext):
-	"""Gère la sélection d'un slot"""
+	"""Gère la sélection d'un slot (MODIFIÉ pour inclure feedback d'erreur)"""
 	if context.source_slot_data.get("is_empty", true):
+		# NOUVEAU: Slot vide - afficher feedback d'erreur
+		_show_error_feedback(context)
 		return
 	
 	_clear_visual_selection()
 	_apply_visual_selection(context)
 	_save_selection_data(context)
+
+func _show_error_feedback(context: ClickContext):
+	"""NOUVEAU: Affiche le feedback d'erreur sur un slot vide"""
+	var slot_ui = SlotFinder.find_slot_ui_for_context(context, registered_uis)
+	if slot_ui and slot_ui.has_method("show_error_feedback"):
+		slot_ui.show_error_feedback()
+		print("❌ Clic sur slot vide - feedback d'erreur affiché")
 
 func _handle_usage(context: ClickContext):
 	"""Gère l'utilisation directe d'un item"""

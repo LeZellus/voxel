@@ -82,6 +82,10 @@ func highlight_as_selected():
 func remove_selection_highlight():
 	"""Désactive la sélection visuelle"""
 	visual_manager.set_selected_state(false)
+	
+func show_error_feedback():
+	"""Affiche le feedback d'erreur (action refusée)"""
+	visual_manager.show_error_feedback()
 
 # === GESTION DES DONNÉES ===
 
