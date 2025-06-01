@@ -1,26 +1,3 @@
-class_name ActionRegistry
-extends RefCounted
-
-var actions: Array[BaseInventoryAction] = []
-
-func register(action: BaseInventoryAction):
-	actions.append(action)
-	actions.sort_custom(func(a, b): return a.priority < b.priority)
-
-func execute(context: ClickContext) -> bool:
-	for action in actions:
-		if action.can_execute(context):
-			print("🎯 Exécution: %s" % action.name)
-			return action.execute(context)
-	return false
-
-func setup_defaults():
-	register(RestackAction.new())        # Priorité 1
-	register(HandPlacementAction.new())  # Priorité 2
-	register(HalfStackAction.new())      # Priorité 3
-	register(SimpleMoveAction.new())     # Priorité 4
-	register(SimpleUseAction.new())      # Priorité 5
-
 class SimpleUseAction extends BaseInventoryAction:
 	func _init():
 		super("use", 5)
