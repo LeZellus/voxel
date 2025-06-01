@@ -1,3 +1,4 @@
+# scripts/config/inventory/slot/SlotErrorDisplay.gd - VERSION CORRIGÉE
 class_name SlotErrorDisplay
 extends SlotVisualDisplay
 
@@ -28,48 +29,93 @@ func _save_original_positions():
 func show():
 	super.show()
 	
-	# S'assurer que le tween existe
-	if not animation_tween:
-		animation_tween = parent_control.create_tween()
-	
-	_add_shake_effect()
+	# CORRECTION: Toujours nettoyer et recréer le tween
+	_cleanup_tween()
+	_create_shake_animation()
 	error_timer.start()
 
 func hide():
-	_reset_positions()  # S'assurer que tout est remis en place
+	_cleanup_tween()  # CORRECTION: Nettoyer avant de cacher
+	_reset_positions()
 	super.hide()
+
+func _cleanup_tween():
+	"""NOUVEAU: Nettoyage sécurisé du tween"""
+	if animation_tween and is_instance_valid(animation_tween):
+		animation_tween.kill()
+	animation_tween = null
+
+func _create_shake_animation():
+	"""NOUVEAU: Création sécurisée du tween"""
+	# S'assurer que le parent_control existe et est valide
+	if not parent_control or not is_instance_valid(parent_control):
+		print("❌ Parent control invalide pour shake animation")
+		return
 	
-func _add_shake_effect():
+	# Créer un nouveau tween
+	animation_tween = parent_control.create_tween()
 	if not animation_tween:
-		animation_tween = parent_control.create_tween()
+		print("❌ Impossible de créer le tween")
+		return
 	
+	# CORRECTION: Vérifier que le tween est valide avant d'ajouter des propriétés
+	if not is_instance_valid(animation_tween):
+		print("❌ Tween créé mais invalide")
+		return
+	
+	# Configuration du tween
 	animation_tween.set_parallel(true)
-	animation_tween.tween_method(_shake_effect, 0.0, 1.0, 0.3).set_ease(Tween.EASE_OUT)
+	
+	# CORRECTION: Vérification avant chaque appel de méthode
+	var tween_method = animation_tween.tween_method(_shake_effect, 0.0, 1.0, 0.3)
+	if tween_method:
+		tween_method.set_ease(Tween.EASE_OUT)
 
 func _shake_effect(progress: float):
+	"""OPTIMISÉ: Effet de shake sécurisé"""
+	# CORRECTION: Vérifications de sécurité
+	if not parent_control or not is_instance_valid(parent_control):
+		return
+	
+	if original_positions.is_empty():
+		return
+	
 	var intensity = 3.0 * (1.0 - progress)
 	var offset = Vector2(randf_range(-intensity, intensity), randf_range(-intensity, intensity))
 	
-	for i in range(corners.size()):
+	# CORRECTION: Vérifier chaque corner avant manipulation
+	for i in range(min(corners.size(), original_positions.size())):
 		if corners[i] and is_instance_valid(corners[i]):
 			corners[i].position = original_positions[i] + offset
 	
-	if background:
+	# CORRECTION: Vérifier le background
+	if background and is_instance_valid(background):
 		background.position = Vector2.ZERO + offset
 	
-	# CORRECTION: Remettre en place à la fin
+	# CORRECTION: Reset à la fin de l'animation
 	if progress >= 0.99:
-		_reset_positions()
+		call_deferred("_reset_positions")
 
 func _reset_positions():
-	"""Remet les éléments à leur position originale"""
-	for i in range(corners.size()):
+	"""OPTIMISÉ: Reset sécurisé des positions"""
+	if original_positions.is_empty():
+		return
+	
+	# Reset des corners
+	for i in range(min(corners.size(), original_positions.size())):
 		if corners[i] and is_instance_valid(corners[i]):
 			corners[i].position = original_positions[i]
 	
-	if background:
+	# Reset du background
+	if background and is_instance_valid(background):
 		background.position = Vector2.ZERO
 
 func cleanup():
+	"""AMÉLIORÉ: Nettoyage complet"""
+	_cleanup_tween()
+	
+	if error_timer and is_instance_valid(error_timer):
+		error_timer.queue_free()
+	error_timer = null
+	
 	super.cleanup()
-	if error_timer: error_timer.queue_free()

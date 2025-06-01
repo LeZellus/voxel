@@ -1,3 +1,4 @@
+# scripts/ui/components/SlotVisualManager.gd - VERSION CORRIGÉE
 class_name SlotVisualManager
 extends RefCounted
 
@@ -9,6 +10,7 @@ var parent_control: Control
 
 # === ÉTATS ===
 var current_state: SlotVisualState = SlotVisualState.NONE
+var is_mouse_over: bool = false
 
 enum SlotVisualState { NONE, HOVER, SELECTED, ERROR }
 
@@ -22,11 +24,26 @@ func create_overlays():
 	hover_display = SlotVisualDisplay.new(parent_control, SlotVisualConfig.HOVER)
 	selected_display = SlotVisualDisplay.new(parent_control, SlotVisualConfig.SELECTED)
 	error_display = SlotErrorDisplay.new(parent_control)
+	
+	# CORRECTION: Connecter le signal de fin d'erreur
+	if error_display.error_timer:
+		error_display.error_timer.timeout.connect(_on_error_finished)
 
-# === API PUBLIQUE ===
+func _on_error_finished():
+	"""NOUVEAU: Callback quand l'erreur se termine"""
+	if current_state == SlotVisualState.ERROR:
+		# Retourner à l'état approprié selon la souris
+		var target_state = SlotVisualState.HOVER if is_mouse_over else SlotVisualState.NONE
+		_change_state(target_state)
+
+# === API PUBLIQUE CORRIGÉE ===
+
 func set_hover_state(hovered: bool):
-	if hover_display:
-		hover_display.is_mouse_over = hovered
+	is_mouse_over = hovered  # CORRECTION: Toujours sauvegarder l'état souris
+	
+	# CORRECTION: Ne pas changer l'état si on est en erreur
+	if current_state == SlotVisualState.ERROR:
+		return
 	
 	if hovered and current_state == SlotVisualState.NONE:
 		_change_state(SlotVisualState.HOVER)
@@ -37,7 +54,8 @@ func set_selected_state(selected: bool):
 	if selected:
 		_change_state(SlotVisualState.SELECTED)
 	else:
-		_change_state(SlotVisualState.HOVER if hover_display.is_mouse_over else SlotVisualState.NONE)
+		# CORRECTION: Utiliser la variable is_mouse_over sauvegardée
+		_change_state(SlotVisualState.HOVER if is_mouse_over else SlotVisualState.NONE)
 
 func show_error_feedback():
 	_change_state(SlotVisualState.ERROR)

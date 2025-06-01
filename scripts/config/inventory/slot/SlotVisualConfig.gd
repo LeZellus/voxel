@@ -19,8 +19,8 @@ const SELECTED = {
 
 const ERROR = {
 	"corner_color": Color("#e74c3c"),
-	"background_color": Color("#2c1810"),
-	"background_alpha": 0.3,
-	"size_ratio": 0.4,
+	"background_color": Color("#a53030"),
+	"background_alpha": 0.1,
+	"size_ratio": 0.25,
 	"z_index": 52
 }
