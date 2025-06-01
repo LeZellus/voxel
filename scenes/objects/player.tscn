@@ -97,5 +97,5 @@ lifetime = 0.3
 process_material = SubResource("ParticleProcessMaterial_asvgt")
 draw_pass_1 = SubResource("BoxMesh_0h7bh")
 
-[node name="InventorySystem" type="Node" parent="."]
+[node name="InventorySystem" type="CanvasLayer" parent="."]
 script = ExtResource("9_7wrpq")
