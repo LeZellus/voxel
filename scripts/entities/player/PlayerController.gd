@@ -315,13 +315,18 @@ func _debug_visual_system_state():
 		print("   - ⚠️ Propriété currently_selected_slot_ui manquante dans integrator")
 		
 func _input(event):
-	# DEBUG du système de clic
-	if event.is_action_pressed("ui_cancel"):  # Touche Échap
-		_debug_click_system_complete()
+	# Tests temporaires (à retirer après)
+	if event.is_action_pressed("ui_accept") and Input.is_key_pressed(KEY_1):
+		call_deferred("test_new_input_system")
 	
-	# Test de restack forcé
-	if event.is_action_pressed("ui_accept") and Input.is_action_pressed("ui_right"):  # Entrée + Flèche droite
-		_test_forced_restack()
+	elif event.is_action_pressed("ui_accept") and Input.is_key_pressed(KEY_2):
+		call_deferred("_debug_input_system_integration")
+	
+	elif event.is_action_pressed("ui_accept") and Input.is_key_pressed(KEY_3):
+		call_deferred("_test_specific_input_action", "double_click")
+	
+	elif event.is_action_pressed("ui_accept") and Input.is_key_pressed(KEY_4):
+		call_deferred("_test_specific_input_action", "drag")
 
 func _debug_click_system_complete():
 	"""Debug complet du système de clic"""
@@ -377,3 +382,153 @@ func _test_forced_restack():
 		print("📊 Résultat: %s" % ("✅" if result else "❌"))
 	else:
 		print("❌ ActionRegistry introuvable")
+		
+func test_new_input_system():
+	"""Test temporaire du nouveau système"""
+	print("🧪 === TEST DU NOUVEAU SYSTÈME D'INPUT ===")
+	
+	# 1. Vérifier que l'InputStateManager fonctionne
+	var input_manager = InputStateManager.new()
+	print("✅ InputStateManager créé")
+	
+	# 2. Simuler quelques événements
+	var test_click = InputEventMouseButton.new()
+	test_click.button_index = MOUSE_BUTTON_LEFT
+	test_click.pressed = true
+	test_click.global_position = Vector2(100, 100)
+	
+	var action_type = input_manager.process_input(test_click)
+	print("🎮 Action détectée: %s" % InputStateManager.ActionType.keys()[action_type])
+	
+	# 3. Tester les modificateurs
+	var test_key = InputEventKey.new()
+	test_key.keycode = KEY_SHIFT
+	test_key.pressed = true
+	input_manager.process_input(test_key)
+	
+	var modifiers = input_manager.get_current_modifiers()
+	print("🔧 Modifiers: %s" % modifiers)
+	
+	# 4. Vérifier ClickContext étendu
+	var context = ClickContext.create_advanced_interaction(
+		ClickContext.ClickType.SIMPLE_LEFT_CLICK,
+		0,
+		"test_container",
+		{"is_empty": false, "item_name": "Test Item"},
+		modifiers
+	)
+	print("📦 ClickContext créé: %s" % context._to_string())
+	
+	print("✅ Tests du nouveau système réussis!")
+
+# MÉTHODES DE DEBUG À AJOUTER DANS PLAYERCONTROLLER
+func _debug_input_system_integration():
+	"""Debug l'intégration du nouveau système dans l'inventaire"""
+	print("\n🔍 === DEBUG INTÉGRATION SYSTÈME INPUT ===")
+	
+	var inventory_system = get_inventory_system()
+	if not inventory_system:
+		print("❌ InventorySystem introuvable")
+		return
+	
+	var main_inv = inventory_system.get_main_inventory()
+	if not main_inv or not main_inv.ui:
+		print("❌ MainInventory UI introuvable")
+		return
+	
+	# Vérifier les premiers slots
+	print("🔍 Test des slots UI:")
+	var base_ui = main_inv.ui as BaseInventoryUI
+	if base_ui and base_ui.slots.size() > 0:
+		for i in range(min(3, base_ui.slots.size())):
+			var slot = base_ui.slots[i]
+			if slot:
+				print("   Slot[%d]: Input state = %s" % [i, slot.get_current_action_state()])
+				slot.debug_input_state()
+			else:
+				print("   Slot[%d]: ❌ Slot UI invalide" % i)
+	else:
+		print("❌ Pas de slots UI trouvés")
+
+func _test_specific_input_action(action_name: String):
+	"""Test d'une action spécifique"""
+	print("\n🧪 === TEST ACTION: %s ===" % action_name.to_upper())
+	
+	match action_name:
+		"double_click":
+			_simulate_double_click()
+		"middle_click":
+			pass
+			# _simulate_middle_click()
+		"drag":
+			pass
+			# _simulate_drag_sequence()
+		"hold":
+			pass
+			# _simulate_hold_sequence()
+		_:
+			print("❌ Action de test inconnue: %s" % action_name)
+
+func _simulate_double_click():
+	"""Simule un double-clic pour test"""
+	var input_manager = InputStateManager.new()
+	
+	# Premier clic
+	var click1 = InputEventMouseButton.new()
+	click1.button_index = MOUSE_BUTTON_LEFT
+	click1.pressed = false
+	click1.global_position = Vector2(100, 100)
+	
+	var action1 = input_manager.process_input(click1)
+	print("🖱️ Premier clic: %s" % InputStateManager.ActionType.keys()[action1])
+	
+	# Attendre un peu moins que le délai de double-clic
+	await get_tree().create_timer(0.2).timeout
+	
+	# Deuxième clic
+	var click2 = InputEventMouseButton.new()
+	click2.button_index = MOUSE_BUTTON_LEFT
+	click2.pressed = false
+	click2.global_position = Vector2(100, 100)
+	
+	var action2 = input_manager.process_input(click2)
+	print("🖱️ Deuxième clic: %s" % InputStateManager.ActionType.keys()[action2])
+	
+	if action2 == InputStateManager.ActionType.DOUBLE_LEFT_CLICK:
+		print("✅ Double-clic détecté correctement!")
+	else:
+		print("❌ Double-clic non détecté")
+
+func _simulate_drag_sequence():
+	"""Simule une séquence de drag"""
+	var input_manager = InputStateManager.new()
+	
+	# Press
+	var press = InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	press.global_position = Vector2(100, 100)
+	
+	var action1 = input_manager.process_input(press)
+	print("🖱️ Press: %s" % InputStateManager.ActionType.keys()[action1])
+	
+	# Motion (déclenche drag)
+	var motion = InputEventMouseMotion.new()
+	motion.global_position = Vector2(120, 120)  # Distance > threshold
+	
+	var action2 = input_manager.process_input(motion)
+	print("🖱️ Motion: %s" % InputStateManager.ActionType.keys()[action2])
+	
+	# Plus de motion
+	motion.global_position = Vector2(140, 140)
+	var action3 = input_manager.process_input(motion)
+	print("🖱️ Motion continue: %s" % InputStateManager.ActionType.keys()[action3])
+	
+	# Release
+	var release = InputEventMouseButton.new()
+	release.button_index = MOUSE_BUTTON_LEFT
+	release.pressed = false
+	release.global_position = Vector2(140, 140)
+	
+	var action4 = input_manager.process_input(release)
+	print("🖱️ Release: %s" % InputStateManager.ActionType.keys()[action4])

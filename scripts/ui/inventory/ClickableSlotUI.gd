@@ -1,16 +1,18 @@
-# scripts/ui/inventory/ClickableSlotUI.gd - VERSION AVEC MISE À JOUR FORCÉE
+# scripts/ui/inventory/ClickableSlotUI.gd - AVEC INPUT STATE MANAGER
 class_name ClickableSlotUI
 extends Control
 
 # === SIGNAUX ===
-signal slot_clicked(slot_index: int, mouse_event: InputEventMouseButton)
-signal slot_hovered(slot_index: int)
+signal slot_action_detected(slot_index: int, action_type: InputStateManager.ActionType, context: Dictionary)
 
 # === COMPOSANTS ===
 var item_icon: TextureRect  
 var quantity_label: Label
 var button: Button
 var visual_manager: SlotVisualManager
+
+# === NOUVEAU : INPUT MANAGER ===
+var input_manager: InputStateManager
 
 # === DONNÉES ===
 var slot_index: int = -1
@@ -22,6 +24,7 @@ func _ready():
 func _initialize_components():
 	"""Initialise tous les composants du slot"""
 	_find_ui_components()
+	_setup_input_manager()  # NOUVEAU
 	_setup_visual_manager()
 	_setup_button()
 	clear_slot()
@@ -31,6 +34,12 @@ func _find_ui_components():
 	item_icon = get_node_or_null("ItemIcon")
 	quantity_label = get_node_or_null("QuantityLabel") 
 	button = get_node_or_null("Button")
+
+func _setup_input_manager():
+	"""NOUVEAU : Configure le gestionnaire d'input avancé"""
+	input_manager = InputStateManager.new()
+	# Connecter le signal pour recevoir les actions détectées
+	input_manager.action_detected.connect(_on_advanced_action_detected)
 
 func _setup_visual_manager():
 	"""Configure le gestionnaire visuel robuste"""
@@ -48,34 +57,61 @@ func _setup_button():
 	_connect_button_signals()
 
 func _connect_button_signals():
-	"""Connecte les signaux du bouton"""
-	if not button.gui_input.is_connected(_on_button_gui_input):
-		button.gui_input.connect(_on_button_gui_input)
+	"""Connecte les signaux du bouton - MODIFIÉ"""
+	# REMPLACER l'ancien gui_input par le nouveau système
+	if not button.gui_input.is_connected(_on_advanced_gui_input):
+		button.gui_input.connect(_on_advanced_gui_input)
 	if not button.mouse_entered.is_connected(_on_mouse_entered):
 		button.mouse_entered.connect(_on_mouse_entered)
 	if not button.mouse_exited.is_connected(_on_mouse_exited):
 		button.mouse_exited.connect(_on_mouse_exited)
 
-# === ÉVÉNEMENTS SOURIS ===
+# === NOUVEAUX ÉVÉNEMENTS AVANCÉS ===
 
-func _on_button_gui_input(event: InputEvent):
-	"""Capture et émets les clics"""
-	if event is InputEventMouseButton and not event.pressed:
-		# Toujours émettre le clic, même sur slot vide
-		slot_clicked.emit(slot_index, event as InputEventMouseButton)
+func _on_advanced_gui_input(event: InputEvent):
+	"""NOUVEAU : Traitement d'input avancé via InputStateManager"""
+	if not input_manager:
+		return
+	
+	# Laisser l'InputStateManager analyser l'événement
+	var action_type = input_manager.process_input(event)
+	
+	# Créer le contexte étendu pour cette action
+	var context = {
+		"slot_index": slot_index,
+		"slot_data": slot_data.duplicate(),
+		"mouse_position": event.global_position if event is InputEventMouse else Vector2.ZERO,
+		"modifiers": input_manager.get_current_modifiers(),
+		"is_dragging": input_manager.is_in_drag_state(),
+		"is_holding": input_manager.is_in_hold_state()
+	}
+	
+	# Émettre le signal avec le type d'action détecté
+	slot_action_detected.emit(slot_index, action_type, context)
+	
+	# DEBUG
+	if action_type != InputStateManager.ActionType.SIMPLE_LEFT_CLICK:  # Éviter le spam
+		print("🎮 Slot[%d]: %s détecté" % [slot_index, InputStateManager.ActionType.keys()[action_type]])
+
+func _on_advanced_action_detected(action_type: InputStateManager.ActionType, event: InputEvent, context: Dictionary):
+	"""Callback quand l'InputStateManager détecte une action"""
+	# Cette méthode peut être utilisée pour des traitements spécifiques au slot
+	# Pour l'instant, on délègue tout via slot_action_detected
+	pass
+
+# === ÉVÉNEMENTS SOURIS (inchangés) ===
 
 func _on_mouse_entered():
 	"""Gestion du survol"""
 	if visual_manager:
 		visual_manager.set_hover_state(true)
-	slot_hovered.emit(slot_index)
 
 func _on_mouse_exited():
 	"""Fin du survol"""
 	if visual_manager:
 		visual_manager.set_hover_state(false)
 
-# === API VISUELLE PUBLIQUE ===
+# === API VISUELLE PUBLIQUE (inchangée) ===
 
 func highlight_as_selected():
 	"""Active la sélection visuelle"""
@@ -92,7 +128,29 @@ func show_error_feedback():
 	if visual_manager:
 		visual_manager.show_error_feedback()
 
-# === GESTION DES DONNÉES ===
+# === NOUVELLES MÉTHODES POUR ÉTATS AVANCÉS ===
+
+func is_in_drag_sequence() -> bool:
+	"""Vérifie si ce slot est dans une séquence de drag"""
+	return input_manager and input_manager.is_in_drag_state()
+
+func is_in_hold_sequence() -> bool:
+	"""Vérifie si ce slot est dans une séquence de hold"""
+	return input_manager and input_manager.is_in_hold_state()
+
+func get_current_action_state() -> String:
+	"""Retourne l'état actuel pour debug"""
+	if not input_manager:
+		return "no_manager"
+	
+	if input_manager.is_in_drag_state():
+		return "dragging"
+	elif input_manager.is_in_hold_state():
+		return "holding"
+	else:
+		return "idle"
+
+# === GESTION DES DONNÉES (inchangée) ===
 
 func set_slot_index(index: int):
 	slot_index = index
@@ -101,11 +159,11 @@ func get_slot_index() -> int:
 	return slot_index
 
 func update_slot(slot_info: Dictionary):
-	"""Met à jour l'affichage du slot - VERSION AVEC DEBUG"""
+	"""Met à jour l'affichage du slot"""
 	var old_data = slot_data.duplicate()
 	slot_data = slot_info
 	
-	# DEBUG: Vérifier les changements significatifs
+	# DEBUG : Vérifier les changements significatifs
 	var old_empty = old_data.get("is_empty", true)
 	var new_empty = slot_info.get("is_empty", true)
 	var old_qty = old_data.get("quantity", 0)
@@ -123,7 +181,6 @@ func update_slot(slot_info: Dictionary):
 	else:
 		_display_item(slot_info)
 	
-	# NOUVEAU: Forcer une mise à jour visuelle immédiate
 	_force_visual_refresh()
 
 func _display_item(slot_info: Dictionary):
@@ -145,17 +202,15 @@ func _update_item_icon(slot_info: Dictionary):
 		item_icon.visible = false
 
 func _update_quantity_label(slot_info: Dictionary):
-	"""Met à jour le label de quantité - VERSION CORRIGÉE"""
+	"""Met à jour le label de quantité"""
 	if not quantity_label:
 		return
 	
 	var qty = slot_info.get("quantity", 1)
 	
-	# CORRECTION CRUCIALE: Toujours afficher la quantité si > 1
 	if qty > 1:
 		quantity_label.text = str(qty)
 		quantity_label.visible = true
-		print("  📊 Quantité mise à jour: %d" % qty)
 	else:
 		quantity_label.text = ""
 		quantity_label.visible = false
@@ -173,7 +228,7 @@ func clear_slot():
 	slot_data = {"is_empty": true}
 
 func _force_visual_refresh():
-	"""NOUVEAU: Force un redraw immédiat de tous les composants"""
+	"""Force un redraw immédiat de tous les composants"""
 	await get_tree().process_frame
 	
 	if item_icon:
@@ -181,11 +236,10 @@ func _force_visual_refresh():
 	if quantity_label:
 		quantity_label.queue_redraw()
 	
-	# Forcer un recalcul de layout si nécessaire
 	if get_parent():
 		get_parent().queue_sort()
 
-# === UTILITAIRES ===
+# === UTILITAIRES (inchangés) ===
 
 func is_empty() -> bool:
 	return slot_data.get("is_empty", true)
@@ -202,8 +256,12 @@ func _exit_tree():
 	"""Nettoyage à la destruction"""
 	if visual_manager:
 		visual_manager.cleanup()
+	
+	# NOUVEAU : Reset de l'input manager
+	if input_manager:
+		input_manager.reset_state()
 
-# === DEBUG ===
+# === DEBUG ÉTENDU ===
 
 func debug_visual_state():
 	"""Debug de l'état visuel"""
@@ -212,12 +270,21 @@ func debug_visual_state():
 	else:
 		print("❌ Pas de visual_manager")
 
+func debug_input_state():
+	"""NOUVEAU : Debug de l'état d'input"""
+	if input_manager:
+		print("🎮 Input state pour slot[%d]:" % slot_index)
+		print("   - Action state: %s" % get_current_action_state())
+		print("   - Modifiers: %s" % input_manager.get_current_modifiers())
+	else:
+		print("❌ Pas d'input_manager")
+
 func debug_slot_content():
-	"""NOUVEAU: Debug du contenu du slot"""
+	"""Debug du contenu du slot"""
 	print("🔍 Slot[%d] Debug:" % slot_index)
 	print("   - Vide: %s" % slot_data.get("is_empty", true))
 	print("   - Item: %s" % slot_data.get("item_name", "aucun"))
 	print("   - Quantité: %d" % slot_data.get("quantity", 0))
+	print("   - Input state: %s" % get_current_action_state())
 	print("   - UI Icon visible: %s" % (item_icon.visible if item_icon else "N/A"))
 	print("   - UI Label visible: %s" % (quantity_label.visible if quantity_label else "N/A"))
-	print("   - UI Label text: '%s'" % (quantity_label.text if quantity_label else "N/A"))
