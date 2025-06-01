@@ -57,9 +57,10 @@ func _add_test_items():
 	var wood = _create_test_wood()
 	
 	# Ajouter directement à l'inventaire data
-	var apple_surplus = main_inv.inventory.add_item(apple, 5)
+	var apple_surplus = main_inv.inventory.add_item(apple, 4)
 	var sword_surplus = main_inv.inventory.add_item(sword, 1)
-	var wood_surplus = main_inv.inventory.add_item(wood, 12)
+	var wood_surplus = main_inv.inventory.add_item(wood, 63)
+	var apple2_surplus = main_inv.inventory.add_item(apple, 60)
 	
 	# CRUCIAL - Forcer le refresh de l'UI
 	await get_tree().process_frame
@@ -89,205 +90,6 @@ func setup_spring_arm():
 	spring_arm.margin = Constants.CAMERA_COLLISION_MARGIN
 	spring_arm.rotation.x = Constants.CAMERA_DEFAULT_ROTATION
 	
-func _input(event):
-	# Tes autres touches de debug existantes...
-	if event is InputEventKey and event.pressed:
-		match event.keycode:
-			# Tes touches existantes...
-			
-			# NOUVELLES TOUCHES DEBUG PREVIEW
-			KEY_F1:
-				print("🧪 Test preview:")
-				var integrator = inventory_system.click_integrator
-				if integrator:
-					integrator.print_debug_info()
-				else:
-					print("   - ❌ Click integrator introuvable")
-			
-			KEY_F2:
-				print("🔧 Force création preview:")
-				var integrator = inventory_system.click_integrator
-				if integrator and integrator.has_method("force_create_preview"):
-					integrator.force_create_preview()
-				else:
-					print("   - ❌ Impossible de forcer la création")
-			
-			KEY_F3:
-				print("🧪 Test affichage preview manuel:")
-				var integrator = inventory_system.click_integrator
-				if integrator and integrator.item_preview:
-					var test_data = {
-						"is_empty": false,
-						"item_name": "Test Item",
-						"quantity": 5,
-						"icon": _create_test_icon(Color.BLUE)
-					}
-					integrator._show_item_preview(test_data)
-					
-					# NOUVEAU: Forcer position au centre de l'écran
-					var viewport_size = get_viewport().get_visible_rect().size
-					var center_pos = viewport_size / 2
-					integrator.item_preview.position = center_pos
-					print("🎯 Preview forcée au centre: %s" % center_pos)
-				else:
-					print("   - ❌ Preview ou integrator manquant")
-			
-			KEY_F4:
-				print("🧪 Cache preview:")
-				var integrator = inventory_system.click_integrator
-				if integrator:
-					integrator._hide_item_preview()
-				else:
-					print("   - ❌ Integrator manquant")
-			
-			# NOUVELLE TOUCHE POUR DEBUG ITEMPREVIEW INTERNE
-			KEY_F5:
-				print("🔍 Debug état ItemPreview:")
-				var integrator = inventory_system.click_integrator
-				if integrator and integrator.item_preview:
-					if integrator.item_preview.has_method("debug_state"):
-						integrator.item_preview.debug_state()
-					else:
-						print("   - ❌ Méthode debug_state manquante")
-				else:
-					print("   - ❌ ItemPreview introuvable")
-			
-			# NOUVELLE TOUCHE : Afficher preview en position fixe
-			KEY_F6:
-				print("🎯 Test preview position fixe:")
-				var integrator = inventory_system.click_integrator
-				if integrator and integrator.item_preview:
-					var preview = integrator.item_preview
-					
-					# Forcer visible au centre
-					preview.visible = true
-					preview.is_active = true
-					preview.position = Vector2(500, 300)  # Position fixe
-					preview.z_index = 2000
-					
-					print("✅ Preview forcée visible à (500, 300)")
-					print("   - Position: %s" % preview.position)
-					print("   - Visible: %s" % preview.visible)
-					print("   - Z-index: %s" % preview.z_index)
-				else:
-					print("   - ❌ Preview introuvable")
-			
-			# NOUVELLE TOUCHE : DEBUG HIÉRARCHIE COMPLÈTE
-			KEY_F7:
-				print("🔍 DEBUG HIÉRARCHIE PREVIEW:")
-				var integrator = inventory_system.click_integrator
-				if integrator and integrator.item_preview:
-					var preview = integrator.item_preview
-					print("📋 Hiérarchie complète:")
-					print("   - Preview parent: %s" % (preview.get_parent().name if preview.get_parent() else "null"))
-					print("   - Preview enfants: %d" % preview.get_child_count())
-					
-					# Remonter la hiérarchie
-					var current = preview
-					var depth = 0
-					while current and depth < 10:
-						var indent = "  ".repeat(depth)
-						print("%s- %s (Type: %s, Visible: %s)" % [
-							indent, 
-							current.name, 
-							current.get_class(),
-							current.visible if current.has_method("visible") else "N/A"
-						])
-						current = current.get_parent()
-						depth += 1
-				else:
-					print("   - ❌ Preview introuvable")
-			
-			# NOUVELLE TOUCHE : RECRÉER PREVIEW DIRECTEMENT DANS SCÈNE
-			KEY_F8:
-				print("🔧 RECRÉATION PREVIEW DIRECTE (VERSION SÉCURISÉE):")
-				
-				var integrator = inventory_system.click_integrator
-				if not integrator:
-					print("❌ Integrator introuvable")
-					return
-				
-				print("📋 État avant suppression:")
-				print("   - ItemPreview existe: %s" % (integrator.item_preview != null))
-				
-				if integrator.item_preview:
-					print("   - ItemPreview valide: %s" % is_instance_valid(integrator.item_preview))
-					print("   - ItemPreview nom: %s" % integrator.item_preview.name)
-					print("   - ItemPreview parent: %s" % (integrator.item_preview.get_parent().name if integrator.item_preview.get_parent() else "null"))
-					print("   - ItemPreview is_active: %s" % integrator.item_preview.is_active)
-					
-					# ÉTAPE 1: Cacher d'abord
-					print("🔧 Étape 1: Masquage sécurisé...")
-					integrator.item_preview.hide_item()
-					integrator.item_preview.visible = false
-					integrator.item_preview.is_active = false
-					
-					# ÉTAPE 2: Déconnecter de l'integrator
-					print("🔧 Étape 2: Déconnexion de l'integrator...")
-					integrator.item_preview = null
-					
-					# ÉTAPE 3: Attendre un frame
-					print("🔧 Étape 3: Attente d'un frame...")
-					await get_tree().process_frame
-					
-					# ÉTAPE 4: Chercher manuellement les ItemPreview dans la scène
-					print("🔧 Étape 4: Nettoyage manuel...")
-					var main_scene = get_tree().current_scene
-					var previews_found = []
-					
-					_find_all_item_previews(main_scene, previews_found)
-					
-					print("📋 Trouvé %d ItemPreview(s) dans la scène:" % previews_found.size())
-					for i in range(previews_found.size()):
-						var preview = previews_found[i]
-						print("   - Preview %d: %s (Parent: %s)" % [
-							i, 
-							preview.name, 
-							preview.get_parent().name if preview.get_parent() else "null"
-						])
-						
-						# Suppression sécurisée
-						if is_instance_valid(preview):
-							preview.queue_free()
-							print("   ✅ Preview %d supprimée" % i)
-						else:
-							print("   ⚠️ Preview %d déjà invalide" % i)
-					
-					# ÉTAPE 5: Attendre encore
-					await get_tree().process_frame
-				
-				print("🔧 Étape finale: Création d'une nouvelle preview...")
-				
-				# Créer une nouvelle preview simple
-				var ItemPreviewScript = load("res://scripts/ui/components/ItemPreview.gd")
-				if not ItemPreviewScript:
-					print("❌ Script ItemPreview.gd introuvable")
-					return
-				
-				var new_preview = ItemPreviewScript.new()
-				new_preview.name = "TestDirectItemPreview"
-				
-				# Ajouter DIRECTEMENT à la scène principale
-				var main_scene = get_tree().current_scene
-				main_scene.add_child(new_preview)
-				
-				# Attendre que ça soit prêt
-				await get_tree().process_frame
-				await get_tree().process_frame
-				
-				# Test immédiat
-				print("🧪 Test de la nouvelle preview...")
-				new_preview.visible = true
-				new_preview.position = Vector2(200, 200)
-				new_preview.z_index = 9999
-				new_preview.modulate = Color.GREEN  # Vert pour la distinguer
-				
-				print("✅ Nouvelle preview créée en VERT à (200, 200)")
-				print("   - Parent: %s" % new_preview.get_parent().name)
-				print("   - Visible: %s" % new_preview.visible)
-				print("   - Nom: %s" % new_preview.name)
-				
-				
 func _find_all_item_previews(node: Node, found_previews: Array):
 	"""Trouve récursivement tous les ItemPreview dans l'arbre"""
 	
@@ -403,36 +205,6 @@ func get_inventory_system() -> InventorySystem:
 	"""Accès au système d'inventaire"""
 	return inventory_system
 
-# === DEBUG ===
-
-func debug_inventory():
-	"""Affiche les infos de l'inventaire pour debug"""
-	if inventory_system:
-		inventory_system.debug_all_containers()
-	else:
-		print("❌ Pas d'inventory system")
-		
-func _force_add_test_item():
-	"""Force l'ajout d'un item de test visible"""
-	var test_item = Item.new()
-	test_item.id = "debug_apple"
-	test_item.name = "Pomme Debug"
-	test_item.item_type = Item.ItemType.CONSUMABLE
-	test_item.max_stack_size = 64
-	test_item.is_stackable = true
-	test_item.icon = _create_test_icon(Color.RED)
-	
-	var main_inv = inventory_system.get_main_inventory()
-	if main_inv:
-		var surplus = main_inv.add_item(test_item, 5)
-		
-		# Forcer le rafraîchissement de l'UI
-		if main_inv.ui and main_inv.ui.has_method("refresh_ui"):
-			main_inv.ui.refresh_ui()
-			print("🔄 UI rafraîchie")
-	else:
-		print("❌ Inventaire principal introuvable")
-
 func _create_test_apple() -> Item:
 	var apple = Item.new("apple", "Pomme")
 	apple.item_type = Item.ItemType.CONSUMABLE
@@ -452,7 +224,7 @@ func _create_test_sword() -> Item:
 func _create_test_wood() -> Item:
 	var wood = Item.new("wood", "Bois")
 	wood.item_type = Item.ItemType.RESOURCE
-	wood.max_stack_size = 99
+	wood.max_stack_size = 9999
 	wood.is_stackable = true
 	wood.icon = _create_test_icon(Color(0.6, 0.3, 0.1))
 	return wood

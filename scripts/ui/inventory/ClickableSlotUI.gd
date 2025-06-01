@@ -1,4 +1,4 @@
-# scripts/ui/inventory/ClickableSlotUI.gd - VERSION NETTOYÉE
+# scripts/ui/inventory/ClickableSlotUI.gd - VERSION ROBUSTE
 class_name ClickableSlotUI
 extends Control
 
@@ -33,9 +33,8 @@ func _find_ui_components():
 	button = get_node_or_null("Button")
 
 func _setup_visual_manager():
-	"""Configure le gestionnaire visuel"""
+	"""Configure le gestionnaire visuel robuste"""
 	visual_manager = SlotVisualManager.new(self)
-	visual_manager.create_overlays()
 
 func _setup_button():
 	"""Configure le bouton de capture des clics"""
@@ -62,30 +61,36 @@ func _connect_button_signals():
 func _on_button_gui_input(event: InputEvent):
 	"""Capture et émets les clics"""
 	if event is InputEventMouseButton and not event.pressed:
+		# Toujours émettre le clic, même sur slot vide
 		slot_clicked.emit(slot_index, event as InputEventMouseButton)
 
 func _on_mouse_entered():
 	"""Gestion du survol"""
-	visual_manager.set_hover_state(true)
+	if visual_manager:
+		visual_manager.set_hover_state(true)
 	slot_hovered.emit(slot_index)
 
 func _on_mouse_exited():
 	"""Fin du survol"""
-	visual_manager.set_hover_state(false)
+	if visual_manager:
+		visual_manager.set_hover_state(false)
 
-# === API VISUELLE ===
+# === API VISUELLE PUBLIQUE ===
 
 func highlight_as_selected():
 	"""Active la sélection visuelle"""
-	visual_manager.set_selected_state(true)
+	if visual_manager:
+		visual_manager.set_selected_state(true)
 
 func remove_selection_highlight():
 	"""Désactive la sélection visuelle"""
-	visual_manager.set_selected_state(false)
+	if visual_manager:
+		visual_manager.set_selected_state(false)
 	
 func show_error_feedback():
 	"""Affiche le feedback d'erreur (action refusée)"""
-	visual_manager.show_error_feedback()
+	if visual_manager:
+		visual_manager.show_error_feedback()
 
 # === GESTION DES DONNÉES ===
 
@@ -153,3 +158,19 @@ func get_item_name() -> String:
 
 func get_slot_data() -> Dictionary:
 	return slot_data.duplicate()
+
+# === NETTOYAGE ===
+
+func _exit_tree():
+	"""Nettoyage à la destruction"""
+	if visual_manager:
+		visual_manager.cleanup()
+
+# === DEBUG ===
+
+func debug_visual_state():
+	"""Debug de l'état visuel"""
+	if visual_manager:
+		visual_manager.debug_state()
+	else:
+		print("❌ Pas de visual_manager")
