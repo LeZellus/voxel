@@ -43,7 +43,7 @@ func _handle_slot_click_via_events(context: ClickContext):
 		_handle_fresh_click(context)
 
 func _handle_placement_from_hand(context: ClickContext):
-	"""Gère le placement depuis la main - CONTEXTE CORRIGÉ"""
+	"""Gère le placement depuis la main - LOGIQUE CORRIGÉE"""
 	print("🔄 === PLACEMENT DEPUIS LA MAIN ===")
 	
 	var hand_data = selected_slot_info.slot_data
@@ -56,25 +56,10 @@ func _handle_placement_from_hand(context: ClickContext):
 		context.source_slot_data.get("item_name", "vide")
 	])
 	
-	# NOUVEAU : Créer le bon contexte selon la situation
-	var placement_context: ClickContext
+	# CORRECTION : Utiliser la nouvelle logique de création de contexte
+	var placement_context = _create_hand_to_slot_context(context)
 	
-	# Vérifier si c'est un restack potentiel (même item dans le slot cible)
-	var hand_item_id = hand_data.get("item_id", "")
-	var target_item_id = context.source_slot_data.get("item_id", "")
-	var target_empty = context.source_slot_data.get("is_empty", true)
-	
-	if not target_empty and hand_item_id == target_item_id and hand_item_id != "":
-		# CAS RESTACK : Créer un contexte slot-to-slot
-		print("🔄 Détection restack - création contexte slot-to-slot")
-		placement_context = ClickContext.create_slot_to_slot_interaction(
-			context.click_type,
-			-1, "player_hand", hand_data,  # Source = main
-			context.source_slot_index, context.source_container_id, context.source_slot_data  # Target = slot cliqué
-		)
-	else:
-		# CAS NORMAL : Créer un contexte main-to-slot
-		placement_context = _create_hand_to_slot_context(context)
+	print("   🔧 Contexte créé: %s" % placement_context._to_string())
 	
 	# Envoyer au ActionRegistry
 	if not click_system or not click_system.action_registry:
@@ -92,7 +77,6 @@ func _handle_placement_from_hand(context: ClickContext):
 	
 	if success:
 		call_deferred("_refresh_all_uis")
-
 func _handle_direct_slot_to_slot(source_context: ClickContext, target_context: ClickContext):
 	"""NOUVEAU : Gère les déplacements directs slot → slot"""
 	print("🔄 === DÉPLACEMENT DIRECT SLOT → SLOT ===")
@@ -154,17 +138,39 @@ func _handle_right_click_action(context: ClickContext):
 # === CRÉATION DE CONTEXTES CORRECTS ===
 
 func _create_hand_to_slot_context(clicked_context: ClickContext) -> ClickContext:
-	"""Crée un contexte main → slot SANS target_slot_index"""
-	# IMPORTANT: On ne met pas de target_slot_index pour que HandPlacementAction le reconnaisse
-	var hand_context = ClickContext.new()
-	hand_context.click_type = clicked_context.click_type
-	hand_context.source_slot_index = clicked_context.source_slot_index  # Le slot cliqué
-	hand_context.source_container_id = clicked_context.source_container_id
-	hand_context.source_slot_data = clicked_context.source_slot_data  # Données du slot cliqué
-	hand_context.target_slot_index = -1  # IMPORTANT: Pas de target pour HandPlacementAction
+	"""Crée un contexte main → slot CORRIGÉ"""
+	var hand_data = selected_slot_info.slot_data
+	var hand_item_id = hand_data.get("item_id", "")
+	var target_item_id = clicked_context.source_slot_data.get("item_id", "")
+	var target_empty = clicked_context.source_slot_data.get("is_empty", true)
 	
-	# Les données de la main ne sont pas dans le contexte mais récupérées via get_hand_data()
-	return hand_context
+	# CORRECTION : Créer le bon contexte selon la situation
+	if not target_empty and hand_item_id == target_item_id and hand_item_id != "":
+		# CAS RESTACK : Créer un contexte main → slot pour RestackAction
+		print("🔧 Création contexte RESTACK main → slot")
+		
+		var restack_context = ClickContext.new()
+		restack_context.click_type = clicked_context.click_type
+		restack_context.source_slot_index = -1  # Main
+		restack_context.source_container_id = "player_hand"
+		restack_context.source_slot_data = hand_data
+		restack_context.target_slot_index = clicked_context.source_slot_index  # Slot cliqué
+		restack_context.target_container_id = clicked_context.source_container_id
+		restack_context.target_slot_data = clicked_context.source_slot_data
+		
+		return restack_context
+	else:
+		# CAS PLACEMENT NORMAL : Contexte pour HandPlacementAction
+		print("🔧 Création contexte PLACEMENT normal")
+		
+		var placement_context = ClickContext.new()
+		placement_context.click_type = clicked_context.click_type
+		placement_context.source_slot_index = clicked_context.source_slot_index  # Slot cliqué
+		placement_context.source_container_id = clicked_context.source_container_id
+		placement_context.source_slot_data = clicked_context.source_slot_data
+		placement_context.target_slot_index = -1  # Pas de target pour HandPlacementAction
+		
+		return placement_context
 
 # === GESTION VISUELLE (INCHANGÉ) ===
 
