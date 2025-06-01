@@ -19,10 +19,6 @@ config/features=PackedStringArray("4.3", "Forward Plus")
 AudioConfigManager="*res://scripts/systems/audio/AudioConfigManager.gd"
 AudioManager="*res://scripts/systems/audio/AudioSystem.gd"
 
-[display]
-
-window/size/mode=2
-
 [file_customization]
 
 folder_colors={

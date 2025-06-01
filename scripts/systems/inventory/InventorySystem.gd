@@ -7,6 +7,8 @@ signal system_ready()
 var containers: Dictionary = {}
 var click_integrator: ClickSystemIntegrator
 
+var currently_selected_slot_ui: ClickableSlotUI
+
 func _ready():
 	await _setup_system()
 	system_ready.emit()

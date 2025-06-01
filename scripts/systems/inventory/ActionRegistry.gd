@@ -112,20 +112,26 @@ class SimpleMoveAction extends SimpleAction:
 	func _perform_atomic_transfer(source_slot, target_slot, item, quantity) -> bool:
 		"""Transfert atomique pour éviter les états incohérents"""
 		
+		print("🔄 Transfert atomique: %s x%d" % [item.name, quantity])
+		
 		# CAS 1: Slot destination vide
 		if target_slot.is_empty():
 			print("📥 Destination vide - transfert direct")
 			
-			# OPÉRATION ATOMIQUE : retirer puis ajouter immédiatement
-			source_slot.clear()  # Retirer tout de la source
-			var surplus = target_slot.add_item(item, quantity)  # Ajouter à la destination
+			# OPÉRATION ATOMIQUE : Sauvegarder puis manipuler
+			var temp_item = item
+			var temp_qty = quantity
 			
+			# Vider la source PUIS remplir la destination
+			source_slot.clear()
+			var surplus = target_slot.add_item(temp_item, temp_qty)
+			
+			# Gérer le surplus
 			if surplus > 0:
-				# En cas de surplus, remettre en source
-				source_slot.add_item(item, surplus)
-				print("⚠️ Transfert partiel: %d/%d (surplus: %d)" % [quantity - surplus, quantity, surplus])
+				source_slot.add_item(temp_item, surplus)
+				print("⚠️ Transfert partiel: %d/%d (surplus: %d)" % [temp_qty - surplus, temp_qty, surplus])
 			else:
-				print("✅ Transfert complet: %s x%d" % [item.name, quantity])
+				print("✅ Transfert complet: %s x%d" % [temp_item.name, temp_qty])
 			
 			return true
 		
@@ -133,51 +139,54 @@ class SimpleMoveAction extends SimpleAction:
 		elif target_slot.get_item().id == item.id and item.is_stackable:
 			print("📚 Tentative de stack...")
 			
-			var can_add = min(quantity, target_slot.get_max_stack_size() - target_slot.get_quantity())
+			var available_space = target_slot.get_max_stack_size() - target_slot.get_quantity()
+			var can_transfer = min(quantity, available_space)
 			
-			if can_add > 0:
-				# Opération atomique pour le stack
-				var new_source_qty = quantity - can_add
-				var new_target_qty = target_slot.get_quantity() + can_add
+			if can_transfer > 0:
+				# Transfert atomique pour le stack
+				var remaining_in_source = quantity - can_transfer
 				
-				# Appliquer les changements atomiquement
-				if new_source_qty > 0:
-					source_slot.item_stack.quantity = new_source_qty
+				# Mise à jour atomique des quantités
+				if remaining_in_source > 0:
+					source_slot.item_stack.quantity = remaining_in_source
 				else:
 					source_slot.clear()
 				
-				target_slot.item_stack.quantity = new_target_qty
+				target_slot.item_stack.quantity += can_transfer
 				
 				# Déclencher les signaux
 				source_slot.slot_changed.emit()
 				target_slot.slot_changed.emit()
 				
-				print("✅ Stack réussi: %d items ajoutés" % can_add)
+				print("✅ Stack réussi: %d items transférés" % can_transfer)
 				return true
 			else:
 				print("❌ Stack impossible - destination pleine")
 				return false
 		
-		# CAS 3: Items différents - swap
+		# CAS 3: Items différents - swap complet
 		else:
 			print("🔄 Swap d'items différents")
 			
-			# Sauvegarder les données
+			# Sauvegarder les données avant manipulation
 			var source_item = item
 			var source_qty = quantity
 			var target_item = target_slot.get_item()
 			var target_qty = target_slot.get_quantity()
 			
-			# Swap atomique
+			# Swap atomique : vider puis remplir
 			source_slot.clear()
 			target_slot.clear()
 			
-			target_slot.add_item(source_item, source_qty)
-			source_slot.add_item(target_item, target_qty)
+			var surplus1 = target_slot.add_item(source_item, source_qty)
+			var surplus2 = source_slot.add_item(target_item, target_qty)
+			
+			# En principe, pas de surplus pour un swap 1:1
+			if surplus1 > 0 or surplus2 > 0:
+				print("⚠️ Surplus inattendu dans swap")
 			
 			print("✅ Swap réussi: %s <-> %s" % [source_item.name, target_item.name])
-			return true
-			
+			return true		
 	func _find_click_manager():
 		return ServiceLocator.get_service("click_system")
 		

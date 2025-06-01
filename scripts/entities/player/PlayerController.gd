@@ -116,8 +116,26 @@ func _input(event):
 			
 			KEY_F3:
 				print("🧪 État click system:")
+				# CORRECTION : utiliser l'integrator au lieu du click_system directement
 				if inventory_system.click_integrator:
-					inventory_system.click_integrator.click_system.print_debug_info()
+					inventory_system.click_integrator.print_debug_info()
+				else:
+					print("❌ Click integrator introuvable")
+			KEY_F6:
+				print("🧪 Test overlays visuels:")
+				_debug_visual_overlays()
+			
+			KEY_F7:
+				print("🧪 Force affichage hover sur slot 0:")
+				_force_show_visual_on_slot(0, "hover")
+			
+			KEY_F8:
+				print("🧪 Force affichage selected sur slot 0:")
+				_force_show_visual_on_slot(0, "selected")
+			
+			KEY_F9:
+				print("🧪 Debug état visual système:")
+				_debug_visual_system_state()
 
 func _unhandled_input(event: InputEvent):
 	handle_camera_input(event)
@@ -288,3 +306,69 @@ func update_footsteps():
 	"""Met à jour les footsteps"""
 	AudioSystem.update_footsteps()
 	
+func _debug_visual_overlays():
+	"""Debug les overlays de tous les slots visibles"""
+	var main_inv = inventory_system.get_main_inventory()
+	if not main_inv or not main_inv.ui:
+		print("❌ Inventaire principal introuvable")
+		return
+	
+	var slots = _find_all_clickable_slots(main_inv.ui)
+	print("🔍 Trouvé %d slots dans l'inventaire principal:" % slots.size())
+	
+	for slot in slots:
+		if slot.has_method("debug_visual_state"):
+			slot.debug_visual_state()
+
+func _force_show_visual_on_slot(slot_index: int, type: String):
+	"""Force l'affichage visuel sur un slot spécifique"""
+	var main_inv = inventory_system.get_main_inventory()
+	if not main_inv or not main_inv.ui:
+		print("❌ Inventaire principal introuvable")
+		return
+	
+	var slots = _find_all_clickable_slots(main_inv.ui)
+	if slot_index >= slots.size():
+		print("❌ Slot %d introuvable (max: %d)" % [slot_index, slots.size()-1])
+		return
+	
+	var slot = slots[slot_index]
+	match type:
+		"hover":
+			if slot.has_method("force_show_hover"):
+				slot.force_show_hover()
+		"selected":
+			if slot.has_method("force_show_selected"):
+				slot.force_show_selected()
+
+func _find_all_clickable_slots(ui: Control) -> Array:
+	"""Trouve tous les ClickableSlotUI dans une UI"""
+	var slots = []
+	_find_clickable_slots_recursive(ui, slots)
+	return slots
+
+func _find_clickable_slots_recursive(node: Node, slots: Array):
+	"""Recherche récursive"""
+	if node.get_class() == "ClickableSlotUI" or node.get_script() and node.get_script().get_global_name() == "ClickableSlotUI":
+		slots.append(node)
+	
+	for child in node.get_children():
+		_find_clickable_slots_recursive(child, slots)
+
+func _debug_visual_system_state():
+	"""Debug l'état général du système visuel"""
+	var integrator = inventory_system.click_integrator
+	if not integrator:
+		print("❌ Click integrator introuvable")
+		return
+	
+	print("\n🔍 ÉTAT SYSTÈME VISUEL:")
+	print("   - Sélection logique: %s" % (not integrator.selected_slot_info.is_empty()))
+	
+	if integrator.has_property("currently_selected_slot_ui"):
+		var visual_slot = integrator.currently_selected_slot_ui
+		print("   - Sélection visuelle: %s" % (visual_slot != null))
+		if visual_slot:
+			print("   - Slot visuel sélectionné: %d" % visual_slot.get_slot_index())
+	else:
+		print("   - ⚠️ Propriété currently_selected_slot_ui manquante dans integrator")
