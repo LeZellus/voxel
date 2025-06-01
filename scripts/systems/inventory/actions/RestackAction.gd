@@ -7,112 +7,34 @@ func _init():
 
 func can_execute(context: ClickContext) -> bool:
 	"""
-	SIMPLIFIÉ: Ne gère QUE les restacks slot → slot
-	Main → slot sera géré par HandPlacementAction
+	CORRIGÉ: Gère maintenant AUSSI main → slot avec même item
 	"""
 	print("\n🔍 === RESTACKACTION.CAN.EXECUTE ===")
-	
-	# CONDITION STRICTE: Seulement slot-to-slot
-	if context.target_slot_index == -1:
-		print("❌ Pas un contexte slot-to-slot")
-		return false
 	
 	if context.click_type != ClickContext.ClickType.SIMPLE_LEFT_CLICK:
 		print("❌ Pas un clic gauche")
 		return false
 	
-	# Vérifier que source et target ont des items
-	var source_empty = context.source_slot_data.get("is_empty", true)
-	var target_empty = context.target_slot_data.get("is_empty", true)
+	# CAS 1: Slot-to-slot classique
+	if context.target_slot_index != -1:
+		return _can_execute_slot_to_slot(context)
 	
-	if source_empty or target_empty:
-		print("❌ Un des slots est vide (source: %s, target: %s)" % [source_empty, target_empty])
-		return false
+	# CAS 2: NOUVEAU - Main-to-slot avec même item (restack depuis main)
+	if player_has_selection():
+		return _can_execute_hand_to_slot_restack(context)
 	
-	# Vérifier que c'est le même item
-	var source_item_id = context.source_slot_data.get("item_id", "")
-	var target_item_id = context.target_slot_data.get("item_id", "")
-	
-	if source_item_id != target_item_id or source_item_id == "":
-		print("❌ Items différents (source: %s, target: %s)" % [source_item_id, target_item_id])
-		return false
-	
-	# Vérifier que c'est stackable
-	var item_type = context.source_slot_data.get("item_type", -1)
-	if item_type == Item.ItemType.TOOL:
-		print("❌ Item non stackable (outil)")
-		return false
-	
-	# Vérifier qu'il y a de la place dans le target
-	var target_quantity = context.target_slot_data.get("quantity", 0)
-	var target_max = _get_max_stack_size(context.target_slot_data)
-	
-	if target_quantity >= target_max:
-		print("❌ Slot target déjà plein (%d/%d)" % [target_quantity, target_max])
-		return false
-	
-	print("✅ Restack slot→slot possible: %s (%d + %d)" % [
-		source_item_id, 
-		context.source_slot_data.get("quantity", 0),
-		target_quantity
-	])
-	return true
+	print("❌ Ni slot-to-slot ni restack depuis main")
+	return false
 
 func execute(context: ClickContext) -> bool:
-	"""Exécute le restack slot → slot uniquement"""
+	"""Exécute selon le type de restack"""
 	print("\n🚀 === RESTACKACTION.EXECUTE ===")
-	print("    - Restack: %s[%d] → %s[%d]" % [
-		context.source_container_id, context.source_slot_index,
-		context.target_container_id, context.target_slot_index
-	])
 	
-	# Récupérer les controllers
-	var source_controller = get_controller(context.source_container_id)
-	var target_controller = get_controller(context.target_container_id)
-	
-	if not source_controller or not target_controller:
-		print("❌ Controllers introuvables")
-		return false
-	
-	var source_slot = source_controller.inventory.get_slot(context.source_slot_index)
-	var target_slot = target_controller.inventory.get_slot(context.target_slot_index)
-	
-	if not source_slot or not target_slot:
-		print("❌ Slots introuvables")
-		return false
-	
-	# ÉTAT AVANT
-	var source_quantity = source_slot.get_quantity()
-	var target_current = target_slot.get_quantity()
-	var target_max = target_slot.get_max_stack_size()
-	var available_space = target_max - target_current
-	
-	print("📊 AVANT - Source: %d, Target: %d/%d (espace: %d)" % [
-		source_quantity, target_current, target_max, available_space
-	])
-	
-	# Calculer le transfert optimal
-	var can_transfer = mini(source_quantity, available_space)
-	var remaining_in_source = source_quantity - can_transfer
-	
-	print("🔄 Transfert planifié: %d items, reste en source: %d" % [can_transfer, remaining_in_source])
-	
-	# EFFECTUER LE TRANSFERT ATOMIQUE
-	if not _execute_atomic_transfer(source_slot, target_slot, can_transfer):
-		print("❌ Transfert atomique échoué")
-		return false
-	
-	# FORCER LES SIGNAUX ET REFRESH
-	_force_signals_and_refresh(source_controller, target_controller, context)
-	
-	print("📊 APRÈS - Source: %d, Target: %d" % [
-		source_slot.get_quantity() if not source_slot.is_empty() else 0,
-		target_slot.get_quantity()
-	])
-	
-	print("✅ Restack réussi: %d transférés" % can_transfer)
-	return true
-
+	if context.target_slot_index != -1:
+		return _execute_slot_to_slot_restack(context)
+	else:
+		return _execute_hand_to_slot_restack(context)
+		
 func _execute_atomic_transfer(source_slot, target_slot, transfer_amount: int) -> bool:
 	"""Effectue le transfert de manière atomique"""
 	
@@ -173,3 +95,149 @@ func _delayed_refresh(context: ClickContext):
 func _get_max_stack_size(slot_data: Dictionary) -> int:
 	"""Récupère la taille max du stack depuis les données"""
 	return slot_data.get("max_stack", 64) # Valeur par défaut
+	
+func _execute_hand_to_slot_restack(context: ClickContext) -> bool:
+	"""NOUVEAU: Exécute restack depuis main vers slot"""
+	print("    - Restack: main → slot %d" % context.source_slot_index)
+	
+	var hand_data = get_hand_data()
+	var hand_quantity = hand_data.get("quantity", 0)
+	
+	var target_controller = get_controller(context.source_container_id)
+	if not target_controller:
+		print("❌ Controller introuvable")
+		return false
+	
+	var target_slot = target_controller.inventory.get_slot(context.source_slot_index)
+	if not target_slot:
+		print("❌ Slot target introuvable")
+		return false
+	
+	var target_current = target_slot.get_quantity()
+	var target_max = target_slot.get_max_stack_size()
+	var available_space = target_max - target_current
+	
+	var can_transfer = min(hand_quantity, available_space)
+	var remaining_in_hand = hand_quantity - can_transfer
+	
+	print("📊 Transfert: %d items, reste en main: %d" % [can_transfer, remaining_in_hand])
+	
+	# Effectuer le transfert
+	target_slot.item_stack.quantity += can_transfer
+	
+	if remaining_in_hand > 0:
+		update_hand_quantity(remaining_in_hand)
+	else:
+		clear_hand_selection()
+	
+	# Forcer signaux et refresh
+	target_slot.slot_changed.emit()
+	target_controller.inventory.inventory_changed.emit()
+	call_deferred("refresh_container_ui", context.source_container_id)
+	
+	print("✅ Restack main→slot réussi")
+	return true
+	
+func _can_execute_hand_to_slot_restack(context: ClickContext) -> bool:
+	"""NOUVEAU: Logique main-to-slot avec même item"""
+	var hand_data = get_hand_data()
+	var slot_data = context.source_slot_data
+	
+	# Vérifier que le slot n'est pas vide
+	if slot_data.get("is_empty", true):
+		print("❌ Slot cible vide - pas un restack")
+		return false
+	
+	# Vérifier même item
+	var hand_item_id = hand_data.get("item_id", "")
+	var slot_item_id = slot_data.get("item_id", "")
+	
+	if hand_item_id != slot_item_id or hand_item_id == "":
+		print("❌ Items différents main:%s vs slot:%s" % [hand_item_id, slot_item_id])
+		return false
+	
+	# Vérifier stackable
+	var item_type = hand_data.get("item_type", -1)
+	if item_type == Item.ItemType.TOOL:
+		print("❌ Item non stackable (outil)")
+		return false
+	
+	# Vérifier qu'il y a de la place
+	var slot_quantity = slot_data.get("quantity", 0)
+	var slot_max = _get_max_stack_size(slot_data)
+	
+	if slot_quantity >= slot_max:
+		print("❌ Slot déjà plein (%d/%d)" % [slot_quantity, slot_max])
+		return false
+	
+	print("✅ Restack main→slot possible: %s" % hand_item_id)
+	return true
+	
+func _can_execute_slot_to_slot(context: ClickContext) -> bool:
+	"""Logique slot-to-slot existante"""
+	var source_empty = context.source_slot_data.get("is_empty", true)
+	var target_empty = context.target_slot_data.get("is_empty", true)
+	
+	if source_empty or target_empty:
+		print("❌ Un des slots est vide (source: %s, target: %s)" % [source_empty, target_empty])
+		return false
+	
+	var source_item_id = context.source_slot_data.get("item_id", "")
+	var target_item_id = context.target_slot_data.get("item_id", "")
+	
+	if source_item_id != target_item_id or source_item_id == "":
+		print("❌ Items différents (source: %s, target: %s)" % [source_item_id, target_item_id])
+		return false
+	
+	var item_type = context.source_slot_data.get("item_type", -1)
+	if item_type == Item.ItemType.TOOL:
+		print("❌ Item non stackable (outil)")
+		return false
+	
+	var target_quantity = context.target_slot_data.get("quantity", 0)
+	var target_max = _get_max_stack_size(context.target_slot_data)
+	
+	if target_quantity >= target_max:
+		print("❌ Slot target déjà plein (%d/%d)" % [target_quantity, target_max])
+		return false
+	
+	print("✅ Restack slot→slot possible")
+	return true
+
+func _execute_slot_to_slot_restack(context: ClickContext) -> bool:
+	"""Exécute le restack slot → slot (code existant)"""
+	print("    - Restack: %s[%d] → %s[%d]" % [
+		context.source_container_id, context.source_slot_index,
+		context.target_container_id, context.target_slot_index
+	])
+	
+	# Utiliser le code existant de l'ancien execute()
+	var source_controller = get_controller(context.source_container_id)
+	var target_controller = get_controller(context.target_container_id)
+	
+	if not source_controller or not target_controller:
+		print("❌ Controllers introuvables")
+		return false
+	
+	var source_slot = source_controller.inventory.get_slot(context.source_slot_index)
+	var target_slot = target_controller.inventory.get_slot(context.target_slot_index)
+	
+	if not source_slot or not target_slot:
+		print("❌ Slots introuvables")
+		return false
+	
+	var source_quantity = source_slot.get_quantity()
+	var target_current = target_slot.get_quantity()
+	var target_max = target_slot.get_max_stack_size()
+	var available_space = target_max - target_current
+	
+	var can_transfer = min(source_quantity, available_space)
+	var remaining_in_source = source_quantity - can_transfer
+	
+	print("📊 Transfert: %d items, reste en source: %d" % [can_transfer, remaining_in_source])
+	
+	if not _execute_atomic_transfer(source_slot, target_slot, can_transfer):
+		return false
+	
+	_force_signals_and_refresh(source_controller, target_controller, context)
+	return true

@@ -43,7 +43,7 @@ func _handle_slot_click_via_events(context: ClickContext):
 		_handle_fresh_click(context)
 
 func _handle_placement_from_hand(context: ClickContext):
-	"""Gère le placement depuis la main - CONTEXTE CORRECT"""
+	"""Gère le placement depuis la main - CONTEXTE CORRIGÉ"""
 	print("🔄 === PLACEMENT DEPUIS LA MAIN ===")
 	
 	var hand_data = selected_slot_info.slot_data
@@ -56,10 +56,27 @@ func _handle_placement_from_hand(context: ClickContext):
 		context.source_slot_data.get("item_name", "vide")
 	])
 	
-	# CRÉER LE BON CONTEXTE : main → slot cliqué
-	var placement_context = _create_hand_to_slot_context(context)
+	# NOUVEAU : Créer le bon contexte selon la situation
+	var placement_context: ClickContext
 	
-	# Envoyer directement au ActionRegistry
+	# Vérifier si c'est un restack potentiel (même item dans le slot cible)
+	var hand_item_id = hand_data.get("item_id", "")
+	var target_item_id = context.source_slot_data.get("item_id", "")
+	var target_empty = context.source_slot_data.get("is_empty", true)
+	
+	if not target_empty and hand_item_id == target_item_id and hand_item_id != "":
+		# CAS RESTACK : Créer un contexte slot-to-slot
+		print("🔄 Détection restack - création contexte slot-to-slot")
+		placement_context = ClickContext.create_slot_to_slot_interaction(
+			context.click_type,
+			-1, "player_hand", hand_data,  # Source = main
+			context.source_slot_index, context.source_container_id, context.source_slot_data  # Target = slot cliqué
+		)
+	else:
+		# CAS NORMAL : Créer un contexte main-to-slot
+		placement_context = _create_hand_to_slot_context(context)
+	
+	# Envoyer au ActionRegistry
 	if not click_system or not click_system.action_registry:
 		print("❌ ActionRegistry introuvable!")
 		_clear_selection()
@@ -70,13 +87,30 @@ func _handle_placement_from_hand(context: ClickContext):
 	
 	print("📊 Résultat: %s" % ("✅ Succès" if success else "❌ Échec"))
 	
-	# IMPORTANT: Ne clear que si c'est un placement réussi ou un échec définitif
 	if success or context.click_type == ClickContext.ClickType.SIMPLE_RIGHT_CLICK:
 		_clear_selection()
 	
 	if success:
 		call_deferred("_refresh_all_uis")
 
+func _handle_direct_slot_to_slot(source_context: ClickContext, target_context: ClickContext):
+	"""NOUVEAU : Gère les déplacements directs slot → slot"""
+	print("🔄 === DÉPLACEMENT DIRECT SLOT → SLOT ===")
+	
+	var direct_context = ClickContext.create_slot_to_slot_interaction(
+		source_context.click_type,
+		source_context.source_slot_index, source_context.source_container_id, source_context.source_slot_data,
+		target_context.source_slot_index, target_context.source_container_id, target_context.source_slot_data
+	)
+	
+	if click_system and click_system.action_registry:
+		var success = click_system.action_registry.execute(direct_context)
+		if success:
+			call_deferred("_refresh_all_uis")
+		return success
+	
+	return false
+	
 func _handle_fresh_click(context: ClickContext):
 	"""Gère un nouveau clic - LOGIQUE CLARIFIÉE"""
 	print("🎯 === NOUVEAU CLIC ===")
